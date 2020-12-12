@@ -1,9 +1,47 @@
 .App {
-  text-align: center;
-  margin-top: 60px;
-  font-size: 2em;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
 }
 
-img.wip {
-  width: 400px;
+.self-portrait {
+  border-radius: 50%;
+  border: 4px solid hsla(0, 0%, 0%, 0.6);
+  height: 200px;
+  max-height: 60vw;
+}
+
+header {
+  background-color: hsl(150, 30%, 85%);
+  text-align: center;
+  padding: 1em;
+  width: 100vw;
+  border-bottom: 1px solid hsla(0, 0%, 0%, 0.6)
+}
+
+.blurb {
+  display: flex;
+  justify-content: space-between;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 1em;
+  padding: 0 1em;
+}
+
+.spacer {
+  border-left: 1px solid black;
+  margin: 0 8px;
+}
+
+.content-wrapper {
+  width: 100vw;
+}
+
+.content {
+  height: 100%;
+  max-width: 400px;
+  padding: 1em;
+  margin-left: auto;
+  margin-right: auto;
 }
