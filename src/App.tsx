@@ -12,7 +12,7 @@ function App() {
           <div className="spacer"></div>
           <div>Software Developer</div>
           <div className="spacer"></div>
-          <div>London, UK</div>
+          <div>Manchester, UK</div>
         </div>
       </header>
       <div className="content-wrapper">
