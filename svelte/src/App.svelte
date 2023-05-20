@@ -1,34 +1,38 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import finny from "./assets/finny.png";
+
+  let canvas: HTMLCanvasElement;
+
+  const image = new Image();
+
+  const imageLoadPromise = new Promise<void>((resolve, reject) => {
+    image.onload = () => resolve();
+    setTimeout(() => {
+      image.src = finny;
+    }, 2000);
+  });
+
+  onMount(() => {
+    const ctx = canvas.getContext("2d");
+
+    imageLoadPromise.then(() => {
+      ctx.clearRect(0, 0, 600, 400);
+      ctx.drawImage(image, 10, 10);
+    });
+
+    ctx.font = "30px Arial";
+    ctx.fillText("Loading please stand by...", 20, 50);
+  });
 </script>
 
-<main>
-  <h1>Hello pqy</h1>
-  <p>
-    My name is Lucy and I make websites. Sometimes I even keep them up to date.
-  </p>
-  <figure>
-    <img src={finny} alt="Me" class="me" />
-    <figcaption>
-      This is a picture of me, in case you couldn't guess.
-    </figcaption>
-  </figure>
-</main>
+<canvas width="600px" height="400px" bind:this={canvas} />
 
 <style>
-  main {
-    display: flex;
-    flex-direction: column;
-    row-gap: 20px;
-    max-width: 500px;
+  canvas {
+    display: block;
     margin: auto;
     box-shadow: 0px 2px 6px 2px var(--color-box-shadow);
-    padding: clamp(18px, 6vw, 32px);
     background-color: hsl(143.71deg 43.79% 96.1%);
-  }
-
-  img.me {
-    clip-path: inset(1px);
-    width: 100%;
   }
 </style>
