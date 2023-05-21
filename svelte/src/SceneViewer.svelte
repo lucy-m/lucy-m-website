@@ -6,22 +6,44 @@
   let canvas: HTMLCanvasElement;
   let unsub: Unsubscriber | undefined = undefined;
 
+  const canvasWidth = 960;
+  const canvasHeight = 540;
+  const imageWidth = 1920;
+  const imageHeight = 1080;
+
   const scene = loadIntroScene();
 
   onMount(() => {
     const ctx = canvas.getContext("2d");
 
     if (ctx) {
+      ctx.setTransform(
+        canvasWidth / imageWidth,
+        0,
+        0,
+        canvasHeight / imageHeight,
+        0,
+        0
+      );
+      ctx.font = "30px Arial";
+
       unsub = scene.subscribe((fetchState) => {
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
         switch (fetchState.kind) {
-          case "loading":
+          case "loading": {
+            ctx.fillText("Loading", 40, 40);
             return;
-          case "error":
+          }
+          case "error": {
+            ctx.fillText("Something went wrong :(", 40, 40);
             return;
+          }
           case "loaded": {
             fetchState.data.images.forEach((image) => {
               ctx.drawImage(image, 0, 0);
             });
+            return;
           }
         }
       });
@@ -37,4 +59,12 @@
   });
 </script>
 
-<canvas width="1920px" height="1080px" bind:this={canvas} />
+<canvas width="{canvasWidth}px" height="{canvasHeight}px" bind:this={canvas} />
+
+<style>
+  canvas {
+    display: block;
+    margin: auto;
+    box-shadow: 0px 2px 6px 2px var(--color-box-shadow);
+  }
+</style>
