@@ -1,32 +1,60 @@
 import { Observable, from, map, of, switchMap, timer, zip } from "rxjs";
-import layer0 from "../assets/intro-scene/0.PNG";
-import layer1 from "../assets/intro-scene/1.PNG";
-import layer2 from "../assets/intro-scene/2.PNG";
-import layer3 from "../assets/intro-scene/3.PNG";
-import layer4 from "../assets/intro-scene/4.PNG";
+import bg0 from "../assets/scene-intro/background/bg 0.PNG";
+import bg1 from "../assets/scene-intro/background/bg 1.PNG";
+import bg2 from "../assets/scene-intro/background/bg 2.PNG";
+import bg3 from "../assets/scene-intro/background/bg 3.PNG";
+import bgOutline from "../assets/scene-intro/background/bg outline.PNG";
+import person0 from "../assets/scene-intro/person/person 0.PNG";
+import person1 from "../assets/scene-intro/person/person 1.PNG";
+import person2 from "../assets/scene-intro/person/person 2.PNG";
+import personOutline from "../assets/scene-intro/person/person outline.PNG";
 
-export const loadIntroScene = (): Promise<HTMLImageElement[]> => {
-  const loadImage = (path: string): Promise<HTMLImageElement> => {
+export type ImageLayer =
+  | "bg-outline"
+  | "bg-fill"
+  | "person-outline"
+  | "person-fill";
+export interface ImageWithLayer {
+  image: HTMLImageElement;
+  layer: ImageLayer;
+}
+
+export const loadIntroScene = (): Promise<ImageWithLayer[]> => {
+  const loadImage = (
+    path: string,
+    layer: ImageLayer
+  ): Promise<ImageWithLayer> => {
     const image = new Image();
 
     return new Promise<void>((resolve) => {
       image.onload = () => resolve();
       image.src = path;
-    }).then(() => image);
+    }).then(() => ({ image, layer }));
   };
 
-  const paths = [layer4, layer0, layer3, layer2, layer1];
-  const promises = paths.map(loadImage);
+  const imagePaths: [string, ImageLayer][] = [
+    [bgOutline, "bg-outline"],
+    [bg0, "bg-fill"],
+    [bg1, "bg-fill"],
+    [bg2, "bg-fill"],
+    [bg3, "bg-fill"],
+    [personOutline, "person-outline"],
+    [person0, "person-fill"],
+    [person1, "person-fill"],
+    [person2, "person-fill"],
+  ];
+
+  const promises = imagePaths.map(([path, layer]) => loadImage(path, layer));
 
   return Promise.all(promises);
 };
 
 export const throttleImages = (
-  images: HTMLImageElement[]
-): Observable<HTMLImageElement> => {
-  const baseDataSource: Observable<HTMLImageElement> = of(images).pipe(
+  images: ImageWithLayer[]
+): Observable<ImageWithLayer> => {
+  const baseDataSource: Observable<ImageWithLayer> = of(images).pipe(
     switchMap((images) => {
-      return zip(from(images), timer(0, 200)).pipe(map(([image]) => image));
+      return zip(from(images), timer(0, 100)).pipe(map(([image]) => image));
     })
   );
 
