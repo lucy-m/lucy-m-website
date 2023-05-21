@@ -7,6 +7,7 @@ import bgOutline from "../assets/scene-intro/background/bg outline.PNG";
 import person0 from "../assets/scene-intro/person/person 0.PNG";
 import person1 from "../assets/scene-intro/person/person 1.PNG";
 import person2 from "../assets/scene-intro/person/person 2.PNG";
+import personHead from "../assets/scene-intro/person/person head.PNG";
 import personOutline from "../assets/scene-intro/person/person outline.PNG";
 
 export type ImageLayer = "bg" | "person";
@@ -45,6 +46,7 @@ export const loadIntroScene = (): Promise<ImageWithLayer[]> => {
     [person0, "person", "fill"],
     [person1, "person", "fill"],
     [person2, "person", "fill"],
+    [personHead, "person", "outline"],
   ];
 
   const promises = imagePaths.map(loadImage);
@@ -57,7 +59,7 @@ export const throttleImages = (
 ): Observable<ImageWithLayer> => {
   const baseDataSource: Observable<ImageWithLayer> = of(images).pipe(
     switchMap((images) => {
-      return zip(from(images), timer(0, 100)).pipe(map(([image]) => image));
+      return zip(from(images), timer(0, 200)).pipe(map(([image]) => image));
     })
   );
 
