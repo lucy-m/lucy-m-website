@@ -30,7 +30,7 @@ export const loadIntroScene = (): Promise<ImageWithLayer[]> => {
 
     return new Promise<void>((resolve) => {
       image.onload = () => {
-        setTimeout(() => resolve(), 2000);
+        resolve();
       };
       image.src = path;
     }).then(() => ({ image, layer, type }));
@@ -59,7 +59,7 @@ export const throttleImages = (
 ): Observable<ImageWithLayer> => {
   const baseDataSource: Observable<ImageWithLayer> = of(images).pipe(
     switchMap((images) => {
-      return zip(from(images), timer(0, 200)).pipe(map(([image]) => image));
+      return zip(from(images), timer(0, 100)).pipe(map(([image]) => image));
     })
   );
 
