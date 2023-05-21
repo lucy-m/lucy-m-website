@@ -1,22 +1,23 @@
 <script lang="ts">
+  import type { Subscription } from "rxjs";
   import { onDestroy, onMount } from "svelte";
-  import type { Unsubscriber } from "svelte/store";
-  import { loadIntroScene } from "./scenes/intro-scene";
+  import { loadIntroScene, throttleImages } from "./scenes/intro-scene";
 
-  let canvas: HTMLCanvasElement;
-  let unsub: Unsubscriber | undefined = undefined;
+  let bgCanvas: HTMLCanvasElement;
+  let subscription: Subscription | undefined = undefined;
 
   const canvasWidth = 960;
   const canvasHeight = 540;
   const imageWidth = 1920;
   const imageHeight = 1080;
 
-  const scene = loadIntroScene();
+  const loadScene = loadIntroScene();
 
   onMount(() => {
-    const ctx = canvas.getContext("2d");
+    const ctx = bgCanvas.getContext("2d");
 
     if (ctx) {
+      ctx.globalCompositeOperation = "destination-over";
       ctx.setTransform(
         canvasWidth / imageWidth,
         0,
@@ -25,27 +26,14 @@
         0,
         0
       );
-      ctx.font = "30px Arial";
+      ctx.font = "60px Arial";
+      ctx.fillText("Loading!", 40, 80);
 
-      unsub = scene.subscribe((fetchState) => {
+      loadScene.then((images) => {
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-        switch (fetchState.kind) {
-          case "loading": {
-            ctx.fillText("Loading", 40, 40);
-            return;
-          }
-          case "error": {
-            ctx.fillText("Something went wrong :(", 40, 40);
-            return;
-          }
-          case "loaded": {
-            fetchState.data.images.forEach((image) => {
-              ctx.drawImage(image, 0, 0);
-            });
-            return;
-          }
-        }
+        subscription = throttleImages(images).subscribe((image) => {
+          ctx.drawImage(image, 0, 0);
+        });
       });
     } else {
       throw new Error("Unable to get 2d render context");
@@ -53,18 +41,35 @@
   });
 
   onDestroy(() => {
-    if (unsub) {
-      unsub();
+    if (subscription) {
+      subscription.unsubscribe();
     }
   });
 </script>
 
-<canvas width="{canvasWidth}px" height="{canvasHeight}px" bind:this={canvas} />
+<div
+  class="canvas-wrapper"
+  style:width="{canvasWidth}px"
+  style:height="{canvasHeight}px"
+>
+  <canvas
+    width="{canvasWidth}px"
+    height="{canvasHeight}px"
+    bind:this={bgCanvas}
+  />
+</div>
 
 <style>
-  canvas {
-    display: block;
+  .canvas-wrapper {
+    position: relative;
     margin: auto;
     box-shadow: 0px 2px 6px 2px var(--color-box-shadow);
+    background-color: "white";
+  }
+
+  canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
   }
 </style>
