@@ -9,22 +9,13 @@ import person1 from "../assets/scene-intro/person/person 1.PNG";
 import person2 from "../assets/scene-intro/person/person 2.PNG";
 import personHead from "../assets/scene-intro/person/person head.PNG";
 import personOutline from "../assets/scene-intro/person/person outline.PNG";
-
-export type ImageLayer = "bg" | "person";
-
-export type ImageType = "outline" | "fill";
-
-export interface ImageWithLayer {
-  image: HTMLImageElement;
-  layer: ImageLayer;
-  type: ImageType;
-}
+import type { ImageLayer, ImageSubLayer, ImageWithLayer } from "../model";
 
 export const loadIntroScene = (): Promise<ImageWithLayer[]> => {
-  const loadImage = ([path, layer, type]: [
+  const loadImage = ([path, layer, subLayer]: [
     string,
     ImageLayer,
-    ImageType
+    ImageSubLayer
   ]): Promise<ImageWithLayer> => {
     const image = new Image();
 
@@ -33,10 +24,10 @@ export const loadIntroScene = (): Promise<ImageWithLayer[]> => {
         resolve();
       };
       image.src = path;
-    }).then(() => ({ image, layer, type }));
+    }).then(() => ({ image, layer, subLayer }));
   };
 
-  const imagePaths: [string, ImageLayer, ImageType][] = [
+  const imagePaths: [string, ImageLayer, ImageSubLayer][] = [
     [bgOutline, "bg", "outline"],
     [bg0, "bg", "fill"],
     [bg1, "bg", "fill"],

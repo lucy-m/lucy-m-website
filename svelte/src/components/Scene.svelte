@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type ImageWithLayer } from "../scenes/intro-scene";
+  import { type ImageWithLayer } from "../model";
   import SceneViewer from "./SceneViewer.svelte";
 
   export let source: Promise<ImageWithLayer[]>;
