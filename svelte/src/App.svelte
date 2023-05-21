@@ -1,5 +1,8 @@
 <script lang="ts">
-  import SceneViewer from "./SceneViewer.svelte";
+  import { Scene } from "./components";
+  import { loadIntroScene } from "./scenes/intro-scene";
+
+  const source = loadIntroScene();
 </script>
 
-<SceneViewer />
+<Scene {source} />
