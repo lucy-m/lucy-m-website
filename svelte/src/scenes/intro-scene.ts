@@ -4,11 +4,11 @@ import bg1 from "../assets/scene-intro/background/bg 1.PNG";
 import bg2 from "../assets/scene-intro/background/bg 2.PNG";
 import bg3 from "../assets/scene-intro/background/bg 3.PNG";
 import bgOutline from "../assets/scene-intro/background/bg outline.PNG";
-import person0 from "../assets/scene-intro/person/person 0.PNG";
-import person1 from "../assets/scene-intro/person/person 1.PNG";
-import person2 from "../assets/scene-intro/person/person 2.PNG";
-import personHead from "../assets/scene-intro/person/person head.PNG";
-import personOutline from "../assets/scene-intro/person/person outline.PNG";
+import person0 from "../assets/scene-intro/person-sitting/person 0.PNG";
+import person1 from "../assets/scene-intro/person-sitting/person 1.PNG";
+import person2 from "../assets/scene-intro/person-sitting/person 2.PNG";
+import personHead from "../assets/scene-intro/person-sitting/person head.PNG";
+import personOutline from "../assets/scene-intro/person-sitting/person outline.PNG";
 import type { ImageLayer, ImageSubLayer, ImageWithLayer } from "../model";
 
 export const loadIntroScene = (): Promise<ImageWithLayer[]> => {

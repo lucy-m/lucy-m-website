@@ -1,3 +1,6 @@
+import { p, type Position } from "./position";
+import type { PositionedImage } from "./positioned-image";
+
 export type ImageLayer = "bg" | "person";
 export type ImageSubLayer = "outline" | "fill";
 
@@ -42,16 +45,23 @@ export const addImage = (
 const layerOrder: ImageLayer[] = ["bg", "person"];
 const sublayerOrder: ImageSubLayer[] = ["fill", "outline"];
 
+const layerOrigins: Record<ImageLayer, Position> = {
+  bg: p(0, 0),
+  person: p(1200, 450),
+};
+
 export const getImagesInOrder = (
   imagesByLayer: ImagesByLayer
-): HTMLImageElement[] => {
-  return layerOrder.reduce<HTMLImageElement[]>((acc, layer) => {
-    const mergedSublayerItems = sublayerOrder.reduce<HTMLImageElement[]>(
-      (acc, sublayer) => {
+): PositionedImage[] => {
+  return layerOrder.reduce<PositionedImage[]>((acc, layer) => {
+    const mergedSublayerItems: PositionedImage[] = sublayerOrder
+      .reduce<HTMLImageElement[]>((acc, sublayer) => {
         return [...acc, ...imagesByLayer[layer][sublayer]];
-      },
-      []
-    );
+      }, [])
+      .map((image) => ({
+        image,
+        position: layerOrigins[layer],
+      }));
 
     return [...acc, ...mergedSublayerItems];
   }, []);

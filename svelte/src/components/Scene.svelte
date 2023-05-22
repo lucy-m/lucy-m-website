@@ -25,6 +25,6 @@
     position: relative;
     margin: auto;
     box-shadow: 0px 2px 6px 2px var(--color-box-shadow);
-    background-color: "white";
+    background-color: white;
   }
 </style>

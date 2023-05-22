@@ -35,8 +35,8 @@
 
       const drawOrder = getImagesInOrder(imagesByLayer);
 
-      drawOrder.forEach((image) => {
-        ctx?.drawImage(image, 0, 0);
+      drawOrder.forEach(({ image, position }) => {
+        ctx?.drawImage(image, position.x, position.y);
       });
     }
   };
