@@ -1,11 +1,10 @@
 <script lang="ts">
-  import { Subject, type Subscription } from "rxjs";
+  import { type Subscription } from "rxjs";
   import { onDestroy, onMount } from "svelte";
   import {
     addImage,
     emptyImagesByLayer,
     getImagesInOrder,
-    type ImageLayer,
     type ImageWithLayer,
     type ImagesByLayer,
   } from "../model";
@@ -21,11 +20,6 @@
 
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D | null;
-
-  const layerImages: Record<ImageLayer, Subject<ImageWithLayer>> = {
-    bg: new Subject(),
-    person: new Subject(),
-  };
 
   let imagesByLayer: ImagesByLayer = emptyImagesByLayer;
 
@@ -55,6 +49,7 @@
         0,
         0
       );
+      ctx.font = "30px Quicksand";
     }
 
     subscription = throttleImages(images).subscribe((image) => {
@@ -62,7 +57,6 @@
       requestAnimationFrame(() => {
         redrawCanvas();
       });
-      layerImages[image.layer].next(image);
     });
   });
 

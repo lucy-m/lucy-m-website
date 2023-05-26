@@ -1,7 +1,7 @@
 import { p, type Position } from "./position";
 import type { PositionedImage } from "./positioned-image";
 
-export type ImageLayer = "bg" | "person";
+export type ImageLayer = "bg" | "person" | "speechBubble";
 export type ImageSubLayer = "outline" | "fill";
 
 export interface ImageWithLayer {
@@ -24,6 +24,10 @@ export const emptyImagesByLayer: ImagesByLayer = {
     outline: [],
     fill: [],
   },
+  speechBubble: {
+    outline: [],
+    fill: [],
+  },
 };
 
 export const addImage = (
@@ -42,12 +46,13 @@ export const addImage = (
   };
 };
 
-const layerOrder: ImageLayer[] = ["bg", "person"];
+const layerOrder: ImageLayer[] = ["bg", "person", "speechBubble"];
 const sublayerOrder: ImageSubLayer[] = ["fill", "outline"];
 
 const layerOrigins: Record<ImageLayer, Position> = {
   bg: p(0, 0),
-  person: p(1200, 450),
+  person: p(1260, 490),
+  speechBubble: p(730, 260),
 };
 
 export const getImagesInOrder = (

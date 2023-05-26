@@ -9,6 +9,8 @@ import person1 from "../assets/scene-intro/person-sitting/person 1.PNG";
 import person2 from "../assets/scene-intro/person-sitting/person 2.PNG";
 import personHead from "../assets/scene-intro/person-sitting/person head.PNG";
 import personOutline from "../assets/scene-intro/person-sitting/person outline.PNG";
+import speechBubbleFill from "../assets/scene-intro/speech-bubble/fill.PNG";
+import speechBubbleOutline from "../assets/scene-intro/speech-bubble/outline.PNG";
 import type { ImageLayer, ImageSubLayer, ImageWithLayer } from "../model";
 
 export const loadIntroScene = (): Promise<ImageWithLayer[]> => {
@@ -38,6 +40,8 @@ export const loadIntroScene = (): Promise<ImageWithLayer[]> => {
     [person1, "person", "fill"],
     [person2, "person", "fill"],
     [personHead, "person", "outline"],
+    [speechBubbleOutline, "speechBubble", "outline"],
+    [speechBubbleFill, "speechBubble", "fill"],
   ];
 
   const promises = imagePaths.map(loadImage);

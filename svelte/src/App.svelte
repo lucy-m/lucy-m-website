@@ -25,10 +25,10 @@
   };
 </script>
 
-{#if $pathnameStore === "/scene"}
+{#if $pathnameStore === "/the-fun-bit"}
   <button on:click={() => navigate("/")}>Home</button>
   <Scene {source} />
 {:else}
   <div bind:this={testDiv} />
-  <button on:click={() => navigate("/scene")}>Go to scene</button>
+  <button on:click={() => navigate("/the-fun-bit")}>Go to scene</button>
 {/if}
