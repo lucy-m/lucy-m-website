@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { type ImageWithLayer } from "../model";
+  import { type Layer } from "../model";
   import SceneViewer from "./SceneViewer.svelte";
 
-  export let source: Promise<ImageWithLayer[]>;
+  export let source: Promise<Layer[]>;
 
   const canvasWidth = 960;
   const canvasHeight = 540;
@@ -16,7 +16,7 @@
   {#await source}
     <p>Loading</p>
   {:then images}
-    <SceneViewer {images} {canvasHeight} {canvasWidth} />
+    <SceneViewer layers={images} {canvasHeight} {canvasWidth} />
   {/await}
 </div>
 

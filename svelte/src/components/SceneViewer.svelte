@@ -2,15 +2,15 @@
   import { type Subscription } from "rxjs";
   import { onDestroy, onMount } from "svelte";
   import {
-    addImage,
-    emptyImagesByLayer,
-    getImagesInOrder,
-    type ImageWithLayer,
-    type ImagesByLayer,
+    addLayer,
+    emptyContentByLayer,
+    getLayerContentInOrder,
+    type ContentByLayer,
+    type Layer,
   } from "../model";
-  import { throttleImages } from "../scenes/intro-scene";
+  import { throttleLayers } from "../scenes/intro-scene";
 
-  export let images: ImageWithLayer[];
+  export let layers: Layer[];
 
   export let canvasWidth: number;
   export let canvasHeight: number;
@@ -21,16 +21,20 @@
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D | null;
 
-  let imagesByLayer: ImagesByLayer = emptyImagesByLayer;
+  let imagesByLayer: ContentByLayer = emptyContentByLayer;
 
   const redrawCanvas = () => {
     if (ctx) {
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-      const drawOrder = getImagesInOrder(imagesByLayer);
+      const drawOrder = getLayerContentInOrder(imagesByLayer);
 
-      drawOrder.forEach(({ image, position }) => {
-        ctx?.drawImage(image, position.x, position.y);
+      drawOrder.forEach((content) => {
+        if (content.kind === "image") {
+          ctx?.drawImage(content.image, content.position.x, content.position.y);
+        } else {
+          ctx?.fillText(content.text, content.position.x, content.position.y);
+        }
       });
     }
   };
@@ -49,11 +53,11 @@
         0,
         0
       );
-      ctx.font = "30px Quicksand";
+      ctx.font = "48px Quicksand";
     }
 
-    subscription = throttleImages(images).subscribe((image) => {
-      imagesByLayer = addImage(image, imagesByLayer);
+    subscription = throttleLayers(layers).subscribe((image) => {
+      imagesByLayer = addLayer(image, imagesByLayer);
       requestAnimationFrame(() => {
         redrawCanvas();
       });
