@@ -23,17 +23,14 @@ export type LoadedScene<
   images: Record<TAssetKey, HTMLImageElement>;
 };
 
-const loadImage = (relPath: string): Promise<HTMLImageElement> => {
+const loadImage = (absPath: string): Promise<HTMLImageElement> => {
   const image = new Image();
-
-  return import(relPath).then((absPath: any) => {
-    return new Promise<void>((resolve) => {
-      image.onload = () => {
-        resolve();
-      };
-      image.src = absPath.default;
-    }).then(() => image);
-  });
+  return new Promise<void>((resolve) => {
+    image.onload = () => {
+      resolve();
+    };
+    image.src = absPath;
+  }).then(() => image);
 };
 
 export const loadScene = <TLayerKey extends string, TAssetKey extends string>(
