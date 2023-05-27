@@ -11,8 +11,9 @@
   } from "../model";
 
   type TLayerKey = $$Generic<string>;
+  type TAssetKey = $$Generic<string>;
 
-  export let scene: LoadedScene<TLayerKey>;
+  export let scene: LoadedScene<TLayerKey, TAssetKey>;
 
   export let canvasWidth: number;
   export let canvasHeight: number;

@@ -27,22 +27,39 @@ const layerOrigins: Record<LayerKey, Position> = {
   speechBubble: PosFns.new(730, 260),
 };
 
-const imagePaths: [string, LayerKey, SubLayerKey][] = [
-  [bgOutline, "bg", "outline"],
-  [bg0, "bg", "fill"],
-  [bg1, "bg", "fill"],
-  [bg2, "bg", "fill"],
-  [bg3, "bg", "fill"],
-  [personOutline, "person", "outline"],
-  [person0, "person", "fill"],
-  [person1, "person", "fill"],
-  [person2, "person", "fill"],
-  [personHead, "person", "outline"],
-  [speechBubbleOutline, "speechBubble", "outline"],
-  [speechBubbleFill, "speechBubble", "fill"],
+const imagePaths = {
+  bgOutline,
+  bg0,
+  bg1,
+  bg2,
+  bg3,
+  personOutline,
+  person0,
+  person1,
+  person2,
+  personHead,
+  speechBubbleOutline,
+  speechBubbleFill,
+};
+
+type AssetKey = keyof typeof imagePaths;
+
+const imageLayers: [AssetKey, LayerKey, SubLayerKey][] = [
+  ["bgOutline", "bg", "outline"],
+  ["bg0", "bg", "fill"],
+  ["bg1", "bg", "fill"],
+  ["bg2", "bg", "fill"],
+  ["bg3", "bg", "fill"],
+  ["personOutline", "person", "outline"],
+  ["person0", "person", "fill"],
+  ["person1", "person", "fill"],
+  ["person2", "person", "fill"],
+  ["personHead", "person", "outline"],
+  ["speechBubbleOutline", "speechBubble", "outline"],
+  ["speechBubbleFill", "speechBubble", "fill"],
 ];
 
-const texts: [string[], LayerKey, Position][] = [
+const textLayers: [string[], LayerKey, Position][] = [
   [
     [
       "Hello! Thank you for",
@@ -57,9 +74,10 @@ const texts: [string[], LayerKey, Position][] = [
   ],
 ];
 
-export const introScene: SceneModel<LayerKey> = {
+export const introScene: SceneModel<LayerKey, AssetKey> = {
   imagePaths,
-  texts,
+  imageLayers,
+  textLayers,
   layerOrder,
   layerOrigins,
 };
