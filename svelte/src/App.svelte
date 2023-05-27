@@ -5,29 +5,29 @@
 
   const locationHashStore = writable<string>(window.location.hash);
 
-  const foo = document.querySelector("#foo");
-  const html = (foo?.innerHTML ?? "Unknown").replace("HTML", "Svelte");
-
+  const foo = document.querySelector("#static-intro");
   foo && foo.setAttribute("style", "display: none");
 
-  let testDiv: HTMLDivElement;
+  let staticDiv: HTMLDivElement;
 
   $: {
-    if (testDiv) {
-      testDiv.innerHTML = html;
+    if (staticDiv) {
+      staticDiv.innerHTML = foo?.innerHTML ?? "";
     }
   }
 
   const navigate = (pathname: string) => {
-    window.history.pushState("", "", pathname);
-    locationHashStore.set(window.location.hash);
+    locationHashStore.set(pathname);
   };
 </script>
 
-{#if $locationHashStore === "#/the-fun-bit"}
+<div>
   <button on:click={() => navigate("/")}>Home</button>
+  <button on:click={() => navigate("#/the-fun-bit")}>See something fun</button>
+</div>
+
+{#if $locationHashStore.startsWith("#/the-fun-bit")}
   <Scene source={introScene} />
 {:else}
-  <div bind:this={testDiv} />
-  <button on:click={() => navigate("/#/the-fun-bit")}>Go to scene</button>
+  <div bind:this={staticDiv} />
 {/if}
