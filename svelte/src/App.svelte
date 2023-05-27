@@ -3,7 +3,9 @@
   import { Scene } from "./components";
   import { introScene } from "./scenes/intro-scene";
 
-  const locationHashStore = writable<string>(window.location.hash);
+  const locationHashStore = writable<string>(
+    window.location.hash.replace("#", "")
+  );
 
   const foo = document.querySelector("#static-intro");
   foo && foo.setAttribute("style", "display: none");
@@ -18,15 +20,16 @@
 
   const navigate = (pathname: string) => {
     locationHashStore.set(pathname);
+    window.location.hash = pathname;
   };
 </script>
 
 <div>
   <button on:click={() => navigate("/")}>Home</button>
-  <button on:click={() => navigate("#/the-fun-bit")}>See something fun</button>
+  <button on:click={() => navigate("/the-fun-bit")}>See something fun</button>
 </div>
 
-{#if $locationHashStore.startsWith("#/the-fun-bit")}
+{#if $locationHashStore.startsWith("/the-fun-bit")}
   <Scene source={introScene} />
 {:else}
   <div bind:this={staticDiv} />
