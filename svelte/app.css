@@ -19,6 +19,7 @@ body {
   background-color: hsl(275.4deg 28.72% 90.3%);
   padding: 20px;
   max-width: 960px;
+  height: 100vh;
 }
 
 .v-stack {
@@ -29,4 +30,9 @@ body {
 
 p, h1, h2, h3 {
   margin: 0;
+}
+
+.page-footer {
+  margin-top: auto;
+  font-size: 0.75rem;
 }
