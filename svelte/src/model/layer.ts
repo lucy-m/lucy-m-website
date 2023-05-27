@@ -1,4 +1,4 @@
-import { p, type Position } from "./position";
+import { PosFns, type Position } from "./position";
 
 export type SubLayerKey = "outline" | "fill";
 
@@ -10,7 +10,7 @@ export type LayerContent =
     }
   | {
       kind: "text";
-      text: string;
+      text: string[];
       position: Position;
     };
 
@@ -53,10 +53,7 @@ export const getLayerContentInOrder = <TLayerKey extends string>(
     >((acc, sublayer) => {
       const translatedPositions =
         imagesByLayer[layer]?.[sublayer]?.map((content) => {
-          const position = p(
-            content.position.x + layerOrigins[layer].x,
-            content.position.y + layerOrigins[layer].y
-          );
+          const position = PosFns.add(content.position, layerOrigins[layer]);
 
           return { ...content, position } as LayerContent;
         }) ?? [];

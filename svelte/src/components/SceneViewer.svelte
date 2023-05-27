@@ -2,6 +2,7 @@
   import { type Subscription } from "rxjs";
   import { onDestroy, onMount } from "svelte";
   import {
+    PosFns,
     addLayer,
     getLayerContentInOrder,
     throttleLayers,
@@ -18,6 +19,8 @@
 
   const imageWidth = 1920;
   const imageHeight = 1080;
+
+  const lineHeight = 50;
 
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D | null;
@@ -38,7 +41,13 @@
         if (content.kind === "image") {
           ctx?.drawImage(content.image, content.position.x, content.position.y);
         } else {
-          ctx?.fillText(content.text, content.position.x, content.position.y);
+          content.text.forEach((line, index) => {
+            const position = PosFns.add(
+              content.position,
+              PosFns.new(0, index * lineHeight)
+            );
+            ctx?.fillText(line, position.x, position.y);
+          });
         }
       });
     }

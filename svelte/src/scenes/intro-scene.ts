@@ -10,16 +10,21 @@ import personHead from "../assets/scene-intro/person-sitting/person head.PNG";
 import personOutline from "../assets/scene-intro/person-sitting/person outline.PNG";
 import speechBubbleFill from "../assets/scene-intro/speech-bubble/fill.PNG";
 import speechBubbleOutline from "../assets/scene-intro/speech-bubble/outline.PNG";
-import { p, type Position, type SceneModel, type SubLayerKey } from "../model";
+import {
+  PosFns,
+  type Position,
+  type SceneModel,
+  type SubLayerKey,
+} from "../model";
 
 type LayerKey = "bg" | "person" | "speechBubble";
 
 const layerOrder: LayerKey[] = ["bg", "person", "speechBubble"];
 
 const layerOrigins: Record<LayerKey, Position> = {
-  bg: p(0, 0),
-  person: p(1260, 490),
-  speechBubble: p(730, 260),
+  bg: PosFns.new(0, 0),
+  person: PosFns.new(1260, 490),
+  speechBubble: PosFns.new(730, 260),
 };
 
 const imagePaths: [string, LayerKey, SubLayerKey][] = [
@@ -37,8 +42,19 @@ const imagePaths: [string, LayerKey, SubLayerKey][] = [
   [speechBubbleFill, "speechBubble", "fill"],
 ];
 
-const texts: [string, LayerKey, Position][] = [
-  ["Hello world", "speechBubble", p(100, 100)],
+const texts: [string[], LayerKey, Position][] = [
+  [
+    [
+      "Hello! Thank you for",
+      "visiting my little",
+      "corner of the world.",
+      "There's not much to",
+      "see here yet but I'm",
+      "working on it (promise).",
+    ],
+    "speechBubble",
+    PosFns.new(80, 110),
+  ],
 ];
 
 export const introScene: SceneModel<LayerKey> = {

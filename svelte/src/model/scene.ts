@@ -1,9 +1,9 @@
 import type { Layer, SubLayerKey } from "./layer";
-import { p, type Position } from "./position";
+import { PosFns, type Position } from "./position";
 
 export interface SceneModel<TLayerKey extends string> {
   imagePaths: [string, TLayerKey, SubLayerKey][];
-  texts: [string, TLayerKey, Position][];
+  texts: [string[], TLayerKey, Position][];
   layerOrder: TLayerKey[];
   layerOrigins: Record<TLayerKey, Position>;
 }
@@ -28,7 +28,7 @@ const loadImage = <TLayerKey extends string>([path, layer, subLayer]: [
     };
     image.src = path;
   }).then(() => ({
-    content: { kind: "image", image, position: p(0, 0) },
+    content: { kind: "image", image, position: PosFns.new(0, 0) },
     layer,
     subLayer,
   }));
