@@ -3,7 +3,7 @@
   import { Scene } from "./components";
   import { introScene } from "./scenes/intro-scene";
 
-  const pathnameStore = writable<string>(window.location.pathname);
+  const locationHashStore = writable<string>(window.location.hash);
 
   const foo = document.querySelector("#foo");
   const html = (foo?.innerHTML ?? "Unknown").replace("HTML", "Svelte");
@@ -20,14 +20,14 @@
 
   const navigate = (pathname: string) => {
     window.history.pushState("", "", pathname);
-    pathnameStore.set(window.location.pathname);
+    locationHashStore.set(window.location.hash);
   };
 </script>
 
-{#if $pathnameStore === "/the-fun-bit"}
+{#if $locationHashStore === "#/the-fun-bit"}
   <button on:click={() => navigate("/")}>Home</button>
   <Scene source={introScene} />
 {:else}
   <div bind:this={testDiv} />
-  <button on:click={() => navigate("/the-fun-bit")}>Go to scene</button>
+  <button on:click={() => navigate("/#/the-fun-bit")}>Go to scene</button>
 {/if}
