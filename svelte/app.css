@@ -19,3 +19,7 @@ body {
   background-color: hsl(275.4deg 28.72% 90.3%);
   padding: 20px;
 }
+
+p, h1, h2, h3 {
+  margin: 0;
+}

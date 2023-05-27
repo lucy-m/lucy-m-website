@@ -1,15 +1,3 @@
-import bg0 from "../assets/scene-intro/background/bg 0.PNG";
-import bg1 from "../assets/scene-intro/background/bg 1.PNG";
-import bg2 from "../assets/scene-intro/background/bg 2.PNG";
-import bg3 from "../assets/scene-intro/background/bg 3.PNG";
-import bgOutline from "../assets/scene-intro/background/bg outline.PNG";
-import person0 from "../assets/scene-intro/person-sitting/person 0.PNG";
-import person1 from "../assets/scene-intro/person-sitting/person 1.PNG";
-import person2 from "../assets/scene-intro/person-sitting/person 2.PNG";
-import personHead from "../assets/scene-intro/person-sitting/person head.PNG";
-import personOutline from "../assets/scene-intro/person-sitting/person outline.PNG";
-import speechBubbleFill from "../assets/scene-intro/speech-bubble/fill.PNG";
-import speechBubbleOutline from "../assets/scene-intro/speech-bubble/outline.PNG";
 import {
   PosFns,
   type Position,
@@ -28,18 +16,18 @@ const layerOrigins: Record<LayerKey, Position> = {
 };
 
 const imagePaths = {
-  bgOutline,
-  bg0,
-  bg1,
-  bg2,
-  bg3,
-  personOutline,
-  person0,
-  person1,
-  person2,
-  personHead,
-  speechBubbleOutline,
-  speechBubbleFill,
+  bgOutline: "../assets/scene-intro/background/bg outline.PNG",
+  bg0: "../assets/scene-intro/background/bg 0.PNG",
+  bg1: "../assets/scene-intro/background/bg 1.PNG",
+  bg2: "../assets/scene-intro/background/bg 2.PNG",
+  bg3: "../assets/scene-intro/background/bg 3.PNG",
+  personOutline: "../assets/scene-intro/person-sitting/person outline.PNG",
+  person0: "../assets/scene-intro/person-sitting/person 0.PNG",
+  person1: "../assets/scene-intro/person-sitting/person 1.PNG",
+  person2: "../assets/scene-intro/person-sitting/person 2.PNG",
+  personHead: "../assets/scene-intro/person-sitting/person head.PNG",
+  speechBubbleOutline: "../assets/scene-intro/speech-bubble/outline.PNG",
+  speechBubbleFill: "../assets/scene-intro/speech-bubble/fill.PNG",
 };
 
 type AssetKey = keyof typeof imagePaths;

@@ -2,7 +2,7 @@
   import { loadScene, type SceneModel } from "../model";
   import SceneViewer from "./SceneViewer.svelte";
 
-  export let source: SceneModel<string>;
+  export let source: SceneModel<string, string>;
 
   const canvasWidth = 960;
   const canvasHeight = 540;
@@ -26,5 +26,8 @@
     margin: auto;
     box-shadow: 0px 2px 6px 2px var(--color-box-shadow);
     background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 </style>
