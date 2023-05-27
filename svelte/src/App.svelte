@@ -1,9 +1,8 @@
 <script lang="ts">
   import { writable } from "svelte/store";
   import { Scene } from "./components";
-  import { loadIntroScene } from "./scenes/intro-scene";
+  import { introScene } from "./scenes/intro-scene";
 
-  const source = loadIntroScene();
   const pathnameStore = writable<string>(window.location.pathname);
 
   const foo = document.querySelector("#foo");
@@ -27,7 +26,7 @@
 
 {#if $pathnameStore === "/the-fun-bit"}
   <button on:click={() => navigate("/")}>Home</button>
-  <Scene {source} />
+  <Scene source={introScene} />
 {:else}
   <div bind:this={testDiv} />
   <button on:click={() => navigate("/the-fun-bit")}>Go to scene</button>

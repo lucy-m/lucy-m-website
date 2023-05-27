@@ -3,14 +3,15 @@
   import { onDestroy, onMount } from "svelte";
   import {
     addLayer,
-    emptyContentByLayer,
     getLayerContentInOrder,
+    throttleLayers,
     type ContentByLayer,
-    type Layer,
+    type LoadedScene,
   } from "../model";
-  import { throttleLayers } from "../scenes/intro-scene";
 
-  export let layers: Layer[];
+  type TLayerKey = $$Generic<string>;
+
+  export let scene: LoadedScene<TLayerKey>;
 
   export let canvasWidth: number;
   export let canvasHeight: number;
@@ -21,13 +22,17 @@
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D | null;
 
-  let imagesByLayer: ContentByLayer = emptyContentByLayer;
+  let imagesByLayer: ContentByLayer<TLayerKey> = {};
 
   const redrawCanvas = () => {
     if (ctx) {
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-      const drawOrder = getLayerContentInOrder(imagesByLayer);
+      const drawOrder = getLayerContentInOrder(
+        scene.layerOrder,
+        scene.layerOrigins,
+        imagesByLayer
+      );
 
       drawOrder.forEach((content) => {
         if (content.kind === "image") {
@@ -53,15 +58,17 @@
         0,
         0
       );
-      ctx.font = "48px Quicksand";
+      ctx.font = "42px Quicksand";
     }
 
-    subscription = throttleLayers(layers).subscribe((image) => {
-      imagesByLayer = addLayer(image, imagesByLayer);
-      requestAnimationFrame(() => {
-        redrawCanvas();
-      });
-    });
+    subscription = throttleLayers<TLayerKey>(scene.layers).subscribe(
+      (image) => {
+        imagesByLayer = addLayer(image, imagesByLayer);
+        requestAnimationFrame(() => {
+          redrawCanvas();
+        });
+      }
+    );
   });
 
   onDestroy(() => {
