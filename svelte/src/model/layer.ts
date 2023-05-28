@@ -7,6 +7,7 @@ export type LayerContent =
       kind: "image";
       image: HTMLImageElement;
       position: Position;
+      subLayer: SubLayerKey;
     }
   | {
       kind: "text";
@@ -17,7 +18,6 @@ export type LayerContent =
 export interface Layer<TLayerKey> {
   content: LayerContent;
   layer: TLayerKey;
-  subLayer: SubLayerKey;
 }
 
 export type ContentByLayer<TLayerKey extends string> = Partial<
@@ -28,16 +28,38 @@ export const addLayer = <TLayerKey extends string>(
   layer: Layer<TLayerKey>,
   imagesByLayer: ContentByLayer<TLayerKey>
 ): ContentByLayer<TLayerKey> => {
+  const subLayer: SubLayerKey =
+    layer.content.kind === "image" ? layer.content.subLayer : "outline";
+
   return {
     ...imagesByLayer,
     [layer.layer]: {
       ...imagesByLayer[layer.layer],
-      [layer.subLayer]: [
-        ...(imagesByLayer[layer.layer]?.[layer.subLayer] ?? []),
+      [subLayer]: [
+        ...(imagesByLayer[layer.layer]?.[subLayer] ?? []),
         layer.content,
       ],
     },
   };
+
+  // return layer.contents.reduce<ContentByLayer<TLayerKey>>(
+  //   (imagesByLayer, content) => {
+  //     const subLayer: SubLayerKey =
+  //       content.kind === "image" ? content.subLayer : "outline";
+
+  //     return {
+  //       ...imagesByLayer,
+  //       [layer.layer]: {
+  //         ...imagesByLayer[layer.layer],
+  //         [subLayer]: [
+  //           ...(imagesByLayer[layer.layer]?.[subLayer] ?? []),
+  //           content,
+  //         ],
+  //       },
+  //     };
+  //   },
+  //   imagesByLayer
+  // );
 };
 
 const sublayerOrder: SubLayerKey[] = ["fill", "outline"];

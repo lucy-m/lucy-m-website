@@ -1,9 +1,4 @@
-import {
-  PosFns,
-  type Position,
-  type SceneModel,
-  type SubLayerKey,
-} from "../model";
+import { PosFns, type Position, type SceneSpec } from "../model";
 
 type LayerKey = "bg" | "person" | "speechBubble";
 
@@ -32,40 +27,51 @@ const imagePaths = {
 
 type AssetKey = keyof typeof imagePaths;
 
-const imageLayers: [AssetKey, LayerKey, SubLayerKey][] = [
-  ["bgOutline", "bg", "outline"],
-  ["bg0", "bg", "fill"],
-  ["bg1", "bg", "fill"],
-  ["bg2", "bg", "fill"],
-  ["bg3", "bg", "fill"],
-  ["personOutline", "person", "outline"],
-  ["person0", "person", "fill"],
-  ["person1", "person", "fill"],
-  ["person2", "person", "fill"],
-  ["personHead", "person", "outline"],
-  ["speechBubbleOutline", "speechBubble", "outline"],
-  ["speechBubbleFill", "speechBubble", "fill"],
-];
-
-const textLayers: [string[], LayerKey, Position][] = [
+const layerSpecs: SceneSpec<LayerKey, AssetKey>["layerSpecs"] = [
   [
+    "bg",
     [
-      "Hello! Thank you for",
-      "visiting my little",
-      "corner of the world.",
-      "There's not much to",
-      "see here yet but I'm",
-      "working on it (promise).",
+      { kind: "image", assetKey: "bgOutline", subLayer: "outline" },
+      { kind: "image", assetKey: "bg0", subLayer: "fill" },
+      { kind: "image", assetKey: "bg1", subLayer: "fill" },
+      { kind: "image", assetKey: "bg2", subLayer: "fill" },
+      { kind: "image", assetKey: "bg3", subLayer: "fill" },
     ],
+  ],
+  [
+    "person",
+    [
+      { kind: "image", assetKey: "personOutline", subLayer: "outline" },
+      { kind: "image", assetKey: "person0", subLayer: "fill" },
+      { kind: "image", assetKey: "person1", subLayer: "fill" },
+      { kind: "image", assetKey: "person2", subLayer: "fill" },
+      { kind: "image", assetKey: "personHead", subLayer: "outline" },
+    ],
+  ],
+  [
     "speechBubble",
-    PosFns.new(80, 110),
+    [
+      { kind: "image", assetKey: "speechBubbleOutline", subLayer: "outline" },
+      { kind: "image", assetKey: "speechBubbleFill", subLayer: "fill" },
+      {
+        kind: "text",
+        text: [
+          "Hello! Thank you for",
+          "visiting my little",
+          "corner of the world.",
+          "There's not much to",
+          "see here yet but I'm",
+          "working on it (promise).",
+        ],
+        position: PosFns.new(80, 110),
+      },
+    ],
   ],
 ];
 
-export const introScene: SceneModel<LayerKey, AssetKey> = {
+export const introScene: SceneSpec<LayerKey, AssetKey> = {
   imagePaths,
-  imageLayers,
-  textLayers,
+  layerSpecs,
   layerOrder,
   layerOrigins,
 };

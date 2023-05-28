@@ -5,6 +5,7 @@
     PosFns,
     addLayer,
     getLayerContentInOrder,
+    resolveScene,
     throttleLayers,
     type ContentByLayer,
     type LoadedScene,
@@ -71,7 +72,9 @@
       ctx.font = "42px Quicksand";
     }
 
-    subscription = throttleLayers<TLayerKey>(scene.layers).subscribe(
+    const resolved = resolveScene(scene);
+
+    subscription = throttleLayers<TLayerKey>(resolved.layers).subscribe(
       (image) => {
         imagesByLayer = addLayer(image, imagesByLayer);
         requestAnimationFrame(() => {

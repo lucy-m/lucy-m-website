@@ -1,12 +1,20 @@
-import type { Layer, SubLayerKey } from "./layer";
+import type { Layer, LayerContent, SubLayerKey } from "./layer";
 import { PosFns, type Position } from "./position";
 
-export interface SceneModel<
-  TLayerKey extends string,
-  TAssetKey extends string
-> {
-  imageLayers: [TAssetKey, TLayerKey, SubLayerKey][];
-  textLayers: [string[], TLayerKey, Position][];
+type LayerContentSpec<TAssetKey extends string> =
+  | {
+      kind: "text";
+      text: string[];
+      position: Position;
+    }
+  | {
+      kind: "image";
+      assetKey: TAssetKey;
+      subLayer: SubLayerKey;
+    };
+
+export interface SceneSpec<TLayerKey extends string, TAssetKey extends string> {
+  layerSpecs: [TLayerKey, LayerContentSpec<TAssetKey>[]][];
   layerOrder: TLayerKey[];
   layerOrigins: Record<TLayerKey, Position>;
   imagePaths: Record<TAssetKey, string>;
@@ -15,10 +23,14 @@ export interface SceneModel<
 export type LoadedScene<
   TLayerKey extends string,
   TAssetKey extends string
-> = Omit<
-  SceneModel<TLayerKey, TAssetKey>,
-  "imageLayers" | "textLayers" | "imagePaths"
-> & {
+> = Omit<SceneSpec<TLayerKey, TAssetKey>, "imagePaths"> & {
+  images: Record<TAssetKey, HTMLImageElement>;
+};
+
+export type ResolvedScene<
+  TLayerKey extends string,
+  TAssetKey extends string
+> = Omit<SceneSpec<TLayerKey, TAssetKey>, "layerSpecs" | "imagePaths"> & {
   layers: Layer<TLayerKey>[];
   images: Record<TAssetKey, HTMLImageElement>;
 };
@@ -34,20 +46,8 @@ const loadImage = (absPath: string): Promise<HTMLImageElement> => {
 };
 
 export const loadScene = <TLayerKey extends string, TAssetKey extends string>(
-  source: SceneModel<TLayerKey, TAssetKey>
+  source: SceneSpec<TLayerKey, TAssetKey>
 ): Promise<LoadedScene<TLayerKey, TAssetKey>> => {
-  const textLayers: Layer<TLayerKey>[] = source.textLayers.map(
-    ([text, layer, position]) => ({
-      content: {
-        kind: "text",
-        text,
-        position,
-      },
-      layer,
-      subLayer: "outline",
-    })
-  );
-
   const promises = Object.entries<string>(source.imagePaths).map(
     ([assetKey, path]) =>
       loadImage(path).then((image) => [assetKey, image] as const)
@@ -59,25 +59,48 @@ export const loadScene = <TLayerKey extends string, TAssetKey extends string>(
         Object.fromEntries(entries) as Record<TAssetKey, HTMLImageElement>
     )
     .then((images) => {
-      const imageLayers: Layer<TLayerKey>[] = source.imageLayers.map(
-        ([assetKey, layer, subLayer]) => ({
-          content: {
-            kind: "image",
-            position: PosFns.new(0, 0),
-            image: images[assetKey],
-          },
-          layer,
-          subLayer,
-        })
-      );
-
-      const layers: Layer<TLayerKey>[] = [...imageLayers, ...textLayers];
-
       return {
         images,
-        layers,
+        layerSpecs: source.layerSpecs,
         layerOrder: source.layerOrder,
         layerOrigins: source.layerOrigins,
       };
     });
+};
+
+export const resolveScene = <
+  TLayerKey extends string,
+  TAssetKey extends string
+>(
+  source: LoadedScene<TLayerKey, TAssetKey>
+): ResolvedScene<TLayerKey, TAssetKey> => {
+  const layers: Layer<TLayerKey>[] = source.layerSpecs.flatMap(
+    ([layer, contentSpecs]) => {
+      const contents: LayerContent[] = contentSpecs.map((contentSpec) => {
+        if (contentSpec.kind == "image") {
+          return {
+            kind: "image",
+            image: source.images[contentSpec.assetKey],
+            position: PosFns.zero,
+            subLayer: contentSpec.subLayer,
+          };
+        } else {
+          return {
+            kind: "text",
+            position: contentSpec.position,
+            text: contentSpec.text,
+          };
+        }
+      });
+
+      return contents.map((content) => ({ content, layer }));
+    }
+  );
+
+  return {
+    layers,
+    images: source.images,
+    layerOrder: source.layerOrder,
+    layerOrigins: source.layerOrigins,
+  };
 };

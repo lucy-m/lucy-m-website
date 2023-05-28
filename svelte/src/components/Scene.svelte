@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { loadScene, type SceneModel } from "../model";
+  import { loadScene, type SceneSpec } from "../model";
   import SceneViewer from "./SceneViewer.svelte";
 
-  export let source: SceneModel<string, string>;
+  export let source: SceneSpec<string, string>;
 
   const canvasWidth = 960;
   const canvasHeight = 540;
