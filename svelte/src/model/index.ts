@@ -1,3 +1,4 @@
+export * from "./break-text";
 export * from "./layer";
 export * from "./position";
 export * from "./positioned-image";

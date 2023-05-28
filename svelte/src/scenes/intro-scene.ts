@@ -56,14 +56,11 @@ const layerSpecs: SceneSpec<LayerKey, AssetKey>["layerSpecs"] = [
       {
         kind: "text",
         text: [
-          "Hello! Thank you for",
-          "visiting my little",
-          "corner of the world.",
-          "There's not much to",
-          "see here yet but I'm",
-          "working on it (promise).",
+          "Hello! Thank you for visiting my little corner of the world.",
+          "There's not much to see here yet but I'm working on it (promise).",
         ],
-        position: PosFns.new(80, 110),
+        position: PosFns.new(80, 90),
+        maxWidth: 430,
       },
     ],
   ],

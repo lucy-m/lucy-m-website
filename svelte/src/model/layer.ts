@@ -13,6 +13,7 @@ export type LayerContent =
       kind: "text";
       text: string[];
       position: Position;
+      maxWidth: number;
     };
 
 export interface Layer<TLayerKey> {

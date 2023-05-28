@@ -6,6 +6,7 @@ type LayerContentSpec<TAssetKey extends string> =
       kind: "text";
       text: string[];
       position: Position;
+      maxWidth: number;
     }
   | {
       kind: "image";
@@ -88,6 +89,7 @@ export const resolveScene = <
             kind: "text",
             position: contentSpec.position,
             text: contentSpec.text,
+            maxWidth: contentSpec.maxWidth,
           };
         }
       });

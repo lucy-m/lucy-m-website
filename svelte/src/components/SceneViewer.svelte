@@ -4,6 +4,7 @@
   import {
     PosFns,
     addLayer,
+    breakText,
     getLayerContentInOrder,
     resolveScene,
     throttleLayers,
@@ -22,7 +23,7 @@
   const imageWidth = 1920;
   const imageHeight = 1080;
 
-  const lineHeight = 50;
+  const lineHeight = 53;
 
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D | null;
@@ -43,7 +44,12 @@
         if (content.kind === "image") {
           ctx?.drawImage(content.image, content.position.x, content.position.y);
         } else {
-          content.text.forEach((line, index) => {
+          const measureText = (s: string) => ctx?.measureText(s)?.width ?? 0;
+          const lines = content.text.flatMap((t) =>
+            breakText(t, content.maxWidth, measureText)
+          );
+
+          lines.forEach((line, index) => {
             const position = PosFns.add(
               content.position,
               PosFns.new(0, index * lineHeight)
