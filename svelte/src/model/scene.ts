@@ -27,12 +27,11 @@ export type LoadedScene<
   images: Record<TAssetKey, HTMLImageElement>;
 };
 
-export type ResolvedScene<
-  TLayerKey extends string,
-  TAssetKey extends string
-> = Omit<SceneSpec<TLayerKey, TAssetKey>, "layerSpecs" | "imagePaths"> & {
+export type ResolvedScene<TLayerKey extends string> = Omit<
+  LoadedScene<TLayerKey, string>,
+  "layerSpecs" | "images"
+> & {
   layers: Layer<TLayerKey>[];
-  images: Record<TAssetKey, HTMLImageElement>;
 };
 
 const loadImage = (absPath: string): Promise<HTMLImageElement> => {
@@ -73,7 +72,7 @@ export const resolveScene = <
   TAssetKey extends string
 >(
   source: LoadedScene<TLayerKey, TAssetKey>
-): ResolvedScene<TLayerKey, TAssetKey> => {
+): ResolvedScene<TLayerKey> => {
   const layers: Layer<TLayerKey>[] = source.layerSpecs.flatMap(
     ([layer, contentSpecs]) => {
       const contents: LayerContent[] = contentSpecs.map((contentSpec) => {
@@ -99,7 +98,6 @@ export const resolveScene = <
 
   return {
     layers,
-    images: source.images,
     layerOrder: source.layerOrder,
     layerOrigins: source.layerOrigins,
   };

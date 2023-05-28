@@ -41,25 +41,6 @@ export const addLayer = <TLayerKey extends string>(
       ],
     },
   };
-
-  // return layer.contents.reduce<ContentByLayer<TLayerKey>>(
-  //   (imagesByLayer, content) => {
-  //     const subLayer: SubLayerKey =
-  //       content.kind === "image" ? content.subLayer : "outline";
-
-  //     return {
-  //       ...imagesByLayer,
-  //       [layer.layer]: {
-  //         ...imagesByLayer[layer.layer],
-  //         [subLayer]: [
-  //           ...(imagesByLayer[layer.layer]?.[subLayer] ?? []),
-  //           content,
-  //         ],
-  //       },
-  //     };
-  //   },
-  //   imagesByLayer
-  // );
 };
 
 const sublayerOrder: SubLayerKey[] = ["fill", "outline"];
