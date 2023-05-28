@@ -30,7 +30,7 @@ export const breakText = (
       return { completedLines, currentText, currentWidth };
     } else {
       const completedLines = acc.completedLines;
-      const currentText = acc.currentText + " " + next;
+      const currentText = (acc.currentText + " ").trimStart() + next;
       const currentWidth = newWidth;
 
       return { completedLines, currentText, currentWidth };
