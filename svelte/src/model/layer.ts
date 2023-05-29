@@ -6,41 +6,44 @@ export type LayerContent =
   | {
       kind: "image";
       image: HTMLImageElement;
-      position: Position;
       subLayer: SubLayerKey;
     }
   | {
       kind: "text";
       text: string[];
-      position: Position;
       maxWidth: number;
     };
 
 export interface Layer<TLayerKey> {
+  position: Position;
   content: LayerContent;
-  layer: TLayerKey;
+  layerKey: TLayerKey;
 }
 
-export type ContentByLayer<TLayerKey extends string> = Partial<
-  Record<TLayerKey, Partial<Record<SubLayerKey, LayerContent[]>>>
+export type UnkeyedLayer = Omit<Layer<string>, "layer">;
+
+export type LayerByLayerKey<TLayerKey extends string> = Partial<
+  Record<TLayerKey, Partial<Record<SubLayerKey, UnkeyedLayer[]>>>
 >;
 
 export const addLayer = <TLayerKey extends string>(
   layer: Layer<TLayerKey>,
-  imagesByLayer: ContentByLayer<TLayerKey>
-): ContentByLayer<TLayerKey> => {
+  imagesByLayer: LayerByLayerKey<TLayerKey>
+): LayerByLayerKey<TLayerKey> => {
   const subLayer: SubLayerKey =
     layer.content.kind === "image" ? layer.content.subLayer : "outline";
 
+  const newSubLayerEntry: UnkeyedLayer[] = [
+    ...(imagesByLayer[layer.layerKey]?.[subLayer] ?? []),
+    layer,
+  ];
+
   return {
     ...imagesByLayer,
-    [layer.layer]: {
-      ...imagesByLayer[layer.layer],
-      [subLayer]: [
-        ...(imagesByLayer[layer.layer]?.[subLayer] ?? []),
-        layer.content,
-      ],
-    },
+    [layer.layerKey]: {
+      ...imagesByLayer[layer.layerKey],
+      [subLayer]: newSubLayerEntry,
+    } as LayerByLayerKey<TLayerKey>,
   };
 };
 
@@ -49,17 +52,17 @@ const sublayerOrder: SubLayerKey[] = ["fill", "outline"];
 export const getLayerContentInOrder = <TLayerKey extends string>(
   layerOrder: TLayerKey[],
   layerOrigins: Record<TLayerKey, Position>,
-  imagesByLayer: ContentByLayer<TLayerKey>
-): LayerContent[] => {
-  return layerOrder.reduce<LayerContent[]>((acc, layer) => {
-    const mergedSublayerItems: LayerContent[] = sublayerOrder.reduce<
-      LayerContent[]
+  imagesByLayer: LayerByLayerKey<TLayerKey>
+): UnkeyedLayer[] => {
+  return layerOrder.reduce<UnkeyedLayer[]>((acc, layerKey) => {
+    const mergedSublayerItems: UnkeyedLayer[] = sublayerOrder.reduce<
+      UnkeyedLayer[]
     >((acc, sublayer) => {
       const translatedPositions =
-        imagesByLayer[layer]?.[sublayer]?.map((content) => {
-          const position = PosFns.add(content.position, layerOrigins[layer]);
+        imagesByLayer[layerKey]?.[sublayer]?.map((layer) => {
+          const position = PosFns.add(layer.position, layerOrigins[layerKey]);
 
-          return { ...content, position } as LayerContent;
+          return { ...layer, position } as UnkeyedLayer;
         }) ?? [];
 
       return [...acc, ...translatedPositions];

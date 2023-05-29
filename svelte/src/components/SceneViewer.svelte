@@ -8,7 +8,7 @@
     getLayerContentInOrder,
     resolveScene,
     throttleLayers,
-    type ContentByLayer,
+    type LayerByLayerKey,
     type LoadedScene,
   } from "../model";
 
@@ -28,7 +28,7 @@
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D | null;
 
-  let imagesByLayer: ContentByLayer<TLayerKey> = {};
+  let imagesByLayer: LayerByLayerKey<TLayerKey> = {};
 
   const redrawCanvas = () => {
     if (ctx) {
@@ -40,9 +40,11 @@
         imagesByLayer
       );
 
-      drawOrder.forEach((content) => {
+      drawOrder.forEach((layer) => {
+        const content = layer.content;
+
         if (content.kind === "image") {
-          ctx?.drawImage(content.image, content.position.x, content.position.y);
+          ctx?.drawImage(content.image, layer.position.x, layer.position.y);
         } else {
           const measureText = (s: string) => ctx?.measureText(s)?.width ?? 0;
           const lines = content.text.flatMap((t) =>
@@ -51,7 +53,7 @@
 
           lines.forEach((line, index) => {
             const position = PosFns.add(
-              content.position,
+              layer.position,
               PosFns.new(0, index * lineHeight)
             );
             ctx?.fillText(line, position.x, position.y);

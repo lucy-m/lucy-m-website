@@ -1,4 +1,4 @@
-import type { Layer, LayerContent, SubLayerKey } from "./layer";
+import type { Layer, SubLayerKey } from "./layer";
 import { PosFns, type Position } from "./position";
 
 type LayerContentSpec<TAssetKey extends string> =
@@ -81,26 +81,30 @@ export const resolveScene = <
   source: LoadedScene<TLayerKey, TAssetKey>
 ): ResolvedScene<TLayerKey> => {
   const layers: Layer<TLayerKey>[] = source.layerSpecs.flatMap(
-    ([layer, contentSpecs]) => {
-      const contents: LayerContent[] = contentSpecs.map((contentSpec) => {
+    ([layerKey, contentSpecs]) => {
+      return contentSpecs.map<Layer<TLayerKey>>((contentSpec) => {
         if (contentSpec.kind == "image") {
           return {
-            kind: "image",
-            image: source.images[contentSpec.assetKey],
+            content: {
+              kind: "image",
+              image: source.images[contentSpec.assetKey],
+              subLayer: contentSpec.subLayer,
+            },
+            layerKey,
             position: contentSpec.position ?? PosFns.zero,
-            subLayer: contentSpec.subLayer,
           };
         } else {
           return {
-            kind: "text",
+            content: {
+              kind: "text",
+              text: contentSpec.text,
+              maxWidth: contentSpec.maxWidth,
+            },
             position: contentSpec.position,
-            text: contentSpec.text,
-            maxWidth: contentSpec.maxWidth,
+            layerKey,
           };
         }
       });
-
-      return contents.map((content) => ({ content, layer }));
     }
   );
 
