@@ -4,9 +4,22 @@
 
   export let source: SceneSpec<string, string>;
 
+  let windowWidth = window.innerWidth;
+
+  window.addEventListener("resize", () => {
+    windowWidth = window.innerWidth;
+  });
+
   const canvasWidth = 960;
   const canvasHeight = 540;
 </script>
+
+{#if windowWidth <= 960 + 40}
+  <div class="item-wrapper">
+    Please view this page on a wider screen. Sorry, but this page not display
+    properly on mobile devices.
+  </div>
+{/if}
 
 <div
   class="canvas-wrapper"
