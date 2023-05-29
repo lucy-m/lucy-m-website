@@ -5,20 +5,38 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lucy's Very Good Website</title>
-    <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&family=Quicksand">
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&family=Quicksand"
+    />
     <link rel="stylesheet" href="./app.css" />
   </head>
   <body class="v-stack">
     <h1>Lucy Mair's Special Place</h1>
+    
+    <noscript>
+      <div class="item-wrapper">
+        This website is best enjoyed using JavaScript and I'd really appreciate it
+        if you turned it on! 🙂
+      </div>
+    </noscript>
 
     <div id="static-intro">
-      <p>Some static intro to my site</p>
-      <p>Hello my name is Lucy and I like long walks on the beach.</p>
+      <div class="intro-wrapper">
+        <div class="item-wrapper">
+          <p>Hello my name is Lucy and I am happy to go by any pronouns.</p>
+          <p>I am a front-end developer and I like to build websites.</p>
+          <p>
+            You can contact me on
+            <a href="mailto:site@lucym.dev">site@lucym.dev</a>. You can tell me
+            something interesting, give me feedback on my website, or tell me
+            it's broken. Hopefully not the latter.
+          </p>
+        </div>
+
+        <img src="/finny.jpeg" />
+      </div>
     </div>
-    <noscript>
-      This website is best enjoyed using JavaScript and I'd really appreciate it if you turned it on 🙂
-    </noscript>
 
     <div id="app" class="v-stack"></div>
     <footer class="page-footer">Last updated __BUILD_TIMESTAMP__</footer>

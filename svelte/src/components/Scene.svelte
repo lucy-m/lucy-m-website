@@ -29,7 +29,7 @@
   .canvas-wrapper {
     position: relative;
     margin: auto;
-    box-shadow: 0px 2px 6px 2px var(--color-box-shadow);
+    box-shadow: var(--box-shadow);
     background-color: white;
     display: flex;
     align-items: center;
