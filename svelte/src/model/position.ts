@@ -11,8 +11,17 @@ const add = (p1: Position, p2: Position): Position => ({
   y: p1.y + p2.y,
 });
 
+const neg = (p: Position): Position => ({
+  x: -p.x,
+  y: -p.y,
+});
+
+const sub = (p1: Position, p2: Position): Position => add(p1, neg(p2));
+
 export const PosFns = {
   new: p,
   add,
   zero,
+  neg,
+  sub,
 };

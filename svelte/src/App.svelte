@@ -1,6 +1,7 @@
 <script lang="ts">
   import { writable } from "svelte/store";
   import { Scene } from "./components";
+  import Canvas from "./components/Canvas.svelte";
   import { introScene } from "./scenes/intro-scene";
 
   const locationHashStore = writable<string>(
@@ -27,10 +28,13 @@
 <div>
   <button on:click={() => navigate("/")}>Home</button>
   <button on:click={() => navigate("/the-fun-bit")}>See something fun</button>
+  <button on:click={() => navigate("/canvas")}>Canvas</button>
 </div>
 
 {#if $locationHashStore.startsWith("/the-fun-bit")}
   <Scene source={introScene} />
+{:else if $locationHashStore.startsWith("/canvas")}
+  <Canvas />
 {:else}
   <div bind:this={staticDiv} />
 {/if}
