@@ -12,6 +12,7 @@ type LayerContentSpec<TAssetKey extends string> =
       kind: "image";
       assetKey: TAssetKey;
       subLayer: SubLayerKey;
+      position?: Position;
     };
 
 export interface SceneSpec<TLayerKey extends string, TAssetKey extends string> {
@@ -81,7 +82,7 @@ export const resolveScene = <
           return {
             kind: "image",
             image: source.images[contentSpec.assetKey],
-            position: PosFns.zero,
+            position: contentSpec.position ?? PosFns.zero,
             subLayer: contentSpec.subLayer,
           };
         } else {

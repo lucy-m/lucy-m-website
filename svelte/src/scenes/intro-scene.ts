@@ -1,11 +1,12 @@
 import { PosFns, type Position, type SceneSpec } from "../model";
 
-type LayerKey = "bg" | "person" | "speechBubble";
+type LayerKey = "bg" | "person" | "speechBubble" | "trees";
 
-const layerOrder: LayerKey[] = ["bg", "person", "speechBubble"];
+const layerOrder: LayerKey[] = ["bg", "trees", "person", "speechBubble"];
 
 const layerOrigins: Record<LayerKey, Position> = {
-  bg: PosFns.new(0, 0),
+  bg: PosFns.zero,
+  trees: PosFns.zero,
   person: PosFns.new(1260, 490),
   speechBubble: PosFns.new(730, 260),
 };
@@ -23,6 +24,9 @@ const imagePaths = {
   personHead: "/assets/scene-intro/person-sitting/person head.PNG",
   speechBubbleOutline: "/assets/scene-intro/speech-bubble/outline.PNG",
   speechBubbleFill: "/assets/scene-intro/speech-bubble/fill.PNG",
+  tree1: "/assets/scene-intro/trees/tree1.PNG",
+  tree2: "/assets/scene-intro/trees/tree2.PNG",
+  tree3: "/assets/scene-intro/trees/tree3.PNG",
 };
 
 type AssetKey = keyof typeof imagePaths;
@@ -36,6 +40,35 @@ const layerSpecs: SceneSpec<LayerKey, AssetKey>["layerSpecs"] = [
       { kind: "image", assetKey: "bg1", subLayer: "fill" },
       { kind: "image", assetKey: "bg2", subLayer: "fill" },
       { kind: "image", assetKey: "bg3", subLayer: "fill" },
+    ],
+  ],
+  [
+    "trees",
+    [
+      {
+        kind: "image",
+        assetKey: "tree1",
+        subLayer: "fill",
+        position: PosFns.new(0, 300),
+      },
+      {
+        kind: "image",
+        assetKey: "tree2",
+        subLayer: "fill",
+        position: PosFns.new(500, 250),
+      },
+      {
+        kind: "image",
+        assetKey: "tree3",
+        subLayer: "fill",
+        position: PosFns.new(750, 350),
+      },
+      {
+        kind: "image",
+        assetKey: "tree3",
+        subLayer: "fill",
+        position: PosFns.new(100, 500),
+      },
     ],
   ],
   [
