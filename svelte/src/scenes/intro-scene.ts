@@ -1,4 +1,10 @@
-import { PosFns, type Position, type SceneSpec } from "../model";
+import {
+  PosFns,
+  type LayerSpec,
+  type Position,
+  type SceneSpec,
+} from "../model";
+import { generatePointsInShape, type Shape } from "../model/shape";
 
 type LayerKey = "bg" | "person" | "speechBubble" | "trees";
 
@@ -31,7 +37,36 @@ const imagePaths = {
 
 type AssetKey = keyof typeof imagePaths;
 
-const layerSpecs: SceneSpec<LayerKey, AssetKey>["layerSpecs"] = [
+const randomTree = (): AssetKey => {
+  const r = Math.random() * 3;
+
+  if (r < 1) {
+    return "tree1";
+  } else if (r < 2) {
+    return "tree2";
+  } else {
+    return "tree3";
+  }
+};
+
+const makeTreeLayer = (
+  target: number,
+  shape: Shape
+): LayerSpec<LayerKey, AssetKey> => {
+  return [
+    "trees",
+    generatePointsInShape(target, shape)
+      .sort((a, b) => a.y - b.y)
+      .map((position) => ({
+        kind: "image",
+        assetKey: randomTree(),
+        subLayer: "fill",
+        position,
+      })),
+  ];
+};
+
+const layerSpecs: LayerSpec<LayerKey, AssetKey>[] = [
   [
     "bg",
     [
@@ -42,35 +77,19 @@ const layerSpecs: SceneSpec<LayerKey, AssetKey>["layerSpecs"] = [
       { kind: "image", assetKey: "bg3", subLayer: "fill" },
     ],
   ],
-  [
-    "trees",
-    [
-      {
-        kind: "image",
-        assetKey: "tree1",
-        subLayer: "fill",
-        position: PosFns.new(0, 300),
-      },
-      {
-        kind: "image",
-        assetKey: "tree2",
-        subLayer: "fill",
-        position: PosFns.new(500, 250),
-      },
-      {
-        kind: "image",
-        assetKey: "tree3",
-        subLayer: "fill",
-        position: PosFns.new(750, 350),
-      },
-      {
-        kind: "image",
-        assetKey: "tree3",
-        subLayer: "fill",
-        position: PosFns.new(100, 500),
-      },
-    ],
-  ],
+  makeTreeLayer(20, [
+    PosFns.new(0, 300),
+    PosFns.new(500, 250),
+    PosFns.new(750, 350),
+    PosFns.new(100, 500),
+  ]),
+  makeTreeLayer(20, [
+    PosFns.new(881, 231),
+    PosFns.new(1569, 196),
+    PosFns.new(1837, 209),
+    PosFns.new(1829, 361),
+    PosFns.new(1309, 333),
+  ]),
   [
     "person",
     [

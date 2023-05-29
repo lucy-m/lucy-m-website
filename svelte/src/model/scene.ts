@@ -15,8 +15,13 @@ type LayerContentSpec<TAssetKey extends string> =
       position?: Position;
     };
 
+export type LayerSpec<TLayerKey extends string, TAssetKey extends string> = [
+  TLayerKey,
+  LayerContentSpec<TAssetKey>[]
+];
+
 export interface SceneSpec<TLayerKey extends string, TAssetKey extends string> {
-  layerSpecs: [TLayerKey, LayerContentSpec<TAssetKey>[]][];
+  layerSpecs: LayerSpec<TLayerKey, TAssetKey>[];
   layerOrder: TLayerKey[];
   layerOrigins: Record<TLayerKey, Position>;
   imagePaths: Record<TAssetKey, string>;

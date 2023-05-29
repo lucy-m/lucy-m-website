@@ -145,3 +145,41 @@ export const getBoundingBox = (
 
   return reduced;
 };
+
+export const generatePointsInShape = (
+  target: number,
+  shape: Shape
+): Position[] => {
+  const boundingBox = getBoundingBox(shape);
+  const maxIters = target * 4;
+
+  if (boundingBox) {
+    const generatePointsInShapeInner = (
+      iterCount: number,
+      current: Position[]
+    ): Position[] => {
+      if (iterCount >= maxIters || current.length >= target) {
+        return current;
+      } else {
+        const x =
+          Math.random() * (boundingBox.max.x - boundingBox.min.x) +
+          boundingBox.min.x;
+        const y =
+          Math.random() * (boundingBox.max.y - boundingBox.min.y) +
+          boundingBox.min.y;
+
+        const point = PosFns.new(x, y);
+
+        const newCurrent = pointInShape(shape, point)
+          ? [...current, point]
+          : current;
+
+        return generatePointsInShapeInner(iterCount + 1, newCurrent);
+      }
+    };
+
+    return generatePointsInShapeInner(0, []);
+  } else {
+    return [];
+  }
+};
