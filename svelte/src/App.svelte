@@ -51,8 +51,9 @@
     border: none;
     font-family: "Quicksand";
     font-size: 1rem;
-    background: none;
+    background: transparent;
     cursor: pointer;
+    transition: background 400ms;
   }
 
   .button-bar button:hover {
