@@ -28,6 +28,40 @@ export const getRotations = <T>(array: T[]): T[][] => {
   return reduced.rotations;
 };
 
+type Gradient = "vertical" | "horizontal" | number;
+
+const calcGradient = (p1: Position, p2: Position): Gradient => {
+  const diff = PosFns.sub(p2, p1);
+
+  if (diff.x === 0) {
+    return "vertical";
+  } else if (diff.y === 0) {
+    return "horizontal";
+  } else {
+    return diff.y / diff.x;
+  }
+};
+
+const calcConstant = (m: Gradient, point: Position): number => {
+  if (m === "vertical") {
+    return point.x;
+  } else if (m === "horizontal") {
+    return point.y;
+  } else {
+    return point.y - m * point.x;
+  }
+};
+
+const pointAboveLine = (m: Gradient, c: number, point: Position): boolean => {
+  if (m === "vertical") {
+    return point.x > c;
+  } else if (m === "horizontal") {
+    return point.y > c;
+  } else {
+    return point.y - m * point.x > c;
+  }
+};
+
 export const isConvex = (shape: Shape): boolean => {
   if (shape.length < 3) {
     return false;
@@ -40,41 +74,74 @@ export const isConvex = (shape: Shape): boolean => {
     const p2 = r[1];
     const remaining = r.slice(2);
 
-    const diff = PosFns.sub(p2, p1);
+    const m = calcGradient(p1, p2);
+    const c = calcConstant(m, p1);
 
-    const m = (() => {
-      if (diff.x === 0) {
-        return "vertical";
-      } else if (diff.y === 0) {
-        return "horizontal";
-      } else {
-        return diff.y / diff.x;
-      }
-    })();
-
-    const c = (() => {
-      if (m === "vertical") {
-        return p1.x;
-      } else if (m === "horizontal") {
-        return p1.y;
-      } else {
-        return p1.y - m * p1.x;
-      }
-    })();
-
-    const remainingAbove = remaining.map((r) => {
-      if (m === "vertical") {
-        return r.x > c;
-      } else if (m === "horizontal") {
-        return r.y > c;
-      } else {
-        return r.y - m * r.x > c;
-      }
-    });
+    const remainingAbove = remaining.map((r) => pointAboveLine(m, c, r));
 
     const onSameSide =
       remainingAbove.every((r) => r) || remainingAbove.every((r) => !r);
 
     return !onSameSide;
   });
+};
+
+export const pointInShape = (shape: Shape, point: Position): boolean => {
+  if (!isConvex(shape)) {
+    return false;
+  }
+
+  const rotations = getRotations(shape);
+
+  return rotations.every((r) => {
+    const p1 = r[0];
+    const p2 = r[1];
+    const pCheck = r[2];
+
+    const m = calcGradient(p1, p2);
+    const c = calcConstant(m, p1);
+
+    const expectedSide = pointAboveLine(m, c, pCheck);
+    const testSide = pointAboveLine(m, c, point);
+
+    return expectedSide === testSide;
+  });
+};
+
+export const getBoundingBox = (
+  shape: Shape
+): { min: Position; max: Position } | undefined => {
+  if (!isConvex(shape)) {
+    return undefined;
+  }
+
+  interface Accumulator {
+    max: Position;
+    min: Position;
+  }
+
+  const initial: Accumulator = {
+    max: shape[0],
+    min: shape[0],
+  };
+
+  const reduced = shape.slice(1).reduce<Accumulator>((acc, next) => {
+    const max = (() => {
+      const x = Math.max(acc.max.x, next.x);
+      const y = Math.max(acc.max.y, next.y);
+
+      return { x, y };
+    })();
+
+    const min = (() => {
+      const x = Math.min(acc.min.x, next.x);
+      const y = Math.min(acc.min.y, next.y);
+
+      return { x, y };
+    })();
+
+    return { max, min };
+  }, initial);
+
+  return reduced;
 };
