@@ -1,7 +1,7 @@
 <script lang="ts">
   export let selector: string;
 
-  const contentElement = document.querySelector(selector);
+  $: contentElement = document.querySelector(selector);
 
   let staticDiv: HTMLDivElement;
 

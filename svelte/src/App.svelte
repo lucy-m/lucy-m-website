@@ -1,9 +1,6 @@
 <script lang="ts">
-  import { writable } from "svelte/store";
-  import { Scene } from "./components";
-  import FromStatic from "./components/FromStatic.svelte";
-  import { routes } from "./routes";
-  import { introScene } from "./scenes/intro-scene";
+  import { derived, writable } from "svelte/store";
+  import { fallback, navItems } from "./routes";
 
   const staticItems = document.querySelectorAll("[data-static='true']");
   staticItems.forEach((item) => {
@@ -19,40 +16,27 @@
     window.location.hash = pathname;
   };
 
-  interface NavButtons {
-    route: string;
-    label: string;
-  }
+  const currentComponent = derived(locationHashStore, (hash) => {
+    for (let navItem of navItems) {
+      if (navItem !== fallback && hash.startsWith(navItem.route)) {
+        return navItem;
+      }
+    }
 
-  const navButtons: NavButtons[] = [
-    {
-      label: "Home",
-      route: "/",
-    },
-    {
-      label: "CV",
-      route: routes.cv,
-    },
-    {
-      label: "Something fun",
-      route: routes.theFunBit,
-    },
-  ];
+    return fallback;
+  });
 </script>
 
 <div class="button-bar">
-  {#each navButtons as { label, route }}
+  {#each navItems as { label, route }}
     <button on:click={navigateFn(route)}><span>{label}</span></button>
   {/each}
 </div>
 
-{#if $locationHashStore.startsWith(routes.theFunBit)}
-  <Scene source={introScene} />
-{:else if $locationHashStore.startsWith(routes.cv)}
-  <FromStatic selector="#cv" />
-{:else}
-  <FromStatic selector="#static-intro" />
-{/if}
+<svelte:component
+  this={$currentComponent.component}
+  {...$currentComponent.props}
+/>
 
 <style>
   .button-bar {
