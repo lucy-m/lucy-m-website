@@ -5,6 +5,11 @@
   import { routes } from "./routes";
   import { introScene } from "./scenes/intro-scene";
 
+  const staticItems = document.querySelectorAll("[data-static='true']");
+  staticItems.forEach((item) => {
+    item.setAttribute("style", "display: none");
+  });
+
   const locationHashStore = writable<string>(
     window.location.hash.replace("#", "")
   );

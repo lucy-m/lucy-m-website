@@ -2,7 +2,6 @@
   export let selector: string;
 
   const contentElement = document.querySelector(selector);
-  contentElement && contentElement.setAttribute("style", "display: none");
 
   let staticDiv: HTMLDivElement;
 
