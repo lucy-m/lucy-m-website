@@ -28,8 +28,10 @@
 </script>
 
 <div class="button-bar">
-  {#each navItems as { label, route }}
-    <button on:click={navigateFn(route)}><span>{label}</span></button>
+  {#each navItems as { label, route, hidden }}
+    {#if !hidden}
+      <button on:click={navigateFn(route)}><span>{label}</span></button>
+    {/if}
   {/each}
 </div>
 
@@ -51,7 +53,7 @@
     outline: none;
     border: none;
     font-family: "Quicksand";
-    font-size: 1rem;
+    font-size: max(min(1.2rem, 3vw), 1rem);
     background: transparent;
     cursor: pointer;
     transition: background 400ms;

@@ -40,13 +40,18 @@ h3 {
   font-weight: 400;
 }
 
+p {
+  font-size: max(min(1.3rem, 4vw), 1rem);
+}
+
+h1 {
+  font-family: "Fredericka the Great";
+  font-size: max(min(4rem, 10vw), 2rem);
+}
+
 .page-footer {
   margin-top: auto;
   font-size: 0.75rem;
-}
-
-p {
-  font-size: 1.25rem;
 }
 
 p + p {

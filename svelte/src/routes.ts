@@ -15,6 +15,7 @@ interface NavItem {
   route: string;
   component: ComponentType;
   props: any;
+  hidden?: true;
 }
 
 export const fallback: NavItem = {
@@ -31,6 +32,7 @@ export const navItems: NavItem[] = [
     route: routes.cv,
     component: FromStatic,
     props: { selector: "#cv" } as ComponentProps<FromStatic>,
+    hidden: true,
   },
   {
     label: "Talks",
