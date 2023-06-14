@@ -2,29 +2,51 @@
   import { writable } from "svelte/store";
   import { Scene } from "./components";
   import FromStatic from "./components/FromStatic.svelte";
+  import { routes } from "./routes";
   import { introScene } from "./scenes/intro-scene";
 
   const locationHashStore = writable<string>(
     window.location.hash.replace("#", "")
   );
-  const navigate = (pathname: string) => {
+
+  const navigateFn = (pathname: string) => () => {
     locationHashStore.set(pathname);
     window.location.hash = pathname;
   };
+
+  interface NavButtons {
+    route: string;
+    label: string;
+  }
+
+  const navButtons: NavButtons[] = [
+    {
+      label: "Home",
+      route: "/",
+    },
+    {
+      label: "CV",
+      route: routes.cv,
+    },
+    {
+      label: "Something fun",
+      route: routes.theFunBit,
+    },
+  ];
 </script>
 
 <div class="button-bar">
-  <button on:click={() => navigate("/")}> <span>Home</span></button>
-  <button on:click={() => navigate("/the-fun-bit")}>
-    <span>Something fun</span></button
-  >
+  {#each navButtons as { label, route }}
+    <button on:click={navigateFn(route)}><span>{label}</span></button>
+  {/each}
 </div>
 
-{#if $locationHashStore.startsWith("/the-fun-bit")}
+{#if $locationHashStore.startsWith(routes.theFunBit)}
   <Scene source={introScene} />
+{:else if $locationHashStore.startsWith(routes.cv)}
+  <FromStatic selector="#cv" />
 {:else}
   <FromStatic selector="#static-intro" />
-  <FromStatic selector="#cv" />
 {/if}
 
 <style>
