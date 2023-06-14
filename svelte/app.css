@@ -60,7 +60,7 @@ p + p {
 
 .item-wrapper, img {
   box-shadow: var(--box-shadow);
-  background-color: hsl(72deg 86% 96%);
+  background-color: hsl(72deg 56% 97%);
 }
 
 .item-wrapper {

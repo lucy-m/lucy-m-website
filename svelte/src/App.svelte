@@ -1,23 +1,12 @@
 <script lang="ts">
   import { writable } from "svelte/store";
   import { Scene } from "./components";
+  import FromStatic from "./components/FromStatic.svelte";
   import { introScene } from "./scenes/intro-scene";
 
   const locationHashStore = writable<string>(
     window.location.hash.replace("#", "")
   );
-
-  const foo = document.querySelector("#static-intro");
-  foo && foo.setAttribute("style", "display: none");
-
-  let staticDiv: HTMLDivElement;
-
-  $: {
-    if (staticDiv) {
-      staticDiv.innerHTML = foo?.innerHTML ?? "";
-    }
-  }
-
   const navigate = (pathname: string) => {
     locationHashStore.set(pathname);
     window.location.hash = pathname;
@@ -34,7 +23,8 @@
 {#if $locationHashStore.startsWith("/the-fun-bit")}
   <Scene source={introScene} />
 {:else}
-  <div bind:this={staticDiv} />
+  <FromStatic selector="#static-intro" />
+  <FromStatic selector="#cv" />
 {/if}
 
 <style>
