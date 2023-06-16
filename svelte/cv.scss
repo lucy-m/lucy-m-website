@@ -40,7 +40,8 @@ $large-width: 800px;
     background-repeat: no-repeat;
   }
 
-  p {
+  p,
+  li {
     font-family: "Bitter";
     font-size: 1.1rem;
     line-height: 1.6;
@@ -61,7 +62,7 @@ $large-width: 800px;
     flex-direction: column;
 
     & + .column-item {
-      margin-top: calc(var(--spacing) * 0.25);
+      margin-top: calc(var(--spacing) * 0.5);
     }
 
     & > :first-child {
@@ -70,12 +71,26 @@ $large-width: 800px;
 
       p {
         margin-top: 0;
+        line-height: 1.4;
       }
     }
 
     & > :nth-child(2) {
-      p {
+      p,
+      li {
         font-size: 0.85rem;
+      }
+
+      p + p {
+        margin-top: calc(var(--spacing) * 0.2);
+      }
+
+      li {
+        line-height: 1.4;
+      }
+
+      li + li {
+        margin-top: calc(var(--spacing) * 0.1);
       }
     }
 
