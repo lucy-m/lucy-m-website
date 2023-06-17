@@ -5,12 +5,13 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lucy's Very Good Website</title>
-    <!-- <link
+    <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Fredericka+the+Great&family=Quicksand:wght@400;600&family=Bitter"
-    /> -->
+    />
     <link rel="stylesheet" href="./app.scss" />
     <link rel="stylesheet" href="./cv.scss" />
+    <link rel="stylesheet" media="print" href="./print.scss" />
   </head>
   <body class="v-stack">
     <h1>Lucy Mair's <span class="hover-wave">Special</span> Place</h1>
@@ -43,13 +44,13 @@
     </div>
 
     <div id="cv" data-static="true">
-      <p>This page is under construction!</p>
       <div class="item-wrapper cv">
         <section class="contact">
           <h2>Lucy Mair</h2>
           <p>Front-end software developer</p>
-          <p>Manchester, UK</p>
+          <p>they/she</p>
           <p>me+cv@lucym.dev</p>
+          <p>Manchester, UK</p>
         </section>
         <section>
           <h2>About</h2>
@@ -107,8 +108,8 @@
                   programming fans. We built an app that runs every Monday,
                   assigns people in random groups of four, looks at their
                   calendars to find a convenient timeslot, then messages them on
-                  Slack to suggest a time to meet and chat. It didn’t even break
-                  when the clocks changed.
+                  Slack to suggest a time to meet and chat. It even worked when
+                  the clocks changed.
                 </li>
                 <li>
                   Working with product and design to ensure features were

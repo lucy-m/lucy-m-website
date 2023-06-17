@@ -12,4 +12,4 @@
   }
 </script>
 
-<div bind:this={staticDiv} />
+<div data-fromstatic={selector} bind:this={staticDiv} />
