@@ -1,4 +1,5 @@
 $large-width: 800px;
+$narrow-width: 560px;
 
 .cv {
   max-width: 900px;
@@ -139,6 +140,13 @@ $large-width: 800px;
 
       & > :nth-child(2) {
         flex: unset;
+      }
+    }
+
+    @media screen and (max-width: $narrow-width) {
+      & > :first-child {
+        flex-direction: column;
+        margin-bottom: calc(var(--spacing) * 0.1);
       }
     }
   }
