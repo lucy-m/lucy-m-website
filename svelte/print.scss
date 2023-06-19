@@ -3,8 +3,11 @@
     max-width: unset;
   }
 
-  body > :not(#cv, #app, #app > [data-fromstatic="#cv"]),
-  .button-bar {
+  #cv {
+    display: block !important;
+  }
+
+  body > :not(#cv) {
     display: none !important;
   }
 
