@@ -7,6 +7,7 @@ export const routes = {
   theFunBit: "/the-fun-bit",
   cv: "/cv",
   thingsIveYelledAbout: "/things-ive-yelled-about",
+  thingsIveMade: "/things-ive-made",
   fallback: "/",
 };
 
@@ -39,6 +40,12 @@ export const navItems: NavItem[] = [
     route: routes.thingsIveYelledAbout,
     component: FromStatic,
     props: { selector: "#talks" } as ComponentProps<FromStatic>,
+  },
+  {
+    label: "Things",
+    route: routes.thingsIveMade,
+    component: FromStatic,
+    props: { selector: "#things-ive-made" } as ComponentProps<FromStatic>,
   },
   {
     label: "Something fun",
