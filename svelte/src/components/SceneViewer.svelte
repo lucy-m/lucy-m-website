@@ -1,21 +1,14 @@
 <script lang="ts">
+  import type { AssetKey } from "../model/assets";
+
   import { type Subscription } from "rxjs";
   import { onDestroy, onMount } from "svelte";
-  import {
-    PosFns,
-    addLayer,
-    breakText,
-    getLayerContentInOrder,
-    resolveScene,
-    throttleLayers,
-    type LayerByLayerKey,
-    type LoadedScene,
-  } from "../model";
+  import { PosFns, breakText, resolveScene, type SceneType } from "../model";
 
   type TLayerKey = $$Generic<string>;
-  type TAssetKey = $$Generic<string>;
 
-  export let scene: LoadedScene<TLayerKey, TAssetKey>;
+  export let scene: SceneType<TLayerKey>;
+  export let images: Record<AssetKey, HTMLImageElement>;
 
   export let canvasWidth: number;
   export let canvasHeight: number;
@@ -28,19 +21,13 @@
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D | null;
 
-  let imagesByLayer: LayerByLayerKey<TLayerKey> = {};
-
   const redrawCanvas = () => {
     if (ctx) {
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-      const drawOrder = getLayerContentInOrder(
-        scene.layerOrder,
-        scene.layerOrigins,
-        imagesByLayer
-      );
+      const drawLayers = resolveScene(scene, images);
 
-      drawOrder.forEach((layer) => {
+      drawLayers.forEach((layer) => {
         const content = layer.content;
 
         if (content.kind === "image") {
@@ -78,18 +65,9 @@
         0
       );
       ctx.font = "42px Quicksand";
+
+      redrawCanvas();
     }
-
-    const resolved = resolveScene(scene);
-
-    subscription = throttleLayers<TLayerKey>(resolved.layers).subscribe(
-      (image) => {
-        imagesByLayer = addLayer(image, imagesByLayer);
-        requestAnimationFrame(() => {
-          redrawCanvas();
-        });
-      }
-    );
   });
 
   onDestroy(() => {

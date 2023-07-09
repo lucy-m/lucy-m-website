@@ -1,41 +1,10 @@
-import {
-  PosFns,
-  type LayerSpec,
-  type Position,
-  type SceneSpec,
-} from "../model";
+import { PosFns, type GameObject, type SceneType } from "../model";
+import type { AssetKey } from "../model/assets";
 import { generatePointsInShape, type Shape } from "../model/shape";
 
 type LayerKey = "bg" | "person" | "speechBubble" | "trees";
 
 const layerOrder: LayerKey[] = ["bg", "trees", "person", "speechBubble"];
-
-const layerOrigins: Record<LayerKey, Position> = {
-  bg: PosFns.zero,
-  trees: PosFns.zero,
-  person: PosFns.new(1260, 490),
-  speechBubble: PosFns.new(730, 260),
-};
-
-const imagePaths = {
-  bgOutline: "/assets/scene-intro/background/bg outline.PNG",
-  bg0: "/assets/scene-intro/background/bg 0.PNG",
-  bg1: "/assets/scene-intro/background/bg 1.PNG",
-  bg2: "/assets/scene-intro/background/bg 2.PNG",
-  bg3: "/assets/scene-intro/background/bg 3.PNG",
-  personOutline: "/assets/scene-intro/person-sitting/person outline.PNG",
-  person0: "/assets/scene-intro/person-sitting/person 0.PNG",
-  person1: "/assets/scene-intro/person-sitting/person 1.PNG",
-  person2: "/assets/scene-intro/person-sitting/person 2.PNG",
-  personHead: "/assets/scene-intro/person-sitting/person head.PNG",
-  speechBubbleOutline: "/assets/scene-intro/speech-bubble/outline.PNG",
-  speechBubbleFill: "/assets/scene-intro/speech-bubble/fill.PNG",
-  tree1: "/assets/scene-intro/trees/tree1.PNG",
-  tree2: "/assets/scene-intro/trees/tree2.PNG",
-  tree3: "/assets/scene-intro/trees/tree3.PNG",
-};
-
-type AssetKey = keyof typeof imagePaths;
 
 const randomTree = (): AssetKey => {
   const r = Math.random() * 3;
@@ -49,60 +18,62 @@ const randomTree = (): AssetKey => {
   }
 };
 
-const makeTreeLayer = (
-  target: number,
-  shape: Shape
-): LayerSpec<LayerKey, AssetKey> => {
-  return [
-    "trees",
-    generatePointsInShape(target, shape)
-      .sort((a, b) => a.y - b.y)
-      .map((position) => ({
-        kind: "image",
-        assetKey: randomTree(),
-        subLayer: "fill",
-        position,
-      })),
-  ];
+const makeTrees = (target: number, shape: Shape): GameObject<LayerKey>[] => {
+  return generatePointsInShape(target, shape)
+    .sort((a, b) => a.y - b.y)
+    .map<GameObject<LayerKey>>((position) => ({
+      position,
+      layerKey: "trees",
+      getLayers: () => [
+        {
+          kind: "image",
+          assetKey: randomTree(),
+          subLayer: "fill",
+        },
+      ],
+    }));
 };
 
-const layerSpecs: LayerSpec<LayerKey, AssetKey>[] = [
-  [
-    "bg",
-    [
+const objects: GameObject<LayerKey>[] = [
+  {
+    position: PosFns.zero,
+    layerKey: "bg",
+    getLayers: () => [
       { kind: "image", assetKey: "bgOutline", subLayer: "outline" },
       { kind: "image", assetKey: "bg0", subLayer: "fill" },
       { kind: "image", assetKey: "bg1", subLayer: "fill" },
       { kind: "image", assetKey: "bg2", subLayer: "fill" },
       { kind: "image", assetKey: "bg3", subLayer: "fill" },
     ],
-  ],
-  makeTreeLayer(20, [
-    PosFns.new(0, 300),
-    PosFns.new(500, 250),
-    PosFns.new(750, 350),
-    PosFns.new(100, 500),
-  ]),
-  makeTreeLayer(20, [
-    PosFns.new(881, 231),
-    PosFns.new(1569, 196),
-    PosFns.new(1837, 209),
-    PosFns.new(1829, 361),
-    PosFns.new(1309, 333),
-  ]),
-  [
-    "person",
-    [
+  },
+  // ...makeTrees(20, [
+  //   PosFns.new(0, 300),
+  //   PosFns.new(500, 250),
+  //   PosFns.new(750, 350),
+  //   PosFns.new(100, 500),
+  // ]),
+  // ...makeTrees(20, [
+  //   PosFns.new(881, 231),
+  //   PosFns.new(1569, 196),
+  //   PosFns.new(1837, 209),
+  //   PosFns.new(1829, 361),
+  //   PosFns.new(1309, 333),
+  // ]),
+  {
+    layerKey: "person",
+    position: PosFns.new(1260, 490),
+    getLayers: () => [
       { kind: "image", assetKey: "personOutline", subLayer: "outline" },
       { kind: "image", assetKey: "person0", subLayer: "fill" },
       { kind: "image", assetKey: "person1", subLayer: "fill" },
       { kind: "image", assetKey: "person2", subLayer: "fill" },
       { kind: "image", assetKey: "personHead", subLayer: "outline" },
     ],
-  ],
-  [
-    "speechBubble",
-    [
+  },
+  {
+    layerKey: "speechBubble",
+    position: PosFns.new(730, 260),
+    getLayers: () => [
       { kind: "image", assetKey: "speechBubbleOutline", subLayer: "outline" },
       { kind: "image", assetKey: "speechBubbleFill", subLayer: "fill" },
       {
@@ -115,12 +86,10 @@ const layerSpecs: LayerSpec<LayerKey, AssetKey>[] = [
         maxWidth: 430,
       },
     ],
-  ],
+  },
 ];
 
-export const introScene: SceneSpec<LayerKey, AssetKey> = {
-  imagePaths,
-  layerSpecs,
+export const introScene: SceneType<LayerKey> = {
+  objects,
   layerOrder,
-  layerOrigins,
 };

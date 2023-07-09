@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { loadScene, type SceneSpec } from "../model";
+  import { type SceneType } from "../model";
+  import { loadImages } from "../model/assets";
   import SceneViewer from "./SceneViewer.svelte";
 
-  export let source: SceneSpec<string, string>;
+  export let scene: SceneType<string>;
 
   let windowWidth = window.innerWidth;
 
@@ -26,15 +27,15 @@
   style:width="{canvasWidth}px"
   style:height="{canvasHeight}px"
 >
-  {#await loadScene(source)}
+  {#await loadImages()}
     <div class="loading">
       <p>Loading</p>
       <p>.</p>
       <p>.</p>
       <p>.</p>
     </div>
-  {:then scene}
-    <SceneViewer {scene} {canvasHeight} {canvasWidth} />
+  {:then images}
+    <SceneViewer {scene} {images} {canvasHeight} {canvasWidth} />
   {/await}
 </div>
 

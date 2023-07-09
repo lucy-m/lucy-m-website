@@ -51,6 +51,6 @@ export const navItems: NavItem[] = [
     label: "Something fun",
     route: routes.theFunBit,
     component: Scene,
-    props: { source: introScene } as ComponentProps<Scene>,
+    props: { scene: introScene } as ComponentProps<Scene>,
   },
 ];
