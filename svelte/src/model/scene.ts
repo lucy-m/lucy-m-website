@@ -16,13 +16,13 @@ export type ObjectLayerContent =
       position?: Position;
     };
 
-export type GameObject<TLayerKey extends string> = {
+export type SceneObject<TLayerKey extends string> = {
   position: Position;
   layerKey: TLayerKey;
   getLayers: () => ObjectLayerContent[];
 };
 
 export interface SceneType<TLayerKey extends string> {
-  objects: GameObject<TLayerKey>[];
+  objects: SceneObject<TLayerKey>[];
   layerOrder: TLayerKey[];
 }

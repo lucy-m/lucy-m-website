@@ -1,4 +1,4 @@
-import { PosFns, type GameObject, type SceneType } from "../model";
+import { PosFns, type SceneObject, type SceneType } from "../model";
 import type { AssetKey } from "../model/assets";
 import { generatePointsInShape, type Shape } from "../model/shape";
 
@@ -18,10 +18,10 @@ const randomTree = (): AssetKey => {
   }
 };
 
-const makeTrees = (target: number, shape: Shape): GameObject<LayerKey>[] => {
+const makeTrees = (target: number, shape: Shape): SceneObject<LayerKey>[] => {
   return generatePointsInShape(target, shape)
     .sort((a, b) => a.y - b.y)
-    .map<GameObject<LayerKey>>((position) => ({
+    .map<SceneObject<LayerKey>>((position) => ({
       position,
       layerKey: "trees",
       getLayers: () => [
@@ -34,7 +34,7 @@ const makeTrees = (target: number, shape: Shape): GameObject<LayerKey>[] => {
     }));
 };
 
-const objects: GameObject<LayerKey>[] = [
+const objects: SceneObject<LayerKey>[] = [
   {
     position: PosFns.zero,
     layerKey: "bg",
