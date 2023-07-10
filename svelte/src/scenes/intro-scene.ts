@@ -26,19 +26,21 @@ const randomTree = (): AssetKey => {
 const makeTrees = (target: number, shape: Shape): SceneObject<LayerKey>[] => {
   return generatePointsInShape(target, shape)
     .sort((a, b) => a.y - b.y)
-    .map<SceneObject<LayerKey>>((position) =>
-      makeSceneObject({
+    .map<SceneObject<LayerKey>>((position) => {
+      const assetKey = randomTree();
+
+      return makeSceneObject({
         position,
         layerKey: "trees",
         getLayers: () => [
           {
             kind: "image",
-            assetKey: randomTree(),
+            assetKey,
             subLayer: "fill",
           },
         ],
-      })
-    );
+      });
+    });
 };
 
 const objects: SceneObject<LayerKey>[] = [
@@ -94,6 +96,12 @@ const objects: SceneObject<LayerKey>[] = [
       },
     ],
     hidden: true,
+    onInteract: (current) =>
+      current.hidden
+        ? {
+            kind: "show",
+          }
+        : { kind: "hide" },
   }),
 ];
 

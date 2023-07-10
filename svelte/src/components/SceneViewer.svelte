@@ -3,7 +3,13 @@
 
   import { type Subscription } from "rxjs";
   import { onDestroy, onMount } from "svelte";
-  import { PosFns, breakText, resolveScene, type SceneType } from "../model";
+  import {
+    PosFns,
+    applySceneAction,
+    breakText,
+    resolveScene,
+    type SceneType,
+  } from "../model";
 
   type TLayerKey = $$Generic<string>;
 
@@ -75,6 +81,26 @@
       subscription.unsubscribe();
     }
   });
+
+  const onInteract = () => {
+    const newScene = scene.objects.reduce((acc, obj) => {
+      const action = obj.onInteract ? obj.onInteract(obj) : undefined;
+
+      if (action) {
+        return applySceneAction(acc, action, obj.id);
+      } else {
+        return acc;
+      }
+    }, scene);
+
+    scene = newScene;
+    redrawCanvas();
+  };
 </script>
 
-<canvas width="{canvasWidth}px" height="{canvasHeight}px" bind:this={canvas} />
+<canvas
+  width="{canvasWidth}px"
+  height="{canvasHeight}px"
+  on:click={onInteract}
+  bind:this={canvas}
+/>
