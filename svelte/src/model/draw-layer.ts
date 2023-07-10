@@ -67,8 +67,9 @@ export const resolveScene = <TLayerKey extends string>(
   scene: SceneType<TLayerKey>,
   images: Record<AssetKey, HTMLImageElement>
 ): DrawLayer[] => {
-  const sceneLayers: [TLayerKey, SubLayerKey, DrawLayer][] =
-    scene.objects.flatMap((obj) => {
+  const sceneLayers: [TLayerKey, SubLayerKey, DrawLayer][] = scene.objects
+    .filter((obj) => !obj.hidden)
+    .flatMap((obj) => {
       return obj
         .getLayers()
         .map<[TLayerKey, SubLayerKey, DrawLayer]>((objectLayerContent) => {

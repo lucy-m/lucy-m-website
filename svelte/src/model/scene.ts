@@ -18,8 +18,29 @@ export type ObjectLayerContent =
 
 export type SceneObject<TLayerKey extends string> = {
   position: Position;
+  hidden: boolean;
   layerKey: TLayerKey;
   getLayers: () => ObjectLayerContent[];
+};
+
+const defaultSceneObjectValues = {
+  hidden: false,
+};
+
+type ValidTypes = SceneObject<string> extends typeof defaultSceneObjectValues
+  ? true
+  : false;
+
+const isValidType: ValidTypes = true;
+
+export const makeSceneObject = <TLayerKey extends string>(
+  obj: Omit<SceneObject<TLayerKey>, keyof typeof defaultSceneObjectValues> &
+    Partial<typeof defaultSceneObjectValues>
+): SceneObject<TLayerKey> => {
+  return {
+    ...defaultSceneObjectValues,
+    ...obj,
+  };
 };
 
 export interface SceneType<TLayerKey extends string> {

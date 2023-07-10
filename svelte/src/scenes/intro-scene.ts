@@ -1,4 +1,9 @@
-import { PosFns, type SceneObject, type SceneType } from "../model";
+import {
+  PosFns,
+  makeSceneObject,
+  type SceneObject,
+  type SceneType,
+} from "../model";
 import type { AssetKey } from "../model/assets";
 import { generatePointsInShape, type Shape } from "../model/shape";
 
@@ -21,21 +26,23 @@ const randomTree = (): AssetKey => {
 const makeTrees = (target: number, shape: Shape): SceneObject<LayerKey>[] => {
   return generatePointsInShape(target, shape)
     .sort((a, b) => a.y - b.y)
-    .map<SceneObject<LayerKey>>((position) => ({
-      position,
-      layerKey: "trees",
-      getLayers: () => [
-        {
-          kind: "image",
-          assetKey: randomTree(),
-          subLayer: "fill",
-        },
-      ],
-    }));
+    .map<SceneObject<LayerKey>>((position) =>
+      makeSceneObject({
+        position,
+        layerKey: "trees",
+        getLayers: () => [
+          {
+            kind: "image",
+            assetKey: randomTree(),
+            subLayer: "fill",
+          },
+        ],
+      })
+    );
 };
 
 const objects: SceneObject<LayerKey>[] = [
-  {
+  makeSceneObject({
     position: PosFns.zero,
     layerKey: "bg",
     getLayers: () => [
@@ -45,21 +52,21 @@ const objects: SceneObject<LayerKey>[] = [
       { kind: "image", assetKey: "bg2", subLayer: "fill" },
       { kind: "image", assetKey: "bg3", subLayer: "fill" },
     ],
-  },
-  // ...makeTrees(20, [
-  //   PosFns.new(0, 300),
-  //   PosFns.new(500, 250),
-  //   PosFns.new(750, 350),
-  //   PosFns.new(100, 500),
-  // ]),
-  // ...makeTrees(20, [
-  //   PosFns.new(881, 231),
-  //   PosFns.new(1569, 196),
-  //   PosFns.new(1837, 209),
-  //   PosFns.new(1829, 361),
-  //   PosFns.new(1309, 333),
-  // ]),
-  {
+  }),
+  ...makeTrees(20, [
+    PosFns.new(0, 300),
+    PosFns.new(500, 250),
+    PosFns.new(750, 350),
+    PosFns.new(100, 500),
+  ]),
+  ...makeTrees(20, [
+    PosFns.new(881, 231),
+    PosFns.new(1569, 196),
+    PosFns.new(1837, 209),
+    PosFns.new(1829, 361),
+    PosFns.new(1309, 333),
+  ]),
+  makeSceneObject({
     layerKey: "person",
     position: PosFns.new(1260, 490),
     getLayers: () => [
@@ -69,8 +76,8 @@ const objects: SceneObject<LayerKey>[] = [
       { kind: "image", assetKey: "person2", subLayer: "fill" },
       { kind: "image", assetKey: "personHead", subLayer: "outline" },
     ],
-  },
-  {
+  }),
+  makeSceneObject({
     layerKey: "speechBubble",
     position: PosFns.new(730, 260),
     getLayers: () => [
@@ -86,7 +93,8 @@ const objects: SceneObject<LayerKey>[] = [
         maxWidth: 430,
       },
     ],
-  },
+    hidden: true,
+  }),
 ];
 
 export const introScene: SceneType<LayerKey> = {
