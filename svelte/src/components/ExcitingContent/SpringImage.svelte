@@ -10,7 +10,6 @@
   export let myIndex: number;
   export let showIndex: number;
   export let imageCount: number;
-  export let onClick: () => void;
 
   const stackSize = 4;
   const imageSize = 100 - stackSize * (imageCount - 1);
@@ -77,8 +76,6 @@
   style:height={imageSize + "%"}
   style:width={imageSize + "%"}
   data-current={myIndex === showIndex}
-  on:click={onClick}
-  on:keydown={onClick}
 />
 
 <style>

@@ -21,9 +21,8 @@ const renderComponent = (overrides?: {
 };
 
 describe("ImagesAndText", () => {
-  const clickVisible = () => {
-    cy.get("img[data-current='true']").should("have.length", 1).click();
-  };
+  const clickPrev = () => cy.contains("button", "Prev").click();
+  const clickNext = () => cy.contains("button", "Next").click();
 
   describe("default", () => {
     beforeEach(() => {
@@ -63,7 +62,7 @@ describe("ImagesAndText", () => {
         .should("have.attr", "alt", svalbardImg.alt);
     });
 
-    it("only first image is visible", () => {
+    it("first image is visible", () => {
       assertIndexVisible(0);
     });
 
@@ -73,9 +72,19 @@ describe("ImagesAndText", () => {
       assertImageInLocation(2, "100%");
     });
 
-    describe("clicking", () => {
+    describe("clicking prev", () => {
       beforeEach(() => {
-        clickVisible();
+        clickPrev();
+      });
+
+      it("first image is visible", () => {
+        assertIndexVisible(0);
+      });
+    });
+
+    describe("clicking next", () => {
+      beforeEach(() => {
+        clickNext();
       });
 
       it("shows second image", () => {
@@ -88,12 +97,12 @@ describe("ImagesAndText", () => {
         assertImageInLocation(2, "100%");
       });
 
-      describe("clicking (second time)", () => {
+      describe("clicking next (second time)", () => {
         beforeEach(() => {
-          clickVisible();
+          clickNext();
         });
 
-        it("shows thirdimage", () => {
+        it("shows third image", () => {
           assertIndexVisible(2);
         });
 
@@ -103,19 +112,23 @@ describe("ImagesAndText", () => {
           assertImageInLocation(2, "8%");
         });
 
-        describe("clicking (third time)", () => {
+        describe("clicking prev", () => {
           beforeEach(() => {
-            clickVisible();
+            clickPrev();
           });
 
-          it("shows first image", () => {
-            assertIndexVisible(0);
+          it("shows second image", () => {
+            assertIndexVisible(1);
+          });
+        });
+
+        describe("clicking next (third time)", () => {
+          beforeEach(() => {
+            clickNext();
           });
 
-          it("images are in correct position", () => {
-            assertImageInLocation(0, "4%");
-            assertImageInLocation(1, "100%");
-            assertImageInLocation(2, "100%");
+          it("shows third image", () => {
+            assertIndexVisible(2);
           });
         });
       });
