@@ -38,7 +38,16 @@ describe("ImagesAndText", () => {
       });
     };
 
-    it.only("renders all images", () => {
+    const assertImageInLocation = (index: 0 | 1 | 2, top: string): void => {
+      cy.getByTestId("images-and-text").within(() => {
+        cy.get("img")
+          .eq(index)
+          .invoke("attr", "style")
+          .should("contain", `top: ${top}`);
+      });
+    };
+
+    it("renders all images", () => {
       cy.get("img").should("have.length", 3);
       cy.get("img")
         .eq(0)
@@ -58,6 +67,12 @@ describe("ImagesAndText", () => {
       assertIndexVisible(0);
     });
 
+    it("images are in correct position", () => {
+      assertImageInLocation(0, "4%");
+      assertImageInLocation(1, "100%");
+      assertImageInLocation(2, "100%");
+    });
+
     describe("clicking", () => {
       beforeEach(() => {
         clickVisible();
@@ -65,6 +80,12 @@ describe("ImagesAndText", () => {
 
       it("shows second image", () => {
         assertIndexVisible(1);
+      });
+
+      it("images are in correct position", () => {
+        assertImageInLocation(0, "2%");
+        assertImageInLocation(1, "6%");
+        assertImageInLocation(2, "100%");
       });
 
       describe("clicking (second time)", () => {
@@ -76,6 +97,12 @@ describe("ImagesAndText", () => {
           assertIndexVisible(2);
         });
 
+        it("images are in correct position", () => {
+          assertImageInLocation(0, "0%");
+          assertImageInLocation(1, "4%");
+          assertImageInLocation(2, "8%");
+        });
+
         describe("clicking (third time)", () => {
           beforeEach(() => {
             clickVisible();
@@ -83,6 +110,12 @@ describe("ImagesAndText", () => {
 
           it("shows first image", () => {
             assertIndexVisible(0);
+          });
+
+          it("images are in correct position", () => {
+            assertImageInLocation(0, "4%");
+            assertImageInLocation(1, "100%");
+            assertImageInLocation(2, "100%");
           });
         });
       });

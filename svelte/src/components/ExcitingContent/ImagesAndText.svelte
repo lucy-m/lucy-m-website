@@ -11,9 +11,15 @@
   };
 </script>
 
-<div class="image-wrapper">
+<div class="image-wrapper" data-testid="images-and-text">
   {#each images as image, index}
-    <SpringImage {image} myIndex={index} {showIndex} onClick={goToNextImage} />
+    <SpringImage
+      {image}
+      myIndex={index}
+      {showIndex}
+      imageCount={images.length}
+      onClick={goToNextImage}
+    />
   {/each}
 </div>
 
@@ -27,5 +33,6 @@
     width: 200px;
     height: 200px;
     overflow: hidden;
+    border: 1px solid black;
   }
 </style>
