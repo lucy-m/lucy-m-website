@@ -9,7 +9,8 @@ import {
 } from "./spring";
 
 type SpringStore<T> = Readable<Spring<T>> & {
-  set: (value: Parameters<typeof setSpring<T>>[1]) => void;
+  set: (value: Partial<Spring<T>>) => void;
+  update: (updateFn: (current: Spring<T>) => Partial<Spring<T>>) => void;
 };
 
 const makeSpringStore =
@@ -24,11 +25,15 @@ const makeSpringStore =
 
     // Need teardown logic to unsubscribe
 
-    const set = (newValue: Parameters<typeof setSpring<T>>[1]) => {
+    const set = (newValue: Partial<Spring<T>>) => {
       value.update((current) => setSpring(current, newValue));
     };
 
-    return { set, subscribe: value.subscribe };
+    const update = (updateFn: (current: Spring<T>) => Partial<Spring<T>>) => {
+      value.update((current) => setSpring(current, updateFn(current)));
+    };
+
+    return { set, update, subscribe: value.subscribe };
   };
 
 export const makePositionSpring = makeSpringStore(PositionSpringFns.tick);

@@ -22,6 +22,7 @@ const neg = (p: Position): Position => scale(p, -1);
 
 const distance = (a: Position, b: Position): number => {
   // Using Manhattan distance rather than Euclidian distance here
+  //   because it is sufficient
   return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 };
 

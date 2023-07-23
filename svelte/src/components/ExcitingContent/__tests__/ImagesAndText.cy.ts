@@ -2,7 +2,10 @@ import type { ComponentProps } from "svelte";
 import ImagesAndText from "../ImagesAndText.svelte";
 
 const finnyImg = { src: "/finny.jpeg", alt: "Girl with a pink teddy" };
-const prettyGirlImg = { src: "/pretty-girl.jpeg", alt: "Pretty girl" };
+const prettyGirlImg = {
+  src: "/pretty-girl.jpeg",
+  alt: "Pretty girl with a nice hat",
+};
 const svalbardImg = {
   src: "/svalbard.jpeg",
   alt: "Girl standing in front of pack ice",
@@ -62,7 +65,7 @@ describe("ImagesAndText", () => {
         .should("have.attr", "alt", svalbardImg.alt);
     });
 
-    it("first image is visible", () => {
+    it.only("first image is visible", () => {
       assertIndexVisible(0);
     });
 
