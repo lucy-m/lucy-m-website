@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { makeNumberSpring } from "../../model/spring-store";
   import ObnoxiousButton from "./ObnoxiousButton.svelte";
   import SpringImage from "./SpringImage.svelte";
 
@@ -8,38 +7,12 @@
 
   let showIndex = 0;
 
-  const prevSpring = makeNumberSpring({
-    endPoint: 0,
-    position: 0,
-    velocity: 0,
-    properties: {
-      friction: 2.5,
-      precision: 0.1,
-      stiffness: 0.2,
-      weight: 1.5,
-    },
-  });
-
-  const nextSpring = makeNumberSpring({
-    endPoint: 0,
-    position: 0,
-    velocity: 0,
-    properties: {
-      friction: 2.5,
-      precision: 0.1,
-      stiffness: 0.2,
-      weight: 1.5,
-    },
-  });
-
   const goToNextImage = () => {
     showIndex = Math.min(showIndex + 1, images.length - 1);
-    nextSpring.update((s) => ({ endPoint: s.endPoint + 360 }));
   };
 
   const goToPrevImage = () => {
     showIndex = Math.max(showIndex - 1, 0);
-    prevSpring.update((s) => ({ endPoint: s.endPoint - 360 }));
   };
 </script>
 
@@ -48,8 +21,9 @@
     onClick={goToPrevImage}
     label="Previous"
     direction="counter-clockwise"
+    iconSrc="/arrow-left.png"
   />
-  <div class="image-wrapper" data-testid="images-and-text">
+  <div class="image-wrapper" data-testid="images-and-text-images">
     {#each images as image, index}
       <SpringImage
         {image}
@@ -75,6 +49,7 @@
   .images-and-buttons {
     display: flex;
     align-items: center;
+    column-gap: 8px;
   }
 
   .image-wrapper {

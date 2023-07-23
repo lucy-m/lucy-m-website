@@ -24,8 +24,9 @@ const renderComponent = (overrides?: {
 };
 
 describe("ImagesAndText", () => {
-  const clickPrev = () => cy.contains("button", "Prev").click();
-  const clickNext = () => cy.contains("button", "Next").click();
+  const clickPrev = () => cy.get("button[aria-label='Previous']").click();
+  const clickNext = () => cy.get("button[aria-label='Next']").click();
+  const getImagesWrapper = () => cy.getByTestId("images-and-text-images");
 
   describe("default", () => {
     beforeEach(() => {
@@ -34,14 +35,20 @@ describe("ImagesAndText", () => {
 
     const assertIndexVisible = (index: 0 | 1 | 2): void => {
       [0, 1, 2].forEach((i) => {
-        cy.get("img")
-          .eq(i)
-          .should("have.attr", "data-current", i === index ? "true" : "false");
+        getImagesWrapper().within(() => {
+          cy.get("img")
+            .eq(i)
+            .should(
+              "have.attr",
+              "data-current",
+              i === index ? "true" : "false"
+            );
+        });
       });
     };
 
     const assertImageInLocation = (index: 0 | 1 | 2, top: string): void => {
-      cy.getByTestId("images-and-text").within(() => {
+      getImagesWrapper().within(() => {
         cy.get("img")
           .eq(index)
           .invoke("attr", "style")
@@ -50,29 +57,31 @@ describe("ImagesAndText", () => {
     };
 
     it("renders all images", () => {
-      cy.get("img").should("have.length", 3);
-      cy.get("img")
-        .eq(0)
-        .should("have.attr", "src", finnyImg.src)
-        .should("have.attr", "alt", finnyImg.alt);
-      cy.get("img")
-        .eq(1)
-        .should("have.attr", "src", prettyGirlImg.src)
-        .should("have.attr", "alt", prettyGirlImg.alt);
-      cy.get("img")
-        .eq(2)
-        .should("have.attr", "src", svalbardImg.src)
-        .should("have.attr", "alt", svalbardImg.alt);
+      getImagesWrapper().within(() => {
+        cy.get("img").should("have.length", 3);
+        cy.get("img")
+          .eq(0)
+          .should("have.attr", "src", finnyImg.src)
+          .should("have.attr", "alt", finnyImg.alt);
+        cy.get("img")
+          .eq(1)
+          .should("have.attr", "src", prettyGirlImg.src)
+          .should("have.attr", "alt", prettyGirlImg.alt);
+        cy.get("img")
+          .eq(2)
+          .should("have.attr", "src", svalbardImg.src)
+          .should("have.attr", "alt", svalbardImg.alt);
+      });
     });
 
-    it.only("first image is visible", () => {
+    it("first image is visible", () => {
       assertIndexVisible(0);
     });
 
     it("images are in correct position", () => {
       assertImageInLocation(0, "4%");
-      assertImageInLocation(1, "100%");
-      assertImageInLocation(2, "100%");
+      assertImageInLocation(1, "110%");
+      assertImageInLocation(2, "110%");
     });
 
     describe("clicking prev", () => {
@@ -97,7 +106,7 @@ describe("ImagesAndText", () => {
       it("images are in correct position", () => {
         assertImageInLocation(0, "2%");
         assertImageInLocation(1, "6%");
-        assertImageInLocation(2, "100%");
+        assertImageInLocation(2, "110%");
       });
 
       describe("clicking next (second time)", () => {
@@ -133,6 +142,50 @@ describe("ImagesAndText", () => {
           it("shows third image", () => {
             assertIndexVisible(2);
           });
+        });
+      });
+    });
+  });
+
+  describe("many images", () => {
+    beforeEach(() => {
+      renderComponent({
+        props: {
+          images: Array.from({ length: 12 }).map(() => finnyImg),
+        },
+      });
+    });
+
+    it("displays correctly", () => {
+      getImagesWrapper().within(() => {
+        cy.get("img")
+          .eq(0)
+          .invoke("attr", "style")
+          .should("contain", "top: 22%")
+          .should("contain", "height: 56%");
+      });
+    });
+
+    describe("showing all images", () => {
+      beforeEach(() => {
+        Array.from({ length: 11 }).forEach(() => {
+          clickNext();
+        });
+      });
+
+      it("displays images correctly", () => {
+        getImagesWrapper().within(() => {
+          cy.get("img").should("have.length", 12);
+
+          cy.get("img")
+            .eq(0)
+            .invoke("attr", "style")
+            .should("contain", "top: 0%");
+
+          cy.get("img")
+            .eq(11)
+            .invoke("attr", "style")
+            .should("contain", "top: 44%");
         });
       });
     });

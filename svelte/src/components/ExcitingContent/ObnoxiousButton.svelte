@@ -25,7 +25,7 @@
     properties: {
       friction: 4,
       precision: 0.5,
-      stiffness: 1.5,
+      stiffness: 1,
       weight: 0.2,
     },
   });
@@ -64,6 +64,7 @@
       style:top={$offsetSpring.position.y + "px"}
       style:rotate={-2 * $rotateSpring.position + "deg"}
     />
+    <img src={iconSrc} alt="" />
   {:else}
     {label}
   {/if}
@@ -77,9 +78,22 @@
     border: none;
     background-color: hsl(140.91deg 49.83% 87.89%);
     box-shadow: var(--box-shadow);
+    cursor: pointer;
+    position: relative;
+  }
+
+  button:focus-visible {
+    outline-color: hsl(120deg 73.25% 30.78%);
   }
 
   img {
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
+    filter: hue-rotate(140.91deg) saturate(0.8) brightness(1.2);
+  }
+
+  img:nth-child(2) {
+    opacity: 0.2;
   }
 </style>

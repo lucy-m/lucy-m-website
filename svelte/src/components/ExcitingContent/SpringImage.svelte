@@ -19,7 +19,7 @@
     showIndex: number
   ): Partial<PositionSpring> => {
     if (myIndex > showIndex) {
-      const endPoint = PosFns.new(80, 100);
+      const endPoint = PosFns.new(60, 110);
       return { endPoint };
     } else {
       const location = stackSize * (myIndex + (imageCount - showIndex - 1) / 2);
@@ -43,7 +43,7 @@
     velocity: PosFns.zero,
     properties: {
       friction: 5.5,
-      stiffness: 0.6,
+      stiffness: 0.9,
       weight: 1,
       precision: 0.1,
     },
