@@ -16,7 +16,10 @@ const renderComponent = (overrides?: {
 }) => {
   const props: ComponentProps<ImagesAndText> = {
     images: [finnyImg, prettyGirlImg, svalbardImg],
-    text: ["Hello", "Lorem ipsum dolor sit amet"],
+    text: [
+      "Nulla ut nisi mi. Ut vel ornare tellus.",
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis maximus dui quis libero consectetur, ac laoreet risus viverra. Sed quis eleifend dui. Pellentesque nec purus et felis tincidunt congue nec at ipsum. Nulla vestibulum, tortor nec facilisis facilisis, ipsum risus cursus felis.",
+    ],
     imageSize: 200,
     ...overrides?.props,
   };
