@@ -10,9 +10,12 @@
   export let myIndex: number;
   export let showIndex: number;
   export let imageCount: number;
+  export let containerSize: number;
+  export let padding: number;
 
   const stackSize = 4;
-  const imageSize = 100 - stackSize * (imageCount - 1);
+  const imageSize =
+    ((100 - stackSize * (imageCount - 1)) / 100) * containerSize;
 
   const calculateLocation = (
     myIndex: number,
@@ -70,11 +73,15 @@
 <img
   src={image.src}
   alt={image.alt}
-  style:left={$locationSpring.position.x + "%"}
-  style:top={$locationSpring.position.y + "%"}
+  style:left={($locationSpring.position.x / 100) * containerSize +
+    padding +
+    "px"}
+  style:top={($locationSpring.position.y / 100) * containerSize +
+    padding +
+    "px"}
   style:filter="brightness({$brightnessSpring.position})"
-  style:height={imageSize + "%"}
-  style:width={imageSize + "%"}
+  style:height={imageSize + "px"}
+  style:width={imageSize + "px"}
   data-current={myIndex === showIndex}
 />
 
@@ -83,5 +90,6 @@
     position: absolute;
     top: 0;
     object-fit: cover;
+    box-shadow: var(--box-shadow);
   }
 </style>

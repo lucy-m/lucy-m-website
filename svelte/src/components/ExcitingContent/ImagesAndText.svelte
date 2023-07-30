@@ -8,6 +8,8 @@
 
   let showIndex = 0;
 
+  const padding = 12;
+
   const goToNextImage = () => {
     showIndex = Math.min(showIndex + 1, images.length - 1);
   };
@@ -27,15 +29,18 @@
   <div
     class="image-wrapper"
     data-testid="images-and-text-images"
-    style:height={imageSize + "px"}
-    style:width={imageSize + "px"}
+    style:height={imageSize + 2 * padding + "px"}
+    style:width={imageSize + 2 * padding + "px"}
+    style:margin={-padding + "px"}
   >
     {#each images as image, index}
       <SpringImage
         {image}
         myIndex={index}
         {showIndex}
+        {padding}
         imageCount={images.length}
+        containerSize={imageSize}
       />
     {/each}
   </div>

@@ -80,9 +80,9 @@ describe("ImagesAndText", () => {
     });
 
     it("images are in correct position", () => {
-      assertImageInLocation(0, "4%");
-      assertImageInLocation(1, "110%");
-      assertImageInLocation(2, "110%");
+      assertImageInLocation(0, "20px");
+      assertImageInLocation(1, "232px");
+      assertImageInLocation(2, "232px");
     });
 
     describe("clicking prev", () => {
@@ -105,9 +105,9 @@ describe("ImagesAndText", () => {
       });
 
       it("images are in correct position", () => {
-        assertImageInLocation(0, "2%");
-        assertImageInLocation(1, "6%");
-        assertImageInLocation(2, "110%");
+        assertImageInLocation(0, "16px");
+        assertImageInLocation(1, "24px");
+        assertImageInLocation(2, "232px");
       });
 
       describe("clicking next (second time)", () => {
@@ -120,9 +120,9 @@ describe("ImagesAndText", () => {
         });
 
         it("images are in correct position", () => {
-          assertImageInLocation(0, "0%");
-          assertImageInLocation(1, "4%");
-          assertImageInLocation(2, "8%");
+          assertImageInLocation(0, "12px");
+          assertImageInLocation(1, "20px");
+          assertImageInLocation(2, "28px");
         });
 
         describe("clicking prev", () => {
@@ -162,8 +162,8 @@ describe("ImagesAndText", () => {
         cy.get("img")
           .eq(0)
           .invoke("attr", "style")
-          .should("contain", "top: 22%")
-          .should("contain", "height: 56%");
+          .should("contain", "top: 56px")
+          .should("contain", "height: 112px");
       });
     });
 
@@ -181,12 +181,12 @@ describe("ImagesAndText", () => {
           cy.get("img")
             .eq(0)
             .invoke("attr", "style")
-            .should("contain", "top: 0%");
+            .should("contain", "top: 12px");
 
           cy.get("img")
             .eq(11)
             .invoke("attr", "style")
-            .should("contain", "top: 44%");
+            .should("contain", "top: 100px");
         });
       });
     });
