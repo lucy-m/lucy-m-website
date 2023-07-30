@@ -19,12 +19,13 @@
   };
 </script>
 
-<div class="images-and-buttons">
+<div class="images-and-buttons" style:padding={`${padding}px 0px`}>
   <ObnoxiousButton
     onClick={goToPrevImage}
     label="Previous"
     direction="counter-clockwise"
     iconSrc="/arrow-left.png"
+    disabled={showIndex <= 0}
   />
   <div
     class="image-wrapper"
@@ -49,6 +50,7 @@
     label="Next"
     direction="clockwise"
     iconSrc="/arrow-right.png"
+    disabled={showIndex >= images.length - 1}
   />
 </div>
 

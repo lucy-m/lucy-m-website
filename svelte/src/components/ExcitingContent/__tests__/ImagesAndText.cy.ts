@@ -25,8 +25,12 @@ const renderComponent = (overrides?: {
 };
 
 describe("ImagesAndText", () => {
-  const clickPrev = () => cy.get("button[aria-label='Previous']").click();
-  const clickNext = () => cy.get("button[aria-label='Next']").click();
+  const getPrev = () => cy.get("button[aria-label='Previous']");
+  const getNext = () => cy.get("button[aria-label='Next']");
+
+  const clickPrev = () => getPrev().click();
+  const clickNext = () => getNext().click();
+
   const getImagesWrapper = () => cy.getByTestId("images-and-text-images");
 
   describe("default", () => {
@@ -85,14 +89,12 @@ describe("ImagesAndText", () => {
       assertImageInLocation(2, "232px");
     });
 
-    describe("clicking prev", () => {
-      beforeEach(() => {
-        clickPrev();
-      });
+    it("previous button is disabled", () => {
+      getPrev().should("be.disabled");
+    });
 
-      it("first image is visible", () => {
-        assertIndexVisible(0);
-      });
+    it("next button is enabled", () => {
+      getNext().should("be.enabled");
     });
 
     describe("clicking next", () => {
@@ -110,6 +112,10 @@ describe("ImagesAndText", () => {
         assertImageInLocation(2, "232px");
       });
 
+      it("previous button is enabled", () => {
+        getPrev().should("be.enabled");
+      });
+
       describe("clicking next (second time)", () => {
         beforeEach(() => {
           clickNext();
@@ -125,6 +131,10 @@ describe("ImagesAndText", () => {
           assertImageInLocation(2, "28px");
         });
 
+        it("next button is disabled", () => {
+          getNext().should("be.disabled");
+        });
+
         describe("clicking prev", () => {
           beforeEach(() => {
             clickPrev();
@@ -132,16 +142,6 @@ describe("ImagesAndText", () => {
 
           it("shows second image", () => {
             assertIndexVisible(1);
-          });
-        });
-
-        describe("clicking next (third time)", () => {
-          beforeEach(() => {
-            clickNext();
-          });
-
-          it("shows third image", () => {
-            assertIndexVisible(2);
           });
         });
       });
@@ -209,6 +209,19 @@ describe("ImagesAndText", () => {
             expect(img.offsetHeight).to.eq(300 * 0.92);
           });
       });
+    });
+  });
+
+  describe("single image", () => {
+    beforeEach(() => {
+      renderComponent({
+        props: { images: [finnyImg] },
+      });
+    });
+
+    it("buttons disabled", () => {
+      getPrev().should("be.disabled");
+      getNext().should("be.disabled");
     });
   });
 });

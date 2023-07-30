@@ -5,6 +5,7 @@
   export let onClick: () => void;
   export let direction: "clockwise" | "counter-clockwise";
   export let iconSrc: string | undefined = undefined;
+  export let disabled: boolean;
 
   const rotateSpring = makeNumberSpring({
     endPoint: 0,
@@ -55,6 +56,7 @@
   on:mouseleave={onMouseLeave}
   aria-label={label}
   style:rotate={$rotateSpring.position + "deg"}
+  {disabled}
 >
   {#if iconSrc}
     <img
@@ -80,6 +82,12 @@
     box-shadow: var(--box-shadow);
     cursor: pointer;
     position: relative;
+    transition: filter 400ms;
+  }
+
+  button[disabled] {
+    filter: saturate(0);
+    cursor: default;
   }
 
   button:focus-visible {
