@@ -4,6 +4,7 @@
 
   export let images: { src: string; alt: string }[];
   export let text: string[];
+  export let imageSize: number;
 
   let showIndex = 0;
 
@@ -23,7 +24,12 @@
     direction="counter-clockwise"
     iconSrc="/arrow-left.png"
   />
-  <div class="image-wrapper" data-testid="images-and-text-images">
+  <div
+    class="image-wrapper"
+    data-testid="images-and-text-images"
+    style:height={imageSize + "px"}
+    style:width={imageSize + "px"}
+  >
     {#each images as image, index}
       <SpringImage
         {image}
@@ -54,8 +60,6 @@
 
   .image-wrapper {
     position: relative;
-    width: 200px;
-    height: 200px;
     overflow: hidden;
   }
 </style>

@@ -17,6 +17,7 @@ const renderComponent = (overrides?: {
   const props: ComponentProps<ImagesAndText> = {
     images: [finnyImg, prettyGirlImg, svalbardImg],
     text: ["Hello", "Lorem ipsum dolor sit amet"],
+    imageSize: 200,
     ...overrides?.props,
   };
 
@@ -187,6 +188,26 @@ describe("ImagesAndText", () => {
             .invoke("attr", "style")
             .should("contain", "top: 44%");
         });
+      });
+    });
+  });
+
+  describe("custom image size", () => {
+    beforeEach(() => {
+      renderComponent({
+        props: {
+          imageSize: 300,
+        },
+      });
+    });
+
+    it("renders images at correct height", () => {
+      getImagesWrapper().within(() => {
+        cy.get("img")
+          .eq(0)
+          .then(([img]) => {
+            expect(img.offsetHeight).to.eq(300 * 0.92);
+          });
       });
     });
   });
