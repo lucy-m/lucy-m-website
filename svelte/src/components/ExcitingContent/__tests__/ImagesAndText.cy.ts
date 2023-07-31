@@ -228,7 +228,7 @@ describe("ImagesAndText", () => {
     });
   });
 
-  describe.only("viewport narrower than image size", () => {
+  describe("viewport narrower than image size", () => {
     beforeEach(() => {
       cy.viewport(400, 500);
       renderComponent({ props: { targetImageSize: 500 } });
@@ -261,5 +261,19 @@ describe("ImagesAndText", () => {
           .should("contain", "width: 524px");
       });
     });
+  });
+
+  describe.only("container narrower than image size", () => {
+    beforeEach(() => {
+      const props: ComponentProps<ImagesAndText> = {
+        images: [finnyImg, prettyGirlImg, svalbardImg],
+        text: ["Nulla ut nisi mi. Ut vel ornare tellus."],
+        targetImageSize: 300,
+      };
+
+      cy.mountWithFixture(ImagesAndText, props, { width: "280px" });
+    });
+
+    it("renders correctly", () => {});
   });
 });

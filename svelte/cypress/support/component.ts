@@ -14,12 +14,18 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
+import type {
+  ComponentProps,
+  ComponentType,
+  SvelteComponentTyped,
+} from "svelte";
 import "./commands";
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 
 import { mount } from "cypress/svelte";
+import Fixture from "./Fixture.svelte";
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.
@@ -29,6 +35,7 @@ declare global {
   namespace Cypress {
     interface Chainable {
       mount: typeof mount;
+      mountWithFixture: typeof mountWithFixture;
       getByTestId: typeof getByTestId;
     }
   }
@@ -38,8 +45,14 @@ const getByTestId = (testId: string) => {
   return cy.get(`[data-testid="${testId}"]`);
 };
 
-Cypress.Commands.add("mount", mount);
-Cypress.Commands.add("getByTestId", getByTestId);
+const mountWithFixture = <T extends Record<string, any>>(
+  componentType: ComponentType<SvelteComponentTyped<T>>,
+  props: T,
+  fixtureOptions?: ComponentProps<Fixture<T>>["fixtureOptions"]
+) => {
+  cy.mount(Fixture, { props: { componentType, props, fixtureOptions } });
+};
 
-// Example use:
-// cy.mount(MyComponent)
+Cypress.Commands.add("mount", mount);
+Cypress.Commands.add("mountWithFixture", mountWithFixture);
+Cypress.Commands.add("getByTestId", getByTestId);
