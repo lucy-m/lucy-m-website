@@ -76,6 +76,7 @@
   button {
     width: 50px;
     height: 50px;
+    flex-shrink: 0;
     padding: 0;
     border: none;
     background-color: hsl(140.91deg 49.83% 87.89%);

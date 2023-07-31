@@ -1,14 +1,29 @@
 <script lang="ts">
+  import { derived } from "svelte/store";
+  import { makeWindowSizeStore } from "../../model";
   import ObnoxiousButton from "./ObnoxiousButton.svelte";
   import SpringImage from "./SpringImage.svelte";
 
   export let images: { src: string; alt: string }[];
   export let text: string[];
-  export let imageSize: number;
+  export let targetImageSize: number;
 
   let showIndex = 0;
 
   const padding = 12;
+
+  const windowSize = makeWindowSizeStore();
+  const resolvedDisplay = derived(windowSize, (windowSize) => {
+    const imageSize = Math.min(windowSize.width - padding * 4, targetImageSize);
+    const imageWrapperSize = imageSize + padding * 2;
+    const stackButtons = imageWrapperSize > windowSize.width - 100;
+
+    return {
+      imageSize,
+      imageWrapperSize,
+      stackButtons,
+    };
+  });
 
   const goToNextImage = () => {
     showIndex = Math.min(showIndex + 1, images.length - 1);
@@ -22,6 +37,7 @@
 <div class="images-and-text-wrapper">
   <div
     class="images-and-buttons"
+    class:stack-buttons={$resolvedDisplay.stackButtons}
     style:padding={`${padding}px 0px`}
     style:column-gap={padding + 8 + "px"}
   >
@@ -35,8 +51,8 @@
     <div
       class="image-wrapper"
       data-testid="images-and-text-images"
-      style:height={imageSize + 2 * padding + "px"}
-      style:width={imageSize + 2 * padding + "px"}
+      style:height={$resolvedDisplay.imageWrapperSize + "px"}
+      style:width={$resolvedDisplay.imageWrapperSize + "px"}
       style:margin={-padding + "px"}
     >
       {#each images as image, index}
@@ -46,7 +62,7 @@
           {showIndex}
           {padding}
           imageCount={images.length}
-          containerSize={imageSize}
+          containerSize={$resolvedDisplay.imageSize}
         />
       {/each}
     </div>
@@ -84,5 +100,22 @@
   .image-wrapper {
     position: relative;
     overflow: hidden;
+  }
+
+  .stack-buttons {
+    display: grid;
+    grid-template-columns: 1fr auto auto 1fr;
+    grid-template-areas:
+      "a a a a"
+      ". b c .";
+    row-gap: calc(var(--spacing) * 0.5);
+  }
+
+  .stack-buttons .image-wrapper {
+    grid-area: "a";
+  }
+
+  .stack-buttons :global(button) {
+    grid-area: "b";
   }
 </style>

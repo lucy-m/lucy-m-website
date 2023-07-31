@@ -7,3 +7,4 @@ export * from "./scene";
 export * from "./shape";
 export * from "./spring-store";
 export * from "./sub-layer-key";
+export * from "./window-size-store";
