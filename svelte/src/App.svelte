@@ -12,7 +12,7 @@
     window.location.hash.replace("#", "")
   );
 
-  const navigateFn = (pathname: string) => () => {
+  const navigateFn = (pathname: string) => {
     locationHashStore.set(pathname);
     window.location.hash = pathname;
   };
@@ -28,7 +28,7 @@
   });
 </script>
 
-<NavBar {navigateFn} />
+<NavBar {navItems} {navigateFn} />
 
 <svelte:component
   this={$currentComponent.component}

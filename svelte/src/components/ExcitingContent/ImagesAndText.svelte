@@ -18,11 +18,11 @@
     elementSizeStore &&
     derived(elementSizeStore, (wrapperSize) => {
       const imageSize = Math.min(
-        wrapperSize.width - padding * 4,
+        wrapperSize.clientWidth - padding * 4,
         targetImageSize
       );
       const imageWrapperSize = imageSize + padding * 2;
-      const stackButtons = imageWrapperSize > wrapperSize.width - 110;
+      const stackButtons = imageWrapperSize > wrapperSize.clientWidth - 110;
 
       return {
         imageSize,

@@ -1,17 +1,26 @@
 import { readable } from "svelte/store";
 
 export interface ElementSize {
-  width: number;
-  height: number;
+  clientWidth: number;
+  clientHeight: number;
+  scrollHeight: number;
 }
 
 export const makeElementSizeStore = (element: HTMLElement) =>
   readable<ElementSize>(
-    { width: element.clientWidth, height: element.clientHeight },
+    {
+      clientWidth: element.clientWidth,
+      clientHeight: element.clientHeight,
+      scrollHeight: element.scrollHeight,
+    },
     (set) => {
       const r = new ResizeObserver(() => {
         window.requestAnimationFrame(() => {
-          set({ width: element.clientWidth, height: element.clientHeight });
+          set({
+            clientWidth: element.clientWidth,
+            clientHeight: element.clientHeight,
+            scrollHeight: element.scrollHeight,
+          });
         });
       });
 

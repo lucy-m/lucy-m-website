@@ -8,6 +8,7 @@ const renderComponent = (overrides?: {
   const navigateSpy = cy.spy().as("navigate");
 
   const props: ComponentProps<NavBar> = {
+    navItems: [{ label: "A", route: "/" }],
     navigateFn: () => navigateSpy,
     ...overrides?.props,
   };
@@ -25,7 +26,7 @@ describe("NavBar", () => {
       renderComponent({ containerWidth: "400px" });
     });
 
-    it.only("shows only menu button", () => {
+    it("shows only menu button", () => {
       getMenuButton().should("be.visible");
       getNonMenuButtons().should("not.be.visible");
     });

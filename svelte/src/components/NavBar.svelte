@@ -1,39 +1,69 @@
 <script lang="ts">
   import { derived } from "svelte/store";
-  import { makeElementSizeStore } from "../model";
-  import { navItems } from "../routes";
+  import { makeElementSizeStore, makeNumberSpring } from "../model";
+  import type { NavItem } from "../routes";
 
-  export let navigateFn: (s: string) => () => void;
+  export let navItems: Pick<NavItem, "label" | "route" | "hidden">[];
+  export let navigateFn: (s: string) => void;
 
   let wrapperEl: HTMLElement | undefined;
+  let veilHeight: number | undefined;
+
   let open = false;
 
   $: containerSizeStore = wrapperEl && makeElementSizeStore(wrapperEl);
   $: derivedDisplay =
     containerSizeStore &&
-    derived(containerSizeStore, (size) => {
-      const collapseButtons = size.width < 500;
+    derived([containerSizeStore], ([containerSize]) => {
+      const collapseButtons = containerSize.clientWidth < 500;
+      const unveilHeight = containerSize.scrollHeight;
 
-      return { collapseButtons };
+      return { collapseButtons, unveilHeight };
     });
+
+  $: heightSpring =
+    veilHeight === undefined
+      ? undefined
+      : makeNumberSpring({
+          endPoint: 60,
+          position: 60,
+          velocity: 0,
+          properties: {
+            friction: 3,
+            precision: 0.1,
+            stiffness: 0.5,
+            weight: 0.2,
+          },
+        });
+
+  const onClick = (route: string) => () => {
+    navigateFn(route);
+  };
 </script>
 
 <div
   class="button-bar"
   class:collapsed={$derivedDisplay?.collapseButtons}
   class:open
+  style:height={$heightSpring?.position + "px"}
   bind:this={wrapperEl}
 >
   <button
     class="menu-toggle"
+    bind:clientHeight={veilHeight}
     on:click={() => {
       open = !open;
-    }}>Menu</button
+      if (open) {
+        heightSpring?.set({ endPoint: veilHeight });
+      } else {
+        heightSpring?.set({ endPoint: $derivedDisplay?.unveilHeight });
+      }
+    }}><span>Menu</span></button
   >
   <div class="buttons-wrapper">
     {#each navItems as { label, route, hidden }}
       {#if !hidden}
-        <button on:click={navigateFn(route)}><span>{label}</span></button>
+        <button on:click={onClick(route)}><span>{label}</span></button>
       {/if}
     {/each}
   </div>
@@ -55,6 +85,10 @@
     display: none;
   }
 
+  .button-bar.collapsed {
+    overflow: hidden;
+  }
+
   .button-bar.collapsed .menu-toggle {
     display: block;
     width: 100%;
@@ -62,7 +96,6 @@
 
   .button-bar.collapsed .buttons-wrapper {
     flex-direction: column;
-    display: none;
   }
 
   .button-bar.collapsed.open .buttons-wrapper {
