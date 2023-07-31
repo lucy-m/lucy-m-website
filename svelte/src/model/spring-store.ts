@@ -16,14 +16,16 @@ type SpringStore<T> = Readable<Spring<T>> & {
 const makeSpringStore =
   <T>(tick: SpringTickFn<T>) =>
   (initial: Spring<T>): SpringStore<T> => {
-    const value = writable<Spring<T>>(initial);
-    const dt = 16;
+    const value = writable<Spring<T>>(initial, () => {
+      const subscription = interval(dt).subscribe(() => {
+        value.update((current) => tick(current, dt));
+      });
 
-    const subscription = interval(dt).subscribe(() => {
-      value.update((current) => tick(current, dt));
+      return () => {
+        subscription.unsubscribe();
+      };
     });
-
-    // Need teardown logic to unsubscribe
+    const dt = 16;
 
     const set = (newValue: Partial<Spring<T>>) => {
       value.update((current) => setSpring(current, newValue));
