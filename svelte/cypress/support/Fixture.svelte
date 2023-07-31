@@ -13,7 +13,7 @@
     | undefined = undefined;
 </script>
 
-<div class="test-wrapper" style:width={fixtureOptions?.width ?? "280px"}>
+<div class="test-wrapper" style:width={fixtureOptions?.width ?? "400px"}>
   <svelte:component this={componentType} {...props} />
 </div>
 
