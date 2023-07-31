@@ -232,6 +232,10 @@ describe("ImagesAndText", () => {
     beforeEach(() => {
       cy.viewport(400, 500);
       renderComponent({ props: { targetImageSize: 500 } });
+
+      getImagesWrapper().within(() => {
+        cy.get("img").invoke("attr", "style").should("contain", "top: 23.88px");
+      });
     });
 
     it("renders correctly", () => {
@@ -240,7 +244,7 @@ describe("ImagesAndText", () => {
 
         cy.get("button").then(([button1, button2]) => {
           expect(button1.getBoundingClientRect().top).to.be.greaterThan(
-            img.getBoundingClientRect().top
+            img.getBoundingClientRect().bottom
           );
 
           expect(button1.getBoundingClientRect().top).to.equal(
@@ -263,7 +267,7 @@ describe("ImagesAndText", () => {
     });
   });
 
-  describe.only("container narrower than image size", () => {
+  describe("container narrower than image size", () => {
     beforeEach(() => {
       const props: ComponentProps<ImagesAndText> = {
         images: [finnyImg, prettyGirlImg, svalbardImg],
@@ -272,8 +276,26 @@ describe("ImagesAndText", () => {
       };
 
       cy.mountWithFixture(ImagesAndText, props, { width: "280px" });
+
+      getImagesWrapper().within(() => {
+        cy.get("img").invoke("attr", "style").should("contain", "top: 21.24px");
+      });
     });
 
-    it("renders correctly", () => {});
+    it("renders correctly", () => {
+      cy.get("img[data-current='true']").then(([img]) => {
+        expect(img.clientWidth).to.be.lessThan(280);
+
+        cy.get("button").then(([button1, button2]) => {
+          expect(button1.getBoundingClientRect().top).to.be.greaterThan(
+            img.getBoundingClientRect().bottom
+          );
+
+          expect(button1.getBoundingClientRect().top).to.equal(
+            button2.getBoundingClientRect().top
+          );
+        });
+      });
+    });
   });
 });
