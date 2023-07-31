@@ -1,6 +1,7 @@
 export * from "./assets";
 export * from "./break-text";
 export * from "./draw-layer";
+export * from "./element-size-store";
 export * from "./position";
 export * from "./positioned-image";
 export * from "./scene";

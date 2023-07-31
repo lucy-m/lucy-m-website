@@ -14,8 +14,7 @@
   export let padding: number;
 
   const stackSize = 4;
-  const imageSize =
-    ((100 - stackSize * (imageCount - 1)) / 100) * containerSize;
+  $: imageSize = ((100 - stackSize * (imageCount - 1)) / 100) * containerSize;
 
   const calculateLocation = (
     myIndex: number,

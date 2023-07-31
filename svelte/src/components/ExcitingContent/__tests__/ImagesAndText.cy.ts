@@ -20,7 +20,7 @@ const renderComponent = (overrides?: {
       "Nulla ut nisi mi. Ut vel ornare tellus.",
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis maximus dui quis libero consectetur, ac laoreet risus viverra. Sed quis eleifend dui. Pellentesque nec purus et felis tincidunt congue nec at ipsum. Nulla vestibulum, tortor nec facilisis facilisis, ipsum risus cursus felis.",
     ],
-    imageSize: 200,
+    targetImageSize: 200,
     ...overrides?.props,
   };
 
@@ -199,7 +199,7 @@ describe("ImagesAndText", () => {
     beforeEach(() => {
       renderComponent({
         props: {
-          imageSize: 300,
+          targetImageSize: 300,
         },
       });
     });
@@ -225,6 +225,77 @@ describe("ImagesAndText", () => {
     it("buttons disabled", () => {
       getPrev().should("be.disabled");
       getNext().should("be.disabled");
+    });
+  });
+
+  describe("viewport narrower than image size", () => {
+    beforeEach(() => {
+      cy.viewport(400, 500);
+      renderComponent({ props: { targetImageSize: 500 } });
+
+      getImagesWrapper().within(() => {
+        cy.get("img").invoke("attr", "style").should("contain", "top: 23.88px");
+      });
+    });
+
+    it("renders correctly", () => {
+      cy.get("img[data-current='true']").then(([img]) => {
+        expect(img.clientWidth).to.be.lessThan(400);
+
+        cy.get("button").then(([button1, button2]) => {
+          expect(button1.getBoundingClientRect().top).to.be.greaterThan(
+            img.getBoundingClientRect().bottom
+          );
+
+          expect(button1.getBoundingClientRect().top).to.equal(
+            button2.getBoundingClientRect().top
+          );
+        });
+      });
+    });
+
+    describe("window resizes", () => {
+      beforeEach(() => {
+        cy.viewport(800, 600);
+      });
+
+      it("renders correctly", () => {
+        getImagesWrapper()
+          .invoke("attr", "style")
+          .should("contain", "width: 524px");
+      });
+    });
+  });
+
+  describe("container narrower than image size", () => {
+    beforeEach(() => {
+      const props: ComponentProps<ImagesAndText> = {
+        images: [finnyImg, prettyGirlImg, svalbardImg],
+        text: ["Nulla ut nisi mi. Ut vel ornare tellus."],
+        targetImageSize: 300,
+      };
+
+      cy.mountWithFixture(ImagesAndText, props, { width: "280px" });
+
+      getImagesWrapper().within(() => {
+        cy.get("img").invoke("attr", "style").should("contain", "top: 21.24px");
+      });
+    });
+
+    it("renders correctly", () => {
+      cy.get("img[data-current='true']").then(([img]) => {
+        expect(img.clientWidth).to.be.lessThan(280);
+
+        cy.get("button").then(([button1, button2]) => {
+          expect(button1.getBoundingClientRect().top).to.be.greaterThan(
+            img.getBoundingClientRect().bottom
+          );
+
+          expect(button1.getBoundingClientRect().top).to.equal(
+            button2.getBoundingClientRect().top
+          );
+        });
+      });
     });
   });
 });
