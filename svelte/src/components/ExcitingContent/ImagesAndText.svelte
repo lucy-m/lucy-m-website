@@ -20,7 +20,11 @@
 </script>
 
 <div class="images-and-text-wrapper">
-  <div class="images-and-buttons" style:padding={`${padding}px 0px`}>
+  <div
+    class="images-and-buttons"
+    style:padding={`${padding}px 0px`}
+    style:column-gap={padding + 8 + "px"}
+  >
     <ObnoxiousButton
       onClick={goToPrevImage}
       label="Previous"
@@ -56,7 +60,7 @@
   </div>
 
   {#each text as t}
-    <p>{t}</p>
+    <p>{@html t}</p>
   {/each}
 </div>
 
@@ -74,7 +78,6 @@
   .images-and-buttons {
     display: flex;
     align-items: center;
-    column-gap: 8px;
     margin-bottom: calc(var(--spacing) * 0.5);
   }
 

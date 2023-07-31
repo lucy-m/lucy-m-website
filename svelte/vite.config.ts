@@ -19,5 +19,5 @@ export default defineConfig({
     ]),
     svelte(),
   ],
-  assetsInclude: ["**/*.PNG", "**/*.svg"],
+  assetsInclude: ["**/*.PNG", "**/*.JPG", "**/*.svg"],
 });

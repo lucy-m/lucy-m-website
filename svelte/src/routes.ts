@@ -1,5 +1,5 @@
 import type { ComponentProps, ComponentType } from "svelte";
-import { Scene } from "./components";
+import { Scene, Talks } from "./components";
 import FromStatic from "./components/FromStatic.svelte";
 import { introScene } from "./scenes/intro-scene";
 
@@ -38,8 +38,8 @@ export const navItems: NavItem[] = [
   {
     label: "Talks",
     route: routes.thingsIveYelledAbout,
-    component: FromStatic,
-    props: { selector: "#talks" } as ComponentProps<FromStatic>,
+    component: Talks,
+    props: {},
   },
   {
     label: "Things",
