@@ -46,12 +46,12 @@
   h2 {
     font-family: "Bitter", "Quicksand", sans-serif;
     font-weight: 700;
-    font-size: 2.2rem;
+    font-size: min(2.2rem, 7vw);
     background-image: url("/underlines/underline_2.PNG");
     background-size: 400px;
     background-repeat: no-repeat;
     background-position-x: 12px;
-    background-position-y: 64px;
+    background-position-y: bottom;
     filter: hue-rotate(274.92deg) saturate(0.3) brightness(2.5);
     margin: calc(var(--spacing) * -1);
     margin-bottom: 0;

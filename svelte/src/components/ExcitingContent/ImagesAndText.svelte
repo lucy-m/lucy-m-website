@@ -109,16 +109,24 @@
   }
 
   .stack-buttons {
-    flex-wrap: wrap;
-    justify-content: center;
-    row-gap: calc(var(--spacing) * 0.5);
+    display: grid;
+    grid-template-columns: 1fr auto auto 1fr;
+    row-gap: var(--spacing);
+    margin-bottom: var(--spacing);
   }
 
   .stack-buttons .image-wrapper {
-    order: 1;
+    grid-row: 1;
+    grid-column: 1 / 5;
   }
 
   .stack-buttons :global(button) {
-    order: 2;
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .stack-buttons :global(button):nth-of-type(2) {
+    grid-column: 3;
+    grid-row: 2;
   }
 </style>
