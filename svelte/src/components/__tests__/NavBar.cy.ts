@@ -83,7 +83,7 @@ describe("NavBar", () => {
       renderComponent({ containerWidth: "600px" });
     });
 
-    it.only("renders correct height", () => {
+    it("renders correct height", () => {
       cy.get(".buttons-wrapper").should("not.have.attr", "style");
     });
 

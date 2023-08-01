@@ -1,4 +1,4 @@
-import { Subject, startWith, tap, type Observable } from "rxjs";
+import { Subject, share, startWith, tap, type Observable } from "rxjs";
 import { readable } from "svelte/store";
 
 export interface ElementSize {
@@ -34,7 +34,8 @@ export const observeElementSize = (
       complete: () => {
         r.disconnect();
       },
-    })
+    }),
+    share()
   );
 };
 

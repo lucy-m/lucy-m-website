@@ -5,10 +5,11 @@
     combineLatest,
     distinctUntilChanged,
     map,
+    merge,
     scan,
+    share,
   } from "rxjs";
-  import { derived } from "svelte/store";
-  import { makeElementSizeStore, observeElementSize } from "../model";
+  import { observeElementSize } from "../model";
   import {
     makeNumberSpring$,
     type SpringEvent,
@@ -21,27 +22,42 @@
   let wrapperEl: HTMLElement | undefined;
   let buttonWrapperEl: HTMLElement | undefined;
 
-  const openSub = new Subject<void>();
-  const open$ = openSub.pipe(scan((open) => !open, false));
+  const toggleOpenSub = new Subject<void>();
 
-  $: containerSizeStore = wrapperEl && makeElementSizeStore(wrapperEl);
+  $: derivedDisplay$ =
+    wrapperEl &&
+    observeElementSize(wrapperEl).pipe(
+      map((size) => {
+        const collapseButtons = size.clientWidth < 500;
+        return { collapseButtons };
+      }),
+      share()
+    );
 
-  $: derivedDisplay =
-    containerSizeStore &&
-    derived(containerSizeStore, (containerSize) => {
-      const collapseButtons = containerSize.clientWidth < 500;
-
-      return {
-        collapseButtons,
-      };
-    });
+  $: open$ =
+    derivedDisplay$ &&
+    merge(
+      toggleOpenSub.pipe(map(() => ({ kind: "toggle-open" } as const))),
+      derivedDisplay$.pipe(
+        map((display) => ({ kind: "display-changed", display } as const))
+      )
+    ).pipe(
+      scan((open, next) => {
+        if (next.kind === "toggle-open") {
+          return !open;
+        } else {
+          return open && next.display.collapseButtons;
+        }
+      }, false),
+      share()
+    );
 
   $: heightSpring$ = (() => {
-    if (!buttonWrapperEl) {
+    if (!buttonWrapperEl || !open$) {
       return undefined;
     } else {
       const height$ = observeElementSize(buttonWrapperEl).pipe(
-        map((v) => v.scrollHeight),
+        map((size) => size.scrollHeight),
         distinctUntilChanged()
       );
 
@@ -73,24 +89,29 @@
   })();
 
   const onClick = (route: string) => () => {
-    openSub.next();
+    toggleOpenSub.next();
     navigateFn(route);
   };
 </script>
 
 <div
   class="button-bar"
-  class:collapsed={$derivedDisplay?.collapseButtons}
+  class:collapsed={$derivedDisplay$?.collapseButtons}
   class:open={$open$}
   bind:this={wrapperEl}
 >
   <button
     class="menu-toggle"
     on:click={() => {
-      openSub.next();
+      toggleOpenSub.next();
     }}><span>Menu</span></button
   >
-  <div class="buttons-wrapper" style:height={$heightSpring$?.position + "px"}>
+  <div
+    class="buttons-wrapper"
+    style:height={$derivedDisplay$?.collapseButtons
+      ? $heightSpring$?.position + "px"
+      : undefined}
+  >
     <div bind:this={buttonWrapperEl}>
       {#each navItems as { label, route, hidden }}
         {#if !hidden}
@@ -130,6 +151,7 @@
     top: calc(100% + var(--spacing-05));
     left: var(--spacing);
     right: var(--spacing);
+    z-index: 10;
     width: auto;
     background-color: hsl(140.91deg 49.83% 87.89%);
   }
