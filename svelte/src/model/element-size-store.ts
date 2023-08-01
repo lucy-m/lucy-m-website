@@ -1,3 +1,4 @@
+import { Subject, startWith, tap, type Observable } from "rxjs";
 import { readable } from "svelte/store";
 
 export interface ElementSize {
@@ -5,6 +6,37 @@ export interface ElementSize {
   clientHeight: number;
   scrollHeight: number;
 }
+
+export const observeElementSize = (
+  element: HTMLElement
+): Observable<ElementSize> => {
+  const sub = new Subject<ElementSize>();
+
+  const r = new ResizeObserver(() => {
+    window.requestAnimationFrame(() => {
+      sub.next({
+        clientWidth: element.clientWidth,
+        clientHeight: element.clientHeight,
+        scrollHeight: element.scrollHeight,
+      });
+    });
+  });
+
+  r.observe(element);
+
+  return sub.pipe(
+    startWith({
+      clientWidth: element.clientWidth,
+      clientHeight: element.clientHeight,
+      scrollHeight: element.scrollHeight,
+    }),
+    tap({
+      complete: () => {
+        r.disconnect();
+      },
+    })
+  );
+};
 
 export const makeElementSizeStore = (element: HTMLElement) =>
   readable<ElementSize>(

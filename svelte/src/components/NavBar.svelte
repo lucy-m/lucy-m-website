@@ -1,42 +1,79 @@
 <script lang="ts">
+  import {
+    Observable,
+    Subject,
+    combineLatest,
+    distinctUntilChanged,
+    map,
+    scan,
+  } from "rxjs";
   import { derived } from "svelte/store";
-  import { makeElementSizeStore, makeNumberSpring } from "../model";
+  import { makeElementSizeStore, observeElementSize } from "../model";
+  import {
+    makeNumberSpring$,
+    type SpringEvent,
+  } from "../model/spring-observable";
   import type { NavItem } from "../routes";
 
   export let navItems: Pick<NavItem, "label" | "route" | "hidden">[];
   export let navigateFn: (s: string) => void;
 
   let wrapperEl: HTMLElement | undefined;
-  let veilHeight: number | undefined;
+  let buttonWrapperEl: HTMLElement | undefined;
 
-  let open = false;
+  const openSub = new Subject<void>();
+  const open$ = openSub.pipe(scan((open) => !open, false));
 
   $: containerSizeStore = wrapperEl && makeElementSizeStore(wrapperEl);
+
   $: derivedDisplay =
     containerSizeStore &&
-    derived([containerSizeStore], ([containerSize]) => {
+    derived(containerSizeStore, (containerSize) => {
       const collapseButtons = containerSize.clientWidth < 500;
-      const unveilHeight = containerSize.scrollHeight;
 
-      return { collapseButtons, unveilHeight };
+      return {
+        collapseButtons,
+      };
     });
 
-  $: heightSpring =
-    veilHeight === undefined
-      ? undefined
-      : makeNumberSpring({
-          endPoint: 60,
-          position: 60,
+  $: heightSpring$ = (() => {
+    if (!buttonWrapperEl) {
+      return undefined;
+    } else {
+      const height$ = observeElementSize(buttonWrapperEl).pipe(
+        map((v) => v.scrollHeight),
+        distinctUntilChanged()
+      );
+
+      const events$: Observable<SpringEvent<number>> = combineLatest([
+        open$,
+        height$,
+      ]).pipe(
+        map(([open, height]) => ({
+          kind: "set",
+          set: { endPoint: open ? height : 0 },
+        }))
+      );
+
+      return makeNumberSpring$(
+        {
+          endPoint: 0,
+          position: 0,
           velocity: 0,
           properties: {
-            friction: 3,
+            friction: 2.1,
             precision: 0.1,
-            stiffness: 0.5,
-            weight: 0.2,
+            stiffness: 0.4,
+            weight: 0.1,
           },
-        });
+        },
+        events$
+      );
+    }
+  })();
 
   const onClick = (route: string) => () => {
+    openSub.next();
     navigateFn(route);
   };
 </script>
@@ -44,28 +81,23 @@
 <div
   class="button-bar"
   class:collapsed={$derivedDisplay?.collapseButtons}
-  class:open
-  style:height={$heightSpring?.position + "px"}
+  class:open={$open$}
   bind:this={wrapperEl}
 >
   <button
     class="menu-toggle"
-    bind:clientHeight={veilHeight}
     on:click={() => {
-      open = !open;
-      if (open) {
-        heightSpring?.set({ endPoint: veilHeight });
-      } else {
-        heightSpring?.set({ endPoint: $derivedDisplay?.unveilHeight });
-      }
+      openSub.next();
     }}><span>Menu</span></button
   >
-  <div class="buttons-wrapper">
-    {#each navItems as { label, route, hidden }}
-      {#if !hidden}
-        <button on:click={onClick(route)}><span>{label}</span></button>
-      {/if}
-    {/each}
+  <div class="buttons-wrapper" style:height={$heightSpring$?.position + "px"}>
+    <div bind:this={buttonWrapperEl}>
+      {#each navItems as { label, route, hidden }}
+        {#if !hidden}
+          <button on:click={onClick(route)}><span>{label}</span></button>
+        {/if}
+      {/each}
+    </div>
   </div>
 </div>
 
@@ -74,6 +106,7 @@
     width: 100%;
     background-color: hsl(140.91deg 49.83% 87.89%);
     box-shadow: var(--box-shadow);
+    position: relative;
   }
 
   .button-bar .buttons-wrapper {
@@ -85,21 +118,31 @@
     display: none;
   }
 
-  .button-bar.collapsed {
-    overflow: hidden;
-  }
-
   .button-bar.collapsed .menu-toggle {
     display: block;
     width: 100%;
   }
 
   .button-bar.collapsed .buttons-wrapper {
-    flex-direction: column;
+    height: 0px;
+    overflow: hidden;
+    position: absolute;
+    top: calc(100% + var(--spacing-05));
+    left: var(--spacing);
+    right: var(--spacing);
+    width: auto;
+    background-color: hsl(140.91deg 49.83% 87.89%);
   }
 
   .button-bar.collapsed.open .buttons-wrapper {
+    box-shadow: var(--box-shadow);
+  }
+
+  .button-bar.collapsed .buttons-wrapper > div {
     display: flex;
+    flex-direction: column;
+    height: min-content;
+    width: 100%;
   }
 
   .button-bar button {

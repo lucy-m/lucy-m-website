@@ -5,11 +5,14 @@ const renderComponent = (overrides?: {
   containerWidth?: string;
   props?: Partial<ComponentProps<NavBar>>;
 }) => {
-  const navigateSpy = cy.spy().as("navigate");
+  const navigateSpy = cy.spy().as("navigateSpy");
 
   const props: ComponentProps<NavBar> = {
-    navItems: [{ label: "A", route: "/" }],
-    navigateFn: () => navigateSpy,
+    navItems: ["a", "b", "c", "def", "foo"].map((s) => ({
+      label: s,
+      route: "/" + s,
+    })),
+    navigateFn: navigateSpy,
     ...overrides?.props,
   };
 
@@ -28,13 +31,60 @@ describe("NavBar", () => {
 
     it("shows only menu button", () => {
       getMenuButton().should("be.visible");
-      getNonMenuButtons().should("not.be.visible");
+      getNonMenuButtons().each((el) => cy.wrap(el).should("not.be.visible"));
+    });
+
+    describe("click menu button", () => {
+      beforeEach(() => {
+        getMenuButton().click();
+      });
+
+      it("shows buttons", () => {
+        getMenuButton().should("be.visible");
+        getNonMenuButtons().each((el) => cy.wrap(el).should("be.visible"));
+      });
+
+      describe("clicking a non menu button", () => {
+        beforeEach(() => {
+          cy.contains("button", "def").click();
+        });
+
+        it("calls navigate", () => {
+          cy.get("@navigateSpy")
+            .should("have.been.calledOnce")
+            .should("have.been.calledWith", "/def");
+        });
+
+        it("closes menu", () => {
+          getMenuButton().should("be.visible");
+          getNonMenuButtons().each((el) =>
+            cy.wrap(el).should("not.be.visible")
+          );
+        });
+      });
+
+      describe("clicking menu again", () => {
+        beforeEach(() => {
+          getMenuButton().click();
+        });
+
+        it("hides non menu buttons", () => {
+          getMenuButton().should("be.visible");
+          getNonMenuButtons().each((el) =>
+            cy.wrap(el).should("not.be.visible")
+          );
+        });
+      });
     });
   });
 
   describe("wide container", () => {
     beforeEach(() => {
       renderComponent({ containerWidth: "600px" });
+    });
+
+    it.only("renders correct height", () => {
+      cy.get(".buttons-wrapper").should("not.have.attr", "style");
     });
 
     it("does not show menu button", () => {
