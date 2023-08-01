@@ -24,6 +24,11 @@ describe("NavBar", () => {
   const getNonMenuButtons = () =>
     cy.get("button").filter(":not(:contains(Menu))");
 
+  const assertNonMenuButtonsVisible = (visible: boolean) =>
+    getNonMenuButtons().each((el) =>
+      cy.wrap(el).should(visible ? "be.visible" : "not.be.visible")
+    );
+
   describe("default state", () => {
     beforeEach(() => {
       renderComponent({ containerWidth: "400px" });
@@ -31,7 +36,7 @@ describe("NavBar", () => {
 
     it("shows only menu button", () => {
       getMenuButton().should("be.visible");
-      getNonMenuButtons().each((el) => cy.wrap(el).should("not.be.visible"));
+      assertNonMenuButtonsVisible(false);
     });
 
     describe("click menu button", () => {
@@ -41,7 +46,7 @@ describe("NavBar", () => {
 
       it("shows buttons", () => {
         getMenuButton().should("be.visible");
-        getNonMenuButtons().each((el) => cy.wrap(el).should("be.visible"));
+        assertNonMenuButtonsVisible(true);
       });
 
       describe("clicking a non menu button", () => {
@@ -57,9 +62,7 @@ describe("NavBar", () => {
 
         it("closes menu", () => {
           getMenuButton().should("be.visible");
-          getNonMenuButtons().each((el) =>
-            cy.wrap(el).should("not.be.visible")
-          );
+          assertNonMenuButtonsVisible(false);
         });
       });
 
@@ -70,9 +73,7 @@ describe("NavBar", () => {
 
         it("hides non menu buttons", () => {
           getMenuButton().should("be.visible");
-          getNonMenuButtons().each((el) =>
-            cy.wrap(el).should("not.be.visible")
-          );
+          assertNonMenuButtonsVisible(false);
         });
       });
     });
@@ -92,7 +93,7 @@ describe("NavBar", () => {
     });
 
     it("displays all buttons in line", () => {
-      getNonMenuButtons().each((el) => cy.wrap(el).should("be.visible"));
+      assertNonMenuButtonsVisible(true);
       getNonMenuButtons().then((buttons) => {
         const firstButton = buttons[0];
         const firstTop = firstButton.getBoundingClientRect().top;
@@ -101,6 +102,26 @@ describe("NavBar", () => {
           expect(button.getBoundingClientRect().top).to.eq(firstTop);
         }
       });
+    });
+  });
+
+  describe("changing viewport size", () => {
+    beforeEach(() => {
+      renderComponent({ containerWidth: "100%" });
+    });
+
+    it("narrow > wide > narrow, menu does not stay open", () => {
+      cy.viewport(500, 500);
+      assertNonMenuButtonsVisible(false);
+      getMenuButton().click();
+      assertNonMenuButtonsVisible(true);
+
+      cy.viewport(800, 500);
+      getMenuButton().should("not.be.visible");
+      assertNonMenuButtonsVisible(true);
+
+      cy.viewport(500, 500);
+      assertNonMenuButtonsVisible(false);
     });
   });
 });
