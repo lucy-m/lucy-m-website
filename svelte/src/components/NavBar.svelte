@@ -11,7 +11,7 @@
   } from "rxjs";
   import { observeElementSize } from "../model";
   import {
-    makeNumberSpring$,
+    makeNumberSpring,
     type SpringEvent,
   } from "../model/spring-observable";
   import type { NavItem } from "../routes";
@@ -71,7 +71,7 @@
         }))
       );
 
-      return makeNumberSpring$(
+      return makeNumberSpring(
         {
           endPoint: 0,
           position: 0,

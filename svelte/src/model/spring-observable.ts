@@ -1,4 +1,4 @@
-import { interval, map, merge, Observable, scan } from "rxjs";
+import { interval, map, merge, Observable, scan, startWith } from "rxjs";
 import {
   NumberSpringFns,
   PositionSpringFns,
@@ -20,7 +20,7 @@ const makeSpringObservable =
     initial: Spring<T>,
     events$: Observable<SpringEvent<T>>
   ): Observable<Spring<T>> => {
-    const dt = 32;
+    const dt = 16;
 
     const tick$ = interval(dt);
 
@@ -37,11 +37,12 @@ const makeSpringObservable =
           case "update":
             return setSpring(current, next.update(current));
         }
-      }, initial)
+      }, initial),
+      startWith(initial)
     );
 
     return spring$;
   };
 
-export const makePositionSpring$ = makeSpringObservable(PositionSpringFns.tick);
-export const makeNumberSpring$ = makeSpringObservable(NumberSpringFns.tick);
+export const makePositionSpring = makeSpringObservable(PositionSpringFns.tick);
+export const makeNumberSpring = makeSpringObservable(NumberSpringFns.tick);
