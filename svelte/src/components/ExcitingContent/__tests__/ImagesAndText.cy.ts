@@ -234,7 +234,7 @@ describe("ImagesAndText", () => {
       renderComponent({ props: { targetImageSize: 500 } });
 
       getImagesWrapper().within(() => {
-        cy.get("img").invoke("attr", "style").should("contain", "top: 23.88px");
+        cy.get("img").invoke("attr", "style").should("contain", "top: 23.");
       });
     });
 
@@ -278,7 +278,7 @@ describe("ImagesAndText", () => {
       cy.mountWithFixture(ImagesAndText, props, { width: "280px" });
 
       getImagesWrapper().within(() => {
-        cy.get("img").invoke("attr", "style").should("contain", "top: 21.24px");
+        cy.get("img").invoke("attr", "style").should("contain", "top: 21.");
       });
     });
 

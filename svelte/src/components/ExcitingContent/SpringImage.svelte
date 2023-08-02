@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { PosFns } from "../../model";
-  import type { PositionSpring } from "../../model/spring";
+  import { Subject, map } from "rxjs";
+  import { PosFns, type Position } from "../../model";
   import {
     makeNumberSpring,
     makePositionSpring,
-  } from "../../model/spring-store";
+    type SpringEvent,
+  } from "../../model/spring-observable";
 
   export let image: { src: string; alt: string };
   export let myIndex: number;
@@ -16,18 +17,15 @@
   const stackSize = 4;
   $: imageSize = ((100 - stackSize * (imageCount - 1)) / 100) * containerSize;
 
-  const calculateLocation = (
-    myIndex: number,
-    showIndex: number
-  ): Partial<PositionSpring> => {
+  const calculateLocation = (myIndex: number, showIndex: number): Position => {
     if (myIndex > showIndex) {
-      const endPoint = PosFns.new(60, 110);
-      return { endPoint };
+      const location = PosFns.new(60, 110);
+      return location;
     } else {
-      const location = stackSize * (myIndex + (imageCount - showIndex - 1) / 2);
-      const endPoint = PosFns.new(location, location);
+      const frac = stackSize * (myIndex + (imageCount - showIndex - 1) / 2);
+      const location = PosFns.new(frac, frac);
 
-      return { endPoint };
+      return location;
     }
   };
 
@@ -39,46 +37,66 @@
     }
   };
 
-  const locationSpring = makePositionSpring({
-    endPoint: PosFns.zero,
-    position: PosFns.new(100, 100),
-    velocity: PosFns.zero,
-    properties: {
-      friction: 5.5,
-      stiffness: 0.9,
-      weight: 1,
-      precision: 0.1,
-    },
-  });
+  const showIndexChangedSub = new Subject<number>();
+  $: showIndexChangedSub.next(showIndex);
 
-  const brightnessSpring = makeNumberSpring({
-    endPoint: 1,
-    position: 0,
-    velocity: 0,
-    properties: {
-      friction: 0.5,
-      stiffness: 0.05,
-      weight: 1,
-      precision: 0.1,
+  const locationSpring$ = makePositionSpring(
+    {
+      endPoint: calculateLocation(myIndex, showIndex),
+      position: calculateLocation(myIndex, showIndex),
+      velocity: PosFns.zero,
+      properties: {
+        friction: 5.5,
+        stiffness: 0.9,
+        weight: 1,
+        precision: 0.1,
+      },
     },
-  });
+    showIndexChangedSub.pipe(
+      map(
+        (showIndex) =>
+          ({
+            kind: "set",
+            set: { endPoint: calculateLocation(myIndex, showIndex) },
+          } as SpringEvent<Position>)
+      )
+    )
+  );
 
-  $: {
-    locationSpring.set(calculateLocation(myIndex, showIndex));
-    brightnessSpring.set({ endPoint: calculateBrightness(myIndex, showIndex) });
-  }
+  const brightnessSpring$ = makeNumberSpring(
+    {
+      endPoint: calculateBrightness(myIndex, showIndex),
+      position: calculateBrightness(myIndex, showIndex),
+      velocity: 0,
+      properties: {
+        friction: 0.5,
+        stiffness: 0.05,
+        weight: 1,
+        precision: 0.1,
+      },
+    },
+    showIndexChangedSub.pipe(
+      map(
+        (showIndex) =>
+          ({
+            kind: "set",
+            set: { endPoint: calculateBrightness(myIndex, showIndex) },
+          } as SpringEvent<number>)
+      )
+    )
+  );
 </script>
 
 <img
   src={image.src}
   alt={image.alt}
-  style:left={($locationSpring.position.x / 100) * containerSize +
+  style:left={($locationSpring$.position.x / 100) * containerSize +
     padding +
     "px"}
-  style:top={($locationSpring.position.y / 100) * containerSize +
+  style:top={($locationSpring$.position.y / 100) * containerSize +
     padding +
     "px"}
-  style:filter="brightness({$brightnessSpring.position})"
+  style:filter="brightness({$brightnessSpring$.position})"
   style:height={imageSize + "px"}
   style:width={imageSize + "px"}
   data-current={myIndex === showIndex}

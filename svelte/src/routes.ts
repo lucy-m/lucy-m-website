@@ -11,7 +11,7 @@ export const routes = {
   fallback: "/",
 };
 
-interface NavItem {
+export interface NavItem {
   label: string;
   route: string;
   component: ComponentType;
