@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { derived } from "svelte/store";
-  import { makeElementSizeStore } from "../../model";
+  import { map } from "rxjs";
+  import { observeElementSize } from "../../model";
   import ObnoxiousButton from "./ObnoxiousButton.svelte";
   import SpringImage from "./SpringImage.svelte";
 
@@ -13,23 +13,24 @@
 
   const padding = 12;
 
-  $: elementSizeStore = wrapperEl && makeElementSizeStore(wrapperEl);
-  $: resolvedDisplay =
-    elementSizeStore &&
-    derived(elementSizeStore, (wrapperSize) => {
-      const imageSize = Math.min(
-        wrapperSize.clientWidth - padding * 4,
-        targetImageSize
-      );
-      const imageWrapperSize = imageSize + padding * 2;
-      const stackButtons = imageWrapperSize > wrapperSize.clientWidth - 110;
+  $: resolvedDisplay$ =
+    wrapperEl &&
+    observeElementSize(wrapperEl).pipe(
+      map((wrapperSize) => {
+        const imageSize = Math.min(
+          wrapperSize.clientWidth - padding * 4,
+          targetImageSize
+        );
+        const imageWrapperSize = imageSize + padding * 2;
+        const stackButtons = imageWrapperSize > wrapperSize.clientWidth - 110;
 
-      return {
-        imageSize,
-        imageWrapperSize,
-        stackButtons,
-      };
-    });
+        return {
+          imageSize,
+          imageWrapperSize,
+          stackButtons,
+        };
+      })
+    );
 
   const goToNextImage = () => {
     showIndex = Math.min(showIndex + 1, images.length - 1);
@@ -43,7 +44,7 @@
 <div class="images-and-text-wrapper" bind:this={wrapperEl}>
   <div
     class="images-and-buttons"
-    class:stack-buttons={$resolvedDisplay?.stackButtons}
+    class:stack-buttons={$resolvedDisplay$?.stackButtons}
     style:padding={`${padding}px 0px`}
     style:column-gap={padding + 8 + "px"}
   >
@@ -57,8 +58,8 @@
     <div
       class="image-wrapper"
       data-testid="images-and-text-images"
-      style:height={$resolvedDisplay?.imageWrapperSize + "px"}
-      style:width={$resolvedDisplay?.imageWrapperSize + "px"}
+      style:height={$resolvedDisplay$?.imageWrapperSize + "px"}
+      style:width={$resolvedDisplay$?.imageWrapperSize + "px"}
       style:margin={-padding + "px"}
     >
       {#each images as image, index}
@@ -68,7 +69,7 @@
           {showIndex}
           {padding}
           imageCount={images.length}
-          containerSize={$resolvedDisplay?.imageSize ?? targetImageSize}
+          containerSize={$resolvedDisplay$?.imageSize ?? targetImageSize}
         />
       {/each}
     </div>
