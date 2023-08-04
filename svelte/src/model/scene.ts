@@ -1,6 +1,6 @@
 import { v4 as uuid } from "uuid";
 import type { AssetKey } from "./assets";
-import { type Position } from "./position";
+import { PosFns, type Position } from "./position";
 import type { SubLayerKey } from "./sub-layer-key";
 
 export type ObjectLayerContent =
@@ -21,7 +21,8 @@ export type SceneObjectAction =
   | {
       kind: "hide";
     }
-  | { kind: "show" };
+  | { kind: "show" }
+  | { kind: "moveBy"; by: Position };
 
 export type SceneObject<TLayerKey extends string> = {
   id: string;
@@ -51,7 +52,7 @@ export const applySceneAction = <TLayerKey extends string>(
   action: SceneObjectAction,
   sourceId: string
 ): SceneType<TLayerKey> => {
-  const objects = scene.objects.map((obj) => {
+  const objects = scene.objects.map<SceneObject<TLayerKey>>((obj) => {
     if (obj.id === sourceId) {
       switch (action.kind) {
         case "hide":
@@ -64,6 +65,12 @@ export const applySceneAction = <TLayerKey extends string>(
             ...obj,
             hidden: false,
           };
+        case "moveBy": {
+          return {
+            ...obj,
+            position: PosFns.add(obj.position, action.by),
+          };
+        }
       }
     } else {
       return obj;

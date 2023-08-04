@@ -99,6 +99,18 @@ const objects: SceneObject<LayerKey>[] = [
           }
         : { kind: "hide" },
   }),
+  makeSceneObject({
+    layerKey: "bg",
+    position: PosFns.new(50, 100),
+    getLayers: () => [
+      {
+        kind: "image",
+        assetKey: "birdFlapUp",
+        subLayer: "background",
+      },
+    ],
+    onInteract: () => ({ kind: "moveBy", by: PosFns.new(40, 0) }),
+  }),
 ];
 
 export const introScene: SceneType<LayerKey> = {

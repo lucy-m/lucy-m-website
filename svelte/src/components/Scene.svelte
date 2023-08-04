@@ -15,9 +15,9 @@
   const canvasHeight = 1080;
 </script>
 
-{#if windowWidth <= canvasWidth + 40}
+{#if windowWidth <= 800}
   <div class="item-wrapper">
-    Please view this page on a wider screen. Sorry, but this page not display
+    Please view this page on a wider screen. Sorry, but this page may display
     properly on mobile devices.
   </div>
 {/if}

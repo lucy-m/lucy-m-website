@@ -108,5 +108,6 @@
 <style>
   canvas {
     width: 100%;
+    max-height: 95vh;
   }
 </style>
