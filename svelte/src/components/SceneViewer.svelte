@@ -104,3 +104,9 @@
   on:click={onInteract}
   bind:this={canvas}
 />
+
+<style>
+  canvas {
+    width: 100%;
+  }
+</style>

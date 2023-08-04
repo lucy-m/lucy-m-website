@@ -43,7 +43,7 @@ const addLayer = <TLayerKey extends string>(
   };
 };
 
-const sublayerOrder: SubLayerKey[] = ["fill", "outline"];
+const sublayerOrder: SubLayerKey[] = ["background", "text"];
 
 const getLayerContentInOrder = <TLayerKey extends string>(
   layerOrder: TLayerKey[],
@@ -77,7 +77,7 @@ export const resolveScene = <TLayerKey extends string>(
             obj.layerKey,
             objectLayerContent.kind === "image"
               ? objectLayerContent.subLayer
-              : "outline",
+              : "background",
             {
               content:
                 objectLayerContent.kind == "image"

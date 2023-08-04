@@ -1,18 +1,11 @@
 import { entriesToRecord, recordToEntries } from "../utils";
 
 const imagePaths = {
-  bgOutline: "/assets/scene-intro/background/bg outline.PNG",
-  bg0: "/assets/scene-intro/background/bg 0.PNG",
-  bg1: "/assets/scene-intro/background/bg 1.PNG",
-  bg2: "/assets/scene-intro/background/bg 2.PNG",
-  bg3: "/assets/scene-intro/background/bg 3.PNG",
-  personOutline: "/assets/scene-intro/person-sitting/person outline.PNG",
-  person0: "/assets/scene-intro/person-sitting/person 0.PNG",
-  person1: "/assets/scene-intro/person-sitting/person 1.PNG",
-  person2: "/assets/scene-intro/person-sitting/person 2.PNG",
-  personHead: "/assets/scene-intro/person-sitting/person head.PNG",
-  speechBubbleOutline: "/assets/scene-intro/speech-bubble/outline.PNG",
-  speechBubbleFill: "/assets/scene-intro/speech-bubble/fill.PNG",
+  background: "/assets/scene-intro/background.PNG",
+
+  personSitting: "/assets/scene-intro/person-sitting.png",
+  personHead: "/assets/scene-intro/person head.PNG",
+  speechBubble: "/assets/scene-intro/speech-bubble.png",
   tree1: "/assets/scene-intro/trees/tree1.PNG",
   tree2: "/assets/scene-intro/trees/tree2.PNG",
   tree3: "/assets/scene-intro/trees/tree3.PNG",

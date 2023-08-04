@@ -1,1 +1,1 @@
-export type SubLayerKey = "outline" | "fill";
+export type SubLayerKey = "background" | "text";

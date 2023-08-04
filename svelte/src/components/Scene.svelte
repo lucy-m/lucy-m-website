@@ -11,22 +11,18 @@
     windowWidth = window.innerWidth;
   });
 
-  const canvasWidth = 960;
-  const canvasHeight = 540;
+  const canvasWidth = 1920;
+  const canvasHeight = 1080;
 </script>
 
-{#if windowWidth <= 960 + 40}
+{#if windowWidth <= canvasWidth + 40}
   <div class="item-wrapper">
     Please view this page on a wider screen. Sorry, but this page not display
     properly on mobile devices.
   </div>
 {/if}
 
-<div
-  class="canvas-wrapper"
-  style:width="{canvasWidth}px"
-  style:height="{canvasHeight}px"
->
+<div class="canvas-wrapper">
   {#await loadImages()}
     <div class="loading">
       <p>Loading</p>

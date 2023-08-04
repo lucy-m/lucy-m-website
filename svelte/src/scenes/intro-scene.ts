@@ -36,7 +36,7 @@ const makeTrees = (target: number, shape: Shape): SceneObject<LayerKey>[] => {
           {
             kind: "image",
             assetKey,
-            subLayer: "fill",
+            subLayer: "background",
           },
         ],
       });
@@ -48,11 +48,7 @@ const objects: SceneObject<LayerKey>[] = [
     position: PosFns.zero,
     layerKey: "bg",
     getLayers: () => [
-      { kind: "image", assetKey: "bgOutline", subLayer: "outline" },
-      { kind: "image", assetKey: "bg0", subLayer: "fill" },
-      { kind: "image", assetKey: "bg1", subLayer: "fill" },
-      { kind: "image", assetKey: "bg2", subLayer: "fill" },
-      { kind: "image", assetKey: "bg3", subLayer: "fill" },
+      { kind: "image", assetKey: "background", subLayer: "background" },
     ],
   }),
   ...makeTrees(20, [
@@ -72,19 +68,19 @@ const objects: SceneObject<LayerKey>[] = [
     layerKey: "person",
     position: PosFns.new(1260, 490),
     getLayers: () => [
-      { kind: "image", assetKey: "personOutline", subLayer: "outline" },
-      { kind: "image", assetKey: "person0", subLayer: "fill" },
-      { kind: "image", assetKey: "person1", subLayer: "fill" },
-      { kind: "image", assetKey: "person2", subLayer: "fill" },
-      { kind: "image", assetKey: "personHead", subLayer: "outline" },
+      { kind: "image", assetKey: "personSitting", subLayer: "background" },
+      { kind: "image", assetKey: "personHead", subLayer: "background" },
     ],
   }),
   makeSceneObject({
     layerKey: "speechBubble",
     position: PosFns.new(730, 260),
     getLayers: () => [
-      { kind: "image", assetKey: "speechBubbleOutline", subLayer: "outline" },
-      { kind: "image", assetKey: "speechBubbleFill", subLayer: "fill" },
+      {
+        kind: "image",
+        assetKey: "speechBubble",
+        subLayer: "background",
+      },
       {
         kind: "text",
         text: [
