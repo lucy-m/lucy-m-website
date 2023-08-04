@@ -17,37 +17,60 @@ export type ObjectLayerContent =
       position?: Position;
     };
 
-export type SceneObjectAction =
+export type SceneObjectAction<TState> =
   | {
       kind: "hide";
     }
   | { kind: "show" }
   | { kind: "moveBy"; by: Position }
-  | { kind: "moveTo"; to: Position };
+  | { kind: "moveTo"; to: Position }
+  | { kind: "updateState"; state: TState };
 
-export type SceneObject<TLayerKey extends string> = {
+type EmptyState = Record<string, never>;
+
+export type SceneObject<TLayerKey extends string, TState> = {
   id: string;
   position: Position;
   hidden?: boolean;
   layerKey: TLayerKey;
   getLayers: () => ObjectLayerContent[];
-  onInteract?: (current: SceneObject<string>) => SceneObjectAction | undefined;
-  onTick?: (current: SceneObject<string>) => SceneObjectAction | undefined;
+  state: TState;
+  onInteract?: (
+    current: SceneObject<string, TState>
+  ) => SceneObjectAction<TState>[];
+  onTick?: (
+    current: SceneObject<string, TState>
+  ) => SceneObjectAction<TState>[];
 };
 
+export type SceneObjectStateless<TLayerKey extends string> = SceneObject<
+  TLayerKey,
+  EmptyState
+>;
+
 export const makeSceneObject = <TLayerKey extends string>(
-  obj: Omit<SceneObject<TLayerKey>, "id">
-): SceneObject<TLayerKey> => {
+  obj: Omit<SceneObject<TLayerKey, EmptyState>, "id" | "state">
+): SceneObject<TLayerKey, EmptyState> => {
+  return {
+    id: uuid(),
+    state: {},
+    ...obj,
+  };
+};
+
+export const makeSceneObjectStateful = <TLayerKey extends string, TState>(
+  obj: Omit<SceneObject<TLayerKey, TState>, "id">
+): SceneObject<TLayerKey, TState> => {
   return {
     id: uuid(),
     ...obj,
   };
 };
 
-export const applySceneObjectAction = <TLayerKey extends string>(
-  obj: SceneObject<TLayerKey>,
-  action: SceneObjectAction
-): SceneObject<TLayerKey> => {
+export const applySceneObjectAction = <TLayerKey extends string, TState>(
+  obj: SceneObject<TLayerKey, TState>,
+  action: SceneObjectAction<TState>
+): SceneObject<TLayerKey, TState> => {
   switch (action.kind) {
     case "hide":
       return {
@@ -69,6 +92,12 @@ export const applySceneObjectAction = <TLayerKey extends string>(
       return {
         ...obj,
         position: action.to,
+      };
+    }
+    case "updateState": {
+      return {
+        ...obj,
+        state: action.state,
       };
     }
   }

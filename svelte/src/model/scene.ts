@@ -5,7 +5,7 @@ import {
 } from "./scene-object";
 
 export interface SceneType<TLayerKey extends string> {
-  objects: SceneObject<TLayerKey>[];
+  objects: SceneObject<TLayerKey, unknown>[];
   layerOrder: TLayerKey[];
 }
 
@@ -16,7 +16,7 @@ export const applySceneAction = <TLayerKey extends string>(
   action: SceneAction
 ): SceneType<TLayerKey> => {
   const objects = scene.objects.map((obj) => {
-    const objectAction: SceneObjectAction | undefined = (() => {
+    const objectActions: SceneObjectAction<unknown>[] | undefined = (() => {
       switch (action.kind) {
         case "interact":
           return obj.onInteract && obj.onInteract(obj);
@@ -25,11 +25,12 @@ export const applySceneAction = <TLayerKey extends string>(
       }
     })();
 
-    if (objectAction) {
-      return applySceneObjectAction(obj, objectAction);
-    } else {
-      return obj;
-    }
+    return (
+      objectActions?.reduce(
+        (acc, next) => applySceneObjectAction(acc, next),
+        obj
+      ) ?? obj
+    );
   });
 
   return { ...scene, objects };

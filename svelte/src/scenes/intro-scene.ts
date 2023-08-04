@@ -1,7 +1,9 @@
 import {
   PosFns,
   makeSceneObject,
+  makeSceneObjectStateful,
   type SceneObject,
+  type SceneObjectStateless,
   type SceneType,
 } from "../model";
 import type { AssetKey } from "../model/assets";
@@ -23,10 +25,13 @@ const randomTree = (): AssetKey => {
   }
 };
 
-const makeTrees = (target: number, shape: Shape): SceneObject<LayerKey>[] => {
+const makeTrees = (
+  target: number,
+  shape: Shape
+): SceneObjectStateless<LayerKey>[] => {
   return generatePointsInShape(target, shape)
     .sort((a, b) => a.y - b.y)
-    .map<SceneObject<LayerKey>>((position) => {
+    .map<SceneObjectStateless<LayerKey>>((position) => {
       const assetKey = randomTree();
 
       return makeSceneObject({
@@ -43,7 +48,7 @@ const makeTrees = (target: number, shape: Shape): SceneObject<LayerKey>[] => {
     });
 };
 
-const objects: SceneObject<LayerKey>[] = [
+const objects: SceneObject<LayerKey, any>[] = [
   makeSceneObject({
     position: PosFns.zero,
     layerKey: "bg",
@@ -94,14 +99,17 @@ const objects: SceneObject<LayerKey>[] = [
     hidden: true,
     onInteract: (current) =>
       current.hidden
-        ? {
-            kind: "show",
-          }
-        : { kind: "hide" },
+        ? [
+            {
+              kind: "show",
+            },
+          ]
+        : [{ kind: "hide" }],
   }),
-  makeSceneObject({
+  makeSceneObjectStateful<"bg", { up: boolean }>({
     layerKey: "bg",
     position: PosFns.new(50, 100),
+    state: { up: true },
     getLayers: () => [
       {
         kind: "image",
@@ -111,9 +119,14 @@ const objects: SceneObject<LayerKey>[] = [
     ],
     onTick: (current) => {
       if (current.position.x > 800) {
-        return { kind: "moveTo", to: PosFns.new(50, 100) };
+        return [
+          { kind: "moveTo", to: PosFns.new(50, 100) },
+          { kind: "updateState", state: { up: !current.state.up } },
+        ];
       } else {
-        return { kind: "moveBy", by: PosFns.new(10, 0) };
+        return [
+          { kind: "moveBy", by: PosFns.new(10, current.state.up ? -2 : 2) },
+        ];
       }
     },
   }),
