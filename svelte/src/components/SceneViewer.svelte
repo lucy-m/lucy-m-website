@@ -1,13 +1,15 @@
 <script lang="ts">
+  import { Subject, interval, map, merge } from "rxjs";
+
   import type { AssetKey } from "../model/assets";
 
-  import { type Subscription } from "rxjs";
   import { onDestroy, onMount } from "svelte";
   import {
     PosFns,
     applySceneAction,
     breakText,
     resolveScene,
+    type SceneAction,
     type SceneType,
   } from "../model";
 
@@ -56,8 +58,6 @@
     }
   };
 
-  let subscription: Subscription | undefined = undefined;
-
   onMount(() => {
     ctx = canvas.getContext("2d");
 
@@ -76,32 +76,25 @@
     }
   });
 
-  onDestroy(() => {
-    if (subscription) {
-      subscription.unsubscribe();
-    }
+  const interactSub = new Subject<void>();
+
+  const subscription = merge(
+    interval(30).pipe(map(() => ({ kind: "tick" } as SceneAction))),
+    interactSub.pipe(map(() => ({ kind: "interact" } as SceneAction)))
+  ).subscribe((action) => {
+    scene = applySceneAction(scene, action);
+    redrawCanvas();
   });
 
-  const onInteract = () => {
-    const newScene = scene.objects.reduce((acc, obj) => {
-      const action = obj.onInteract ? obj.onInteract(obj) : undefined;
-
-      if (action) {
-        return applySceneAction(acc, action, obj.id);
-      } else {
-        return acc;
-      }
-    }, scene);
-
-    scene = newScene;
-    redrawCanvas();
-  };
+  onDestroy(() => {
+    subscription?.unsubscribe();
+  });
 </script>
 
 <canvas
   width="{canvasWidth}px"
   height="{canvasHeight}px"
-  on:click={onInteract}
+  on:click={() => interactSub.next()}
   bind:this={canvas}
 />
 

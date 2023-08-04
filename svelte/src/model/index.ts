@@ -5,6 +5,7 @@ export * from "./observe-element-size";
 export * from "./position";
 export * from "./positioned-image";
 export * from "./scene";
+export * from "./scene-object";
 export * from "./shape";
 export * from "./spring-observable";
 export * from "./sub-layer-key";
