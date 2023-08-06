@@ -77,10 +77,10 @@
           position: 0,
           velocity: 0,
           properties: {
-            friction: 2.1,
+            friction: 3.6,
             precision: 0.1,
-            stiffness: 0.4,
-            weight: 0.1,
+            stiffness: 0.1,
+            weight: 0.04,
           },
         },
         events$

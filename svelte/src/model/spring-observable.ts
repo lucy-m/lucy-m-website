@@ -42,7 +42,7 @@ const makeSpringObservable =
       scan((current, next) => {
         switch (next.kind) {
           case "tick":
-            return springFns.tick(current, dt / 15);
+            return springFns.tick(current, dt / 25);
           case "set":
             return springFns.set(current, next.set);
           case "update":
