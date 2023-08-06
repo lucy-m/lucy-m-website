@@ -2,9 +2,8 @@ import { interval, map, merge, Observable, scan, startWith } from "rxjs";
 import {
   NumberSpringFns,
   PositionSpringFns,
-  setSpring,
   type Spring,
-  type SpringTickFn,
+  type SpringFns,
 } from "./spring";
 
 export type SpringEvent<T> =
@@ -15,9 +14,9 @@ export type SpringEvent<T> =
   | { kind: "update"; update: (current: Spring<T>) => Partial<Spring<T>> };
 
 const makeSpringObservable =
-  <T>(tick: SpringTickFn<T>) =>
+  <T>(springFns: SpringFns<T>) =>
   (
-    initial: Spring<T>,
+    initial: Parameters<SpringFns<T>["make"]>[0],
     events$: Observable<SpringEvent<T>>
   ): Observable<Spring<T>> => {
     const dt = 25;
@@ -31,18 +30,18 @@ const makeSpringObservable =
       scan((current, next) => {
         switch (next.kind) {
           case "tick":
-            return tick(current, 1);
+            return springFns.tick(current, 1);
           case "set":
-            return setSpring(current, next.set);
+            return springFns.set(current, next.set);
           case "update":
-            return setSpring(current, next.update(current));
+            return springFns.set(current, next.update(current));
         }
-      }, initial),
-      startWith(initial)
+      }, springFns.make(initial)),
+      startWith(springFns.make(initial))
     );
 
     return spring$;
   };
 
-export const makePositionSpring = makeSpringObservable(PositionSpringFns.tick);
-export const makeNumberSpring = makeSpringObservable(NumberSpringFns.tick);
+export const makePositionSpring = makeSpringObservable(PositionSpringFns);
+export const makeNumberSpring = makeSpringObservable(NumberSpringFns);

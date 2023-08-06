@@ -11,22 +11,36 @@ export interface Spring<T> {
   position: T;
   velocity: T;
   endPoint: T;
+  stationary: boolean;
   properties: SpringProperties;
 }
 
-const makeSpring = <T>(
-  position: T,
-  velocity: T,
-  endPoint: T,
-  properties: SpringProperties
-): Spring<T> => ({
-  position,
-  velocity,
-  endPoint,
-  properties,
-});
+const isStationary = <T>(
+  spring: {
+    position: T;
+    velocity: T;
+    endPoint: T;
+    properties: { precision: number };
+  },
+  distance: (a: T, b: T) => number,
+  zero: T
+): boolean => {
+  return (
+    distance(spring.position, spring.endPoint) <= spring.properties.precision &&
+    distance(spring.velocity, zero) <= spring.properties.precision
+  );
+};
 
-export type SpringTickFn<T> = (spring: Spring<T>, dt: number) => Spring<T>;
+type SpringMakeFn<T> = (spring: Omit<Spring<T>, "stationary">) => Spring<T>;
+
+const makeSpring =
+  <T>(distance: (a: T, b: T) => number, zero: T) =>
+  (spring: Omit<Spring<T>, "stationary">): Spring<T> => ({
+    ...spring,
+    stationary: isStationary(spring, distance, zero),
+  });
+
+type SpringTickFn<T> = (spring: Spring<T>, dt: number) => Spring<T>;
 
 export const makeTick =
   <T>(
@@ -37,21 +51,23 @@ export const makeTick =
   ): SpringTickFn<T> =>
   (spring: Spring<T>, t: number): Spring<T> => {
     const tickOne = (spring: Spring<T>, dt: number): Spring<T> => {
+      if (spring.stationary) {
+        return spring;
+      }
+
       const {
         position,
         velocity,
         endPoint,
-        properties: { stiffness, friction, weight, precision },
+        properties: { stiffness, friction, weight },
       } = spring;
 
-      if (
-        distance(position, endPoint) <= precision &&
-        distance(velocity, zero) <= precision
-      ) {
+      if (isStationary(spring, distance, zero)) {
         return {
           ...spring,
           position: endPoint,
           velocity: zero,
+          stationary: true,
         };
       }
 
@@ -79,36 +95,58 @@ export const makeTick =
     return tickOne(afterFullTicks, partialTick);
   };
 
-export const setSpring = <T>(
+type SpringSetFn<T> = (
   spring: Spring<T>,
   setValues: Partial<Spring<T>>
-): Spring<T> => ({
-  ...spring,
-  ...setValues,
-});
+) => Spring<T>;
+
+export const setSpring =
+  <T>(distance: (a: T, b: T) => number, zero: T) =>
+  (spring: Spring<T>, setValues: Partial<Spring<T>>): Spring<T> => {
+    const newSpring = {
+      ...spring,
+      ...setValues,
+    };
+
+    const stationary = isStationary(newSpring, distance, zero);
+
+    return {
+      ...newSpring,
+      stationary,
+    };
+  };
 
 export type NumberSpring = Spring<number>;
 
-export const NumberSpringFns = {
-  makeSpring: makeSpring<number>,
+const numberDistance = (a: number, b: number) => Math.abs(a - b);
+const numberZero = 0;
+
+export type SpringFns<T> = {
+  make: SpringMakeFn<T>;
+  tick: SpringTickFn<T>;
+  set: SpringSetFn<T>;
+};
+
+export const NumberSpringFns: SpringFns<number> = {
+  make: makeSpring<number>(numberDistance, numberZero),
   tick: makeTick<number>(
     (a, b) => a + b,
     (a, s) => a * s,
-    (a, b) => Math.abs(a - b),
-    0
+    numberDistance,
+    numberZero
   ),
-  set: setSpring<number>,
+  set: setSpring<number>(numberDistance, numberZero),
 };
 
 export type PositionSpring = Spring<Position>;
 
-export const PositionSpringFns = {
-  makeSpring: makeSpring<Position>,
+export const PositionSpringFns: SpringFns<Position> = {
+  make: makeSpring<Position>(PosFns.distance, PosFns.zero),
   tick: makeTick<Position>(
     PosFns.add,
     PosFns.scale,
     PosFns.distance,
     PosFns.zero
   ),
-  set: setSpring<Position>,
+  set: setSpring<Position>(PosFns.distance, PosFns.zero),
 };
