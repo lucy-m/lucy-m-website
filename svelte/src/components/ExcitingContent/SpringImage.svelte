@@ -47,8 +47,8 @@
       velocity: PosFns.zero,
       properties: {
         friction: 5.5,
-        stiffness: 0.9,
-        weight: 1,
+        stiffness: 0.2,
+        weight: 0.15,
         precision: 0.1,
       },
     },
@@ -69,9 +69,9 @@
       position: calculateBrightness(myIndex, showIndex),
       velocity: 0,
       properties: {
-        friction: 0.5,
-        stiffness: 0.05,
-        weight: 1,
+        friction: 4,
+        stiffness: 0.1,
+        weight: 0.05,
         precision: 0.1,
       },
     },

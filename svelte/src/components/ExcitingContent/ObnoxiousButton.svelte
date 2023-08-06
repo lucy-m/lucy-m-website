@@ -23,10 +23,10 @@
       position: 0,
       velocity: 0,
       properties: {
-        friction: 2.5,
-        precision: 0.5,
-        stiffness: 0.2,
-        weight: 1.5,
+        friction: 4.5,
+        precision: 0.1,
+        stiffness: 0.1,
+        weight: 0.3,
       },
     },
     rotateSpringSub.pipe(
@@ -51,8 +51,8 @@
       properties: {
         friction: 4,
         precision: 0.5,
-        stiffness: 1,
-        weight: 0.2,
+        stiffness: 0.3,
+        weight: 0.1,
       },
     },
     offsetSpringSub.pipe(

@@ -35,35 +35,48 @@ export const makeTick =
     distance: (a: T, b: T) => number,
     zero: T
   ): SpringTickFn<T> =>
-  (spring: Spring<T>, dt: number): Spring<T> => {
-    const {
-      position,
-      velocity,
-      endPoint,
-      properties: { stiffness, friction, weight, precision },
-    } = spring;
+  (spring: Spring<T>, t: number): Spring<T> => {
+    const tickOne = (spring: Spring<T>, dt: number): Spring<T> => {
+      const {
+        position,
+        velocity,
+        endPoint,
+        properties: { stiffness, friction, weight, precision },
+      } = spring;
 
-    if (
-      distance(position, endPoint) <= precision &&
-      distance(velocity, zero) <= precision
-    ) {
+      if (
+        distance(position, endPoint) <= precision &&
+        distance(velocity, zero) <= precision
+      ) {
+        return {
+          ...spring,
+          position: endPoint,
+          velocity: zero,
+        };
+      }
+
+      const d = add(position, scale(endPoint, -1));
+      const springAcc = scale(d, -stiffness / weight);
+      const frictionAcc = scale(velocity, -friction / weight);
+      const acc = scale(add(springAcc, frictionAcc), dt / 100);
+
       return {
         ...spring,
-        position: endPoint,
-        velocity: zero,
+        position: add(position, velocity),
+        velocity: add(velocity, acc),
       };
-    }
-
-    const d = add(position, scale(endPoint, -1));
-    const springAcc = scale(d, -stiffness / weight);
-    const frictionAcc = scale(velocity, -friction / weight);
-    const acc = scale(add(springAcc, frictionAcc), 1 / dt);
-
-    return {
-      ...spring,
-      position: add(position, velocity),
-      velocity: add(velocity, acc),
     };
+
+    const dt = 0.1;
+    const fullTicks = Math.floor(t / dt);
+    const partialTick = t - fullTicks * dt;
+
+    const afterFullTicks = Array.from({ length: fullTicks }).reduce<Spring<T>>(
+      (acc) => tickOne(acc, dt),
+      spring
+    );
+
+    return tickOne(afterFullTicks, partialTick);
   };
 
 export const setSpring = <T>(

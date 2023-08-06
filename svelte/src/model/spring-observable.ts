@@ -20,7 +20,7 @@ const makeSpringObservable =
     initial: Spring<T>,
     events$: Observable<SpringEvent<T>>
   ): Observable<Spring<T>> => {
-    const dt = 16;
+    const dt = 25;
 
     const tick$ = interval(dt);
 
@@ -31,7 +31,7 @@ const makeSpringObservable =
       scan((current, next) => {
         switch (next.kind) {
           case "tick":
-            return tick(current, dt);
+            return tick(current, 1);
           case "set":
             return setSpring(current, next.set);
           case "update":
