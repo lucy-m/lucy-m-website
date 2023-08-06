@@ -18,9 +18,6 @@
   export let scene: SceneType<TLayerKey>;
   export let images: Record<AssetKey, HTMLImageElement>;
 
-  export let canvasWidth: number;
-  export let canvasHeight: number;
-
   const imageWidth = 1920;
   const imageHeight = 1080;
 
@@ -31,7 +28,7 @@
 
   const redrawCanvas = () => {
     if (ctx) {
-      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      ctx.clearRect(0, 0, imageWidth, imageHeight);
 
       const drawLayers = resolveScene(scene, images);
 
@@ -62,18 +59,10 @@
     ctx = canvas.getContext("2d");
 
     if (ctx) {
-      ctx.setTransform(
-        canvasWidth / imageWidth,
-        0,
-        0,
-        canvasHeight / imageHeight,
-        0,
-        0
-      );
       ctx.font = "42px Quicksand";
-
-      redrawCanvas();
     }
+
+    redrawCanvas();
   });
 
   const interactSub = new Subject<void>();
@@ -92,8 +81,8 @@
 </script>
 
 <canvas
-  width="{canvasWidth}px"
-  height="{canvasHeight}px"
+  width="{imageWidth}px"
+  height="{imageHeight}px"
   on:click={() => interactSub.next()}
   bind:this={canvas}
 />

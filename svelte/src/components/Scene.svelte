@@ -10,15 +10,12 @@
   window.addEventListener("resize", () => {
     windowWidth = window.innerWidth;
   });
-
-  const canvasWidth = 1920;
-  const canvasHeight = 1080;
 </script>
 
 {#if windowWidth <= 800}
   <div class="item-wrapper">
-    Please view this page on a wider screen. Sorry, but this page may display
-    properly on mobile devices.
+    Please view this page on a wider screen. Sorry, but this page may not
+    display properly on mobile devices.
   </div>
 {/if}
 
@@ -31,7 +28,7 @@
       <p>.</p>
     </div>
   {:then images}
-    <SceneViewer {scene} {images} {canvasHeight} {canvasWidth} />
+    <SceneViewer {scene} {images} />
   {/await}
 </div>
 
