@@ -1,4 +1,14 @@
-import { interval, map, merge, Observable, scan, startWith } from "rxjs";
+import {
+  distinctUntilChanged,
+  exhaustMap,
+  from,
+  interval,
+  map,
+  merge,
+  Observable,
+  scan,
+  startWith,
+} from "rxjs";
 import {
   NumberSpringFns,
   PositionSpringFns,
@@ -19,28 +29,39 @@ const makeSpringObservable =
     initial: Parameters<SpringFns<T>["make"]>[0],
     events$: Observable<SpringEvent<T>>
   ): Observable<Spring<T>> => {
-    const dt = 25;
+    const dt = 30;
 
     const tick$ = interval(dt);
 
-    const spring$ = merge(
+    const initialSpring = springFns.make(initial);
+
+    const springUpdates$ = merge(
       events$,
       tick$.pipe(map(() => ({ kind: "tick" } as const)))
     ).pipe(
       scan((current, next) => {
         switch (next.kind) {
           case "tick":
-            return springFns.tick(current, 1);
+            return springFns.tick(current, dt / 15);
           case "set":
             return springFns.set(current, next.set);
           case "update":
             return springFns.set(current, next.update(current));
         }
-      }, springFns.make(initial)),
-      startWith(springFns.make(initial))
+      }, initialSpring),
+      distinctUntilChanged(),
+      exhaustMap((newSpring: Spring<T>) => {
+        const animationFramePromise = new Promise<void>((resolve) => {
+          window.requestAnimationFrame(() => {
+            resolve();
+          });
+        });
+
+        return from(animationFramePromise).pipe(map(() => newSpring));
+      })
     );
 
-    return spring$;
+    return springUpdates$.pipe(startWith(initialSpring));
   };
 
 export const makePositionSpring = makeSpringObservable(PositionSpringFns);
