@@ -1,17 +1,24 @@
 import {
   PosFns,
+  generatePointsInShape,
   makeSceneObject,
-  makeSceneObjectStateful,
   type SceneObject,
   type SceneObjectStateless,
   type SceneType,
+  type Shape,
 } from "../model";
 import type { AssetKey } from "../model/assets";
-import { generatePointsInShape, type Shape } from "../model/shape";
+import { makeCruisingBird } from "./cruising-bird";
 
-type LayerKey = "bg" | "person" | "speechBubble" | "trees";
+type LayerKey = "bg" | "person" | "speechBubble" | "trees" | "bird";
 
-const layerOrder: LayerKey[] = ["bg", "trees", "person", "speechBubble"];
+const layerOrder: LayerKey[] = [
+  "bg",
+  "trees",
+  "bird",
+  "person",
+  "speechBubble",
+];
 
 const randomTree = (): AssetKey => {
   const r = Math.random() * 3;
@@ -56,19 +63,19 @@ const objects: SceneObject<LayerKey, any>[] = [
       { kind: "image", assetKey: "background", subLayer: "background" },
     ],
   }),
-  // ...makeTrees(20, [
-  //   PosFns.new(0, 300),
-  //   PosFns.new(500, 250),
-  //   PosFns.new(750, 350),
-  //   PosFns.new(100, 500),
-  // ]),
-  // ...makeTrees(20, [
-  //   PosFns.new(881, 231),
-  //   PosFns.new(1569, 196),
-  //   PosFns.new(1837, 209),
-  //   PosFns.new(1829, 361),
-  //   PosFns.new(1309, 333),
-  // ]),
+  ...makeTrees(20, [
+    PosFns.new(0, 300),
+    PosFns.new(500, 250),
+    PosFns.new(750, 350),
+    PosFns.new(100, 500),
+  ]),
+  ...makeTrees(20, [
+    PosFns.new(881, 231),
+    PosFns.new(1569, 196),
+    PosFns.new(1837, 209),
+    PosFns.new(1829, 361),
+    PosFns.new(1309, 333),
+  ]),
   makeSceneObject({
     layerKey: "person",
     position: PosFns.new(1260, 490),
@@ -106,30 +113,7 @@ const objects: SceneObject<LayerKey, any>[] = [
           ]
         : [{ kind: "hide" }],
   }),
-  makeSceneObjectStateful<"bg", { up: boolean }>({
-    layerKey: "bg",
-    position: PosFns.new(50, 100),
-    state: { up: true },
-    getLayers: () => [
-      {
-        kind: "image",
-        assetKey: "birdFlapUp",
-        subLayer: "background",
-      },
-    ],
-    onTick: (current) => {
-      if (current.position.x > 800) {
-        return [
-          { kind: "moveTo", to: PosFns.new(50, 100) },
-          { kind: "updateState", state: { up: !current.state.up } },
-        ];
-      } else {
-        return [
-          { kind: "moveBy", by: PosFns.new(10, current.state.up ? -2 : 2) },
-        ];
-      }
-    },
-  }),
+  makeCruisingBird("bird", PosFns.new(-160, 40), [10, 160]),
 ];
 
 export const introScene: SceneType<LayerKey> = {
