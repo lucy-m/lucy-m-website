@@ -1,7 +1,5 @@
 import {
   distinctUntilChanged,
-  exhaustMap,
-  from,
   interval,
   map,
   merge,
@@ -9,6 +7,7 @@ import {
   scan,
   startWith,
 } from "rxjs";
+import { rafThrottle } from "./raf-throttle";
 import {
   NumberSpringFns,
   PositionSpringFns,
@@ -50,15 +49,7 @@ const makeSpringObservable =
         }
       }, initialSpring),
       distinctUntilChanged(),
-      exhaustMap((newSpring: Spring<T>) => {
-        const animationFramePromise = new Promise<void>((resolve) => {
-          window.requestAnimationFrame(() => {
-            resolve();
-          });
-        });
-
-        return from(animationFramePromise).pipe(map(() => newSpring));
-      })
+      rafThrottle()
     );
 
     return springUpdates$.pipe(startWith(initialSpring));

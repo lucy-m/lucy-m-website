@@ -27,32 +27,34 @@
   let ctx: CanvasRenderingContext2D | null;
 
   const redrawCanvas = () => {
-    if (ctx) {
-      ctx.clearRect(0, 0, imageWidth, imageHeight);
+    window.requestAnimationFrame(() => {
+      if (ctx) {
+        ctx.clearRect(0, 0, imageWidth, imageHeight);
 
-      const drawLayers = resolveScene(scene, images);
+        const drawLayers = resolveScene(scene, images);
 
-      drawLayers.forEach((layer) => {
-        const content = layer.content;
+        drawLayers.forEach((layer) => {
+          const content = layer.content;
 
-        if (content.kind === "image") {
-          ctx?.drawImage(content.image, layer.position.x, layer.position.y);
-        } else {
-          const measureText = (s: string) => ctx?.measureText(s)?.width ?? 0;
-          const lines = content.text.flatMap((t) =>
-            breakText(t, content.maxWidth, measureText)
-          );
-
-          lines.forEach((line, index) => {
-            const position = PosFns.add(
-              layer.position,
-              PosFns.new(0, index * lineHeight)
+          if (content.kind === "image") {
+            ctx?.drawImage(content.image, layer.position.x, layer.position.y);
+          } else {
+            const measureText = (s: string) => ctx?.measureText(s)?.width ?? 0;
+            const lines = content.text.flatMap((t) =>
+              breakText(t, content.maxWidth, measureText)
             );
-            ctx?.fillText(line, position.x, position.y);
-          });
-        }
-      });
-    }
+
+            lines.forEach((line, index) => {
+              const position = PosFns.add(
+                layer.position,
+                PosFns.new(0, index * lineHeight)
+              );
+              ctx?.fillText(line, position.x, position.y);
+            });
+          }
+        });
+      }
+    });
   };
 
   onMount(() => {
