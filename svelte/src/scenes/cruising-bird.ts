@@ -10,6 +10,7 @@ import {
 interface CruisingBirdState {
   flapUp: boolean;
   flapTimer: number;
+  xPosition: NumberSpring;
   yPosition: NumberSpring;
 }
 
@@ -20,7 +21,8 @@ export const makeCruisingBird = <TLayerKey extends string>(
 ): SceneObject<TLayerKey, unknown> => {
   const rangeMin = Math.min(rangeY[0], rangeY[1]);
   const rangeRange = Math.abs(rangeY[0] - rangeY[1]);
-  const makeNewEndPoint = () => Math.random() * rangeRange + rangeMin;
+  const makeNewYEndPoint = () => Math.random() * rangeRange + rangeMin;
+  const makeNewXEndPoint = () => Math.random() * 1 + 1.5;
 
   return makeSceneObjectStateful<TLayerKey, CruisingBirdState>({
     layerKey,
@@ -29,7 +31,7 @@ export const makeCruisingBird = <TLayerKey extends string>(
       flapUp: true,
       flapTimer: 0,
       yPosition: NumberSpringFns.make({
-        endPoint: makeNewEndPoint(),
+        endPoint: makeNewYEndPoint(),
         position: initial.y,
         velocity: 0,
         properties: {
@@ -37,6 +39,17 @@ export const makeCruisingBird = <TLayerKey extends string>(
           precision: 1,
           stiffness: 0.1,
           weight: 0.05,
+        },
+      }),
+      xPosition: NumberSpringFns.make({
+        endPoint: makeNewXEndPoint(),
+        position: 2,
+        velocity: 0,
+        properties: {
+          friction: 30,
+          precision: 0.1,
+          stiffness: 0.1,
+          weight: 0.1,
         },
       }),
     },
@@ -54,7 +67,7 @@ export const makeCruisingBird = <TLayerKey extends string>(
           state: {
             yPosition: NumberSpringFns.set(current.state.yPosition, {
               velocity: current.state.yPosition.velocity - 14,
-              endPoint: makeNewEndPoint(),
+              endPoint: makeNewYEndPoint(),
             }),
           },
         },
@@ -65,15 +78,21 @@ export const makeCruisingBird = <TLayerKey extends string>(
         current.position.x > 2000
           ? PosFns.new(-180, current.position.y)
           : PosFns.new(
-              current.position.x + 2,
+              current.position.x + current.state.xPosition.position,
               current.state.yPosition.position
             );
 
-      const newSpring = current.state.yPosition.stationary
+      const newYPositionSpring = current.state.yPosition.stationary
         ? NumberSpringFns.set(current.state.yPosition, {
-            endPoint: makeNewEndPoint(),
+            endPoint: makeNewYEndPoint(),
           })
         : NumberSpringFns.tick(current.state.yPosition, 0.1);
+
+      const newXPositionSpring = current.state.xPosition.stationary
+        ? NumberSpringFns.set(current.state.xPosition, {
+            endPoint: makeNewXEndPoint(),
+          })
+        : NumberSpringFns.tick(current.state.xPosition, 0.1);
 
       const flapState: Partial<CruisingBirdState> = (() => {
         if (current.state.yPosition.velocity > -0.2) {
@@ -93,7 +112,10 @@ export const makeCruisingBird = <TLayerKey extends string>(
         { kind: "moveTo", to: newPosition },
         {
           kind: "updateState",
-          state: { yPosition: newSpring },
+          state: {
+            yPosition: newYPositionSpring,
+            xPosition: newXPositionSpring,
+          },
         },
         {
           kind: "updateState",
