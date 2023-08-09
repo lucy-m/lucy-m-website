@@ -1,3 +1,4 @@
+import type { Position } from "./position";
 import {
   applySceneObjectAction,
   type SceneObject,
@@ -9,7 +10,9 @@ export interface SceneType<TLayerKey extends string> {
   layerOrder: TLayerKey[];
 }
 
-export type SceneAction = { kind: "interact" } | { kind: "tick" };
+export type SceneAction =
+  | { kind: "interact"; position: Position }
+  | { kind: "tick" };
 
 export const applySceneAction = <TLayerKey extends string>(
   scene: SceneType<TLayerKey>,

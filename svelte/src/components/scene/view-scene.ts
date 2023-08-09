@@ -14,6 +14,7 @@ import {
   rafThrottle,
   resolveScene,
   type AssetKey,
+  type Position,
   type SceneAction,
   type SceneType,
 } from "../../model";
@@ -65,11 +66,16 @@ export const viewScene = (
 ): SvelteActionReturnType => {
   const { initialScene, images } = args;
 
-  const interactSub = new Subject<void>();
+  const interactSub = new Subject<Position>();
 
   canvas.width = imageWidth;
   canvas.height = imageHeight;
-  canvas.onclick = () => interactSub.next();
+  canvas.onclick = (e) => {
+    const x = e.offsetX * (canvas.width / canvas.clientWidth);
+    const y = e.offsetY * (canvas.height / canvas.clientHeight);
+
+    interactSub.next({ x, y });
+  };
 
   const ctx = canvas.getContext("2d");
 
@@ -80,7 +86,12 @@ export const viewScene = (
 
     subscription = merge(
       interval(30).pipe(map(() => ({ kind: "tick" } as SceneAction))),
-      interactSub.pipe(map(() => ({ kind: "interact" } as SceneAction)))
+      interactSub.pipe(
+        map(
+          (position: Position) =>
+            ({ kind: "interact", position } as SceneAction)
+        )
+      )
     )
       .pipe(
         scan((scene, action) => applySceneAction(scene, action), initialScene),
