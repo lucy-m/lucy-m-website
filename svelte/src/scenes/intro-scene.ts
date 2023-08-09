@@ -55,6 +55,29 @@ const makeTrees = (
     });
 };
 
+const speechBubble = makeSceneObject({
+  layerKey: "speechBubble",
+  position: PosFns.new(730, 260),
+  getLayers: () => [
+    {
+      kind: "image",
+      assetKey: "speechBubble",
+      subLayer: "background",
+    },
+    {
+      kind: "text",
+      text: [
+        "Hello! Thank you for visiting my little corner of the world.",
+        "There's not much to see here yet but I'm working on it (promise).",
+      ],
+      position: PosFns.new(80, 90),
+      maxWidth: 430,
+    },
+  ],
+  hidden: true,
+  onInteract: () => [{ kind: "hide" }],
+});
+
 const objects: SceneObject<LayerKey, any>[] = [
   makeSceneObject({
     position: PosFns.zero,
@@ -83,36 +106,9 @@ const objects: SceneObject<LayerKey, any>[] = [
       { kind: "image", assetKey: "personSitting", subLayer: "background" },
       { kind: "image", assetKey: "personHead", subLayer: "background" },
     ],
+    onInteract: () => [{ kind: "show", target: speechBubble.id }],
   }),
-  makeSceneObject({
-    layerKey: "speechBubble",
-    position: PosFns.new(730, 260),
-    getLayers: () => [
-      {
-        kind: "image",
-        assetKey: "speechBubble",
-        subLayer: "background",
-      },
-      {
-        kind: "text",
-        text: [
-          "Hello! Thank you for visiting my little corner of the world.",
-          "There's not much to see here yet but I'm working on it (promise).",
-        ],
-        position: PosFns.new(80, 90),
-        maxWidth: 430,
-      },
-    ],
-    hidden: true,
-    onInteract: (current) =>
-      current.hidden
-        ? [
-            {
-              kind: "show",
-            },
-          ]
-        : [{ kind: "hide" }],
-  }),
+  speechBubble,
   makeCruisingBird("bird", PosFns.new(-160, 40), [10, 180]),
   makeCruisingBird("bird", PosFns.new(-870, 40), [18, 188]),
 ];

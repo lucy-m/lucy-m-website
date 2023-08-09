@@ -17,14 +17,15 @@ export type ObjectLayerContent =
       position?: Position;
     };
 
-export type SceneObjectAction<TState> =
+export type SceneObjectAction<TState> = (
   | {
       kind: "hide";
     }
   | { kind: "show" }
   | { kind: "moveBy"; by: Position }
   | { kind: "moveTo"; to: Position }
-  | { kind: "updateState"; state: Partial<TState> };
+  | { kind: "updateState"; state: Partial<TState> }
+) & { target?: string };
 
 type EmptyState = Record<string, never>;
 

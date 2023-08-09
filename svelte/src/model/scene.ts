@@ -18,25 +18,49 @@ export type SceneAction =
   | { kind: "interact"; position: Position }
   | { kind: "tick" };
 
+const applySceneObjectActions = <TLayerKey extends string>(
+  scene: SceneType<TLayerKey>,
+  objectActions: SceneObjectAction<unknown>[],
+  interactObjectId: string
+): SceneType<TLayerKey> => {
+  const byId = objectActions.reduce<
+    Record<string, SceneObjectAction<unknown>[] | undefined>
+  >((acc, next) => {
+    const target = next.target ?? interactObjectId;
+
+    return { ...acc, [target]: [...(acc[target] ?? []), next] };
+  }, {});
+
+  const newObjects = scene.objects.map((obj) => {
+    const myActions = byId[obj.id];
+
+    return (
+      myActions?.reduce(
+        (acc, next) => applySceneObjectAction(acc, next),
+        obj
+      ) ?? obj
+    );
+  });
+
+  return { ...scene, objects: newObjects };
+};
+
 export const applySceneAction = <TLayerKey extends string>(
   scene: SceneType<TLayerKey>,
   images: Record<AssetKey, HTMLImageElement>,
   action: SceneAction
 ): SceneType<TLayerKey> => {
   if (action.kind === "tick") {
-    const objects = scene.objects.map((obj) => {
+    return scene.objects.reduce((acc, obj) => {
       const objectActions: SceneObjectAction<unknown>[] | undefined =
         obj.onTick && obj.onTick(obj);
 
-      return (
-        objectActions?.reduce(
-          (acc, next) => applySceneObjectAction(acc, next),
-          obj
-        ) ?? obj
-      );
-    });
-
-    return { ...scene, objects };
+      if (!objectActions) {
+        return acc;
+      } else {
+        return applySceneObjectActions(acc, objectActions, obj.id);
+      }
+    }, scene);
   } else {
     const objectsInOrder = getObjectsInOrder(
       scene.objects.filter((obj) => obj.onInteract),
@@ -61,16 +85,10 @@ export const applySceneAction = <TLayerKey extends string>(
     const objectActions =
       interactObject.onInteract && interactObject.onInteract(interactObject);
 
-    const newObject =
-      objectActions?.reduce(
-        (acc, next) => applySceneObjectAction(acc, next),
-        interactObject
-      ) ?? interactObject;
-
-    const newObjects = scene.objects.map((obj) =>
-      obj.id === newObject.id ? newObject : obj
-    );
-
-    return { ...scene, objects: newObjects };
+    if (!objectActions) {
+      return scene;
+    } else {
+      return applySceneObjectActions(scene, objectActions, interactObject.id);
+    }
   }
 };
