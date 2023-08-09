@@ -142,3 +142,31 @@ export const getBoundingBox = (
     return { topLeft, bottomRight };
   }
 };
+
+/** Gets objects in order, from top to bottom */
+export const getObjectsInOrder = <TLayerKey extends string>(
+  objects: SceneObject<TLayerKey, unknown>[],
+  layerOrder: TLayerKey[],
+  order: "top-to-bottom" | "bottom-to-top"
+): SceneObject<TLayerKey, unknown>[] => {
+  const byLayer = objects.reduce<
+    Partial<Record<TLayerKey, SceneObject<TLayerKey, unknown>[]>>
+  >(
+    (acc, next) => ({
+      ...acc,
+      [next.layerKey]: [...(acc[next.layerKey] ?? []), next],
+    }),
+    {}
+  );
+
+  const bottomToTop = layerOrder.reduce<SceneObject<TLayerKey, unknown>[]>(
+    (acc, layer) => [...acc, ...(byLayer[layer] ?? [])],
+    []
+  );
+
+  if (order === "bottom-to-top") {
+    return bottomToTop;
+  } else {
+    return bottomToTop.reverse();
+  }
+};

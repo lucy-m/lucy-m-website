@@ -47,6 +47,19 @@ export const makeCruisingBird = <TLayerKey extends string>(
         subLayer: "background",
       },
     ],
+    onInteract: (current) => {
+      return [
+        {
+          kind: "updateState",
+          state: {
+            yPosition: NumberSpringFns.set(current.state.yPosition, {
+              velocity: current.state.yPosition.velocity - 14,
+              endPoint: makeNewEndPoint(),
+            }),
+          },
+        },
+      ];
+    },
     onTick: (current) => {
       const newPosition =
         current.position.x > 2000
@@ -71,7 +84,8 @@ export const makeCruisingBird = <TLayerKey extends string>(
           ? { flapUp: !current.state.flapUp, flapTimer: 0 }
           : {
               flapTimer:
-                current.state.flapTimer + -current.state.yPosition.velocity,
+                current.state.flapTimer +
+                Math.min(Math.abs(current.state.yPosition.velocity), 2),
             };
       })();
 
