@@ -9,6 +9,7 @@ import {
 
 interface CruisingBirdState {
   flapUp: boolean;
+  flapTimer: number;
   yPosition: NumberSpring;
 }
 
@@ -26,13 +27,14 @@ export const makeCruisingBird = <TLayerKey extends string>(
     position: PosFns.new(initial.x, initial.y),
     state: {
       flapUp: true,
+      flapTimer: 0,
       yPosition: NumberSpringFns.make({
         endPoint: makeNewEndPoint(),
         position: initial.y,
         velocity: 0,
         properties: {
           friction: 8,
-          precision: 0.1,
+          precision: 1,
           stiffness: 0.1,
           weight: 0.05,
         },
@@ -60,11 +62,28 @@ export const makeCruisingBird = <TLayerKey extends string>(
           })
         : NumberSpringFns.tick(current.state.yPosition, 0.1);
 
+      const flapState: Partial<CruisingBirdState> = (() => {
+        if (current.state.yPosition.velocity > -0.2) {
+          return { flapUp: true };
+        }
+
+        return current.state.flapTimer >= 5
+          ? { flapUp: !current.state.flapUp, flapTimer: 0 }
+          : {
+              flapTimer:
+                current.state.flapTimer + -current.state.yPosition.velocity,
+            };
+      })();
+
       return [
         { kind: "moveTo", to: newPosition },
         {
           kind: "updateState",
-          state: { yPosition: newSpring, flapUp: !current.state.flapUp },
+          state: { yPosition: newSpring },
+        },
+        {
+          kind: "updateState",
+          state: flapState,
         },
       ];
     },

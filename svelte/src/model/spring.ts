@@ -55,7 +55,7 @@ export const makeTick =
   ): SpringTickFn<T> =>
   (spring: Spring<T>, t: number): Spring<T> => {
     const tickOne = (spring: Spring<T>, dt: number): Spring<T> => {
-      if (spring.stationary) {
+      if (spring.stationary || dt === 0) {
         return spring;
       }
 
@@ -68,22 +68,25 @@ export const makeTick =
 
       if (isStationary(spring, distance, zero)) {
         return {
-          ...spring,
+          endPoint: spring.endPoint,
           position: endPoint,
           velocity: zero,
           stationary: true,
+          properties: spring.properties,
         };
       }
 
       const d = add(position, scale(endPoint, -1));
       const springAcc = scale(d, -stiffness / weight);
       const frictionAcc = scale(velocity, -friction / weight);
-      const acc = scale(add(springAcc, frictionAcc), dt / 100);
+      const acceleration = scale(add(springAcc, frictionAcc), dt / 100);
 
       return {
-        ...spring,
         position: add(position, velocity),
-        velocity: add(velocity, acc),
+        velocity: add(velocity, acceleration),
+        endPoint: spring.endPoint,
+        stationary: false,
+        properties: spring.properties,
       };
     };
 
