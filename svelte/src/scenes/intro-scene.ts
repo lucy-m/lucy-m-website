@@ -113,7 +113,7 @@ const objects: SceneObject<LayerKey, any>[] = [
           ]
         : [{ kind: "hide" }],
   }),
-  makeCruisingBird("bird", PosFns.new(-160, 40), [10, 160]),
+  makeCruisingBird("bird", PosFns.new(-160, 40), [10, 180]),
 ];
 
 export const introScene: SceneType<LayerKey> = {

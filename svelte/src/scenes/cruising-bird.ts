@@ -7,6 +7,12 @@ import {
   type SceneObject,
 } from "../model";
 
+interface CruisingBirdState {
+  flapUp: boolean;
+  flapTimer: number;
+  yPosition: NumberSpring;
+}
+
 export const makeCruisingBird = <TLayerKey extends string>(
   layerKey: TLayerKey,
   initial: Position,
@@ -16,28 +22,28 @@ export const makeCruisingBird = <TLayerKey extends string>(
   const rangeRange = Math.abs(rangeY[0] - rangeY[1]);
   const makeNewEndPoint = () => Math.random() * rangeRange + rangeMin;
 
-  return makeSceneObjectStateful<TLayerKey, { yPosition: NumberSpring }>({
+  return makeSceneObjectStateful<TLayerKey, CruisingBirdState>({
     layerKey,
     position: PosFns.new(initial.x, initial.y),
-    state: (() => {
-      const yPosition = NumberSpringFns.make({
+    state: {
+      flapUp: true,
+      flapTimer: 0,
+      yPosition: NumberSpringFns.make({
         endPoint: makeNewEndPoint(),
         position: initial.y,
         velocity: 0,
         properties: {
           friction: 8,
-          precision: 0.1,
+          precision: 1,
           stiffness: 0.1,
           weight: 0.05,
         },
-      });
-
-      return { yPosition };
-    })(),
-    getLayers: () => [
+      }),
+    },
+    getLayers: (current) => [
       {
         kind: "image",
-        assetKey: "birdFlapUp",
+        assetKey: current.state.flapUp ? "birdFlapUp" : "birdFlapDown",
         subLayer: "background",
       },
     ],
@@ -56,9 +62,29 @@ export const makeCruisingBird = <TLayerKey extends string>(
           })
         : NumberSpringFns.tick(current.state.yPosition, 0.1);
 
+      const flapState: Partial<CruisingBirdState> = (() => {
+        if (current.state.yPosition.velocity > -0.2) {
+          return { flapUp: true };
+        }
+
+        return current.state.flapTimer >= 5
+          ? { flapUp: !current.state.flapUp, flapTimer: 0 }
+          : {
+              flapTimer:
+                current.state.flapTimer + -current.state.yPosition.velocity,
+            };
+      })();
+
       return [
         { kind: "moveTo", to: newPosition },
-        { kind: "updateState", state: { yPosition: newSpring } },
+        {
+          kind: "updateState",
+          state: { yPosition: newSpring },
+        },
+        {
+          kind: "updateState",
+          state: flapState,
+        },
       ];
     },
   });

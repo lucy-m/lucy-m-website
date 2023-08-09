@@ -24,7 +24,7 @@ export type SceneObjectAction<TState> =
   | { kind: "show" }
   | { kind: "moveBy"; by: Position }
   | { kind: "moveTo"; to: Position }
-  | { kind: "updateState"; state: TState };
+  | { kind: "updateState"; state: Partial<TState> };
 
 type EmptyState = Record<string, never>;
 
@@ -33,8 +33,8 @@ export type SceneObject<TLayerKey extends string, TState> = {
   position: Position;
   hidden?: boolean;
   layerKey: TLayerKey;
-  getLayers: () => ObjectLayerContent[];
   state: TState;
+  getLayers: (current: SceneObject<string, TState>) => ObjectLayerContent[];
   onInteract?: (
     current: SceneObject<string, TState>
   ) => SceneObjectAction<TState>[];
@@ -97,7 +97,7 @@ export const applySceneObjectAction = <TLayerKey extends string, TState>(
     case "updateState": {
       return {
         ...obj,
-        state: action.state,
+        state: { ...obj.state, ...action.state },
       };
     }
   }
