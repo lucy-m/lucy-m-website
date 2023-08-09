@@ -11,6 +11,10 @@ export interface Spring<T> {
   position: T;
   velocity: T;
   endPoint: T;
+  /**
+   * Determines whether a spring will be animated.
+   * Set to false when animation is complete.
+   */
   stationary: boolean;
   properties: SpringProperties;
 }

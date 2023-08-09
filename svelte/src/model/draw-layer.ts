@@ -71,7 +71,7 @@ export const resolveScene = <TLayerKey extends string>(
     .filter((obj) => !obj.hidden)
     .flatMap((obj) => {
       return obj
-        .getLayers()
+        .getLayers(obj)
         .map<[TLayerKey, SubLayerKey, DrawLayer]>((objectLayerContent) => {
           return [
             obj.layerKey,

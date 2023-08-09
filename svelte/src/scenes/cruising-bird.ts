@@ -7,6 +7,11 @@ import {
   type SceneObject,
 } from "../model";
 
+interface CruisingBirdState {
+  flapUp: boolean;
+  yPosition: NumberSpring;
+}
+
 export const makeCruisingBird = <TLayerKey extends string>(
   layerKey: TLayerKey,
   initial: Position,
@@ -16,11 +21,12 @@ export const makeCruisingBird = <TLayerKey extends string>(
   const rangeRange = Math.abs(rangeY[0] - rangeY[1]);
   const makeNewEndPoint = () => Math.random() * rangeRange + rangeMin;
 
-  return makeSceneObjectStateful<TLayerKey, { yPosition: NumberSpring }>({
+  return makeSceneObjectStateful<TLayerKey, CruisingBirdState>({
     layerKey,
     position: PosFns.new(initial.x, initial.y),
-    state: (() => {
-      const yPosition = NumberSpringFns.make({
+    state: {
+      flapUp: true,
+      yPosition: NumberSpringFns.make({
         endPoint: makeNewEndPoint(),
         position: initial.y,
         velocity: 0,
@@ -30,14 +36,12 @@ export const makeCruisingBird = <TLayerKey extends string>(
           stiffness: 0.1,
           weight: 0.05,
         },
-      });
-
-      return { yPosition };
-    })(),
-    getLayers: () => [
+      }),
+    },
+    getLayers: (current) => [
       {
         kind: "image",
-        assetKey: "birdFlapUp",
+        assetKey: current.state.flapUp ? "birdFlapUp" : "birdFlapDown",
         subLayer: "background",
       },
     ],
@@ -58,7 +62,10 @@ export const makeCruisingBird = <TLayerKey extends string>(
 
       return [
         { kind: "moveTo", to: newPosition },
-        { kind: "updateState", state: { yPosition: newSpring } },
+        {
+          kind: "updateState",
+          state: { yPosition: newSpring, flapUp: !current.state.flapUp },
+        },
       ];
     },
   });
