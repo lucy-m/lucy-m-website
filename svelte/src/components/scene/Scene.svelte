@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { type SceneType } from "../model";
-  import { loadImages } from "../model/assets";
+  import { type SceneType } from "../../model";
+  import { loadImages } from "../../model/assets";
   import SceneViewer from "./SceneViewer.svelte";
 
   export let scene: SceneType<string>;
