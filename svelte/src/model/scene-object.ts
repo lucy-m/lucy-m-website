@@ -131,7 +131,7 @@ export const applySceneObjectAction = <TLayerKey extends string, TState>(
 /**
  * Gets the bounding box of the object in world co-ords.
  */
-export const getBoundingBox = (
+export const getObjectBoundingBox = (
   obj: SceneObject<string, unknown>,
   images: Record<AssetKey, HTMLImageElement>
 ): { topLeft: Position; bottomRight: Position } => {

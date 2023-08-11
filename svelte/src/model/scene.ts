@@ -4,7 +4,7 @@ import type { AssetKey } from "./assets";
 import type { Position } from "./position";
 import {
   applySceneObjectAction,
-  getBoundingBox,
+  getObjectBoundingBox,
   getObjectsInOrder,
   type SceneObject,
   type SceneObjectAction,
@@ -86,7 +86,7 @@ export const applySceneAction = <TLayerKey extends string>(
     );
 
     const interactObject = objectsInOrder.find((sceneObj) => {
-      const boundingBox = getBoundingBox(sceneObj, images);
+      const boundingBox = getObjectBoundingBox(sceneObj, images);
       return (
         action.position.x > boundingBox.topLeft.x &&
         action.position.x < boundingBox.bottomRight.x &&
