@@ -34,7 +34,7 @@ const applySceneObjectActions = <TLayerKey extends string>(
   const byId = objectActions.reduce<
     Record<string, SceneObjectAction<unknown>[] | undefined>
   >((acc, next) => {
-    const target = next.target ?? interactObjectId;
+    const target = ("target" in next && next.target) || interactObjectId;
 
     return { ...acc, [target]: [...(acc[target] ?? []), next] };
   }, {});

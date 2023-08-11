@@ -17,20 +17,21 @@ export type ObjectLayerContent =
       position?: Position;
     };
 
-export type SceneObjectAction<TState> = (
-  | {
-      kind: "hide";
-    }
-  | { kind: "show" }
-  | { kind: "moveBy"; by: Position }
-  | { kind: "moveTo"; to: Position }
-  | { kind: "updateState"; state: Partial<TState> }
-  | { kind: "removeObject" }
-) & { target?: string };
+export type SceneObjectAction<TState = EmptyState> =
+  | ((
+      | {
+          kind: "hide";
+        }
+      | { kind: "show" }
+      | { kind: "moveBy"; by: Position }
+      | { kind: "moveTo"; to: Position }
+      | { kind: "removeObject" }
+    ) & { target?: string })
+  | { kind: "updateState"; state: Partial<TState> };
 
 type EmptyState = Record<string, never>;
 
-export type SceneObject<TLayerKey extends string, TState> = {
+export type SceneObject<TLayerKey extends string, TState = EmptyState> = {
   id: string;
   position: Position;
   hidden?: boolean;
