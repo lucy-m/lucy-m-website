@@ -94,10 +94,9 @@ export const viewScene = (
       initialScene.actions
     )
       .pipe(
-        scan(
-          (scene, action) => applySceneAction(scene, images, action),
-          initialScene
-        ),
+        scan((scene, action) => {
+          return applySceneAction(scene, images, action);
+        }, initialScene),
         rafThrottle(),
         startWith(initialScene)
       )
