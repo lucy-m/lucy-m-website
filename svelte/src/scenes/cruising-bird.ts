@@ -3,7 +3,6 @@ import {
   PosFns,
   makeSceneObjectStateful,
   type NumberSpring,
-  type Position,
   type SceneObject,
 } from "../model";
 
@@ -16,7 +15,7 @@ interface CruisingBirdState {
 
 export const makeCruisingBird = <TLayerKey extends string>(
   layerKey: TLayerKey,
-  initial: Position,
+  initialX: number,
   rangeY: [number, number]
 ): SceneObject<TLayerKey, unknown> => {
   const rangeMin = Math.min(rangeY[0], rangeY[1]);
@@ -24,15 +23,17 @@ export const makeCruisingBird = <TLayerKey extends string>(
   const makeNewYEndPoint = () => Math.random() * rangeRange + rangeMin;
   const makeNewXEndPoint = () => Math.random() * 1 + 1.5;
 
+  const initialY = makeNewYEndPoint();
+
   return makeSceneObjectStateful<TLayerKey, CruisingBirdState>({
     layerKey,
-    position: PosFns.new(initial.x, initial.y),
+    position: PosFns.new(initialX, initialY),
     state: {
       flapUp: true,
       flapTimer: 0,
       yPosition: NumberSpringFns.make({
         endPoint: makeNewYEndPoint(),
-        position: initial.y,
+        position: initialY,
         velocity: 0,
         properties: {
           friction: 8,

@@ -1,3 +1,4 @@
+import type { Observable } from "rxjs";
 import type { AssetKey } from "./assets";
 import type { Position } from "./position";
 import {
@@ -12,9 +13,15 @@ export interface SceneType<TLayerKey extends string> {
   objects: SceneObject<TLayerKey, unknown>[];
   /** Order of layer drawing, from bottom to top */
   layerOrder: TLayerKey[];
+  actions: Observable<SceneAction<TLayerKey>>;
 }
 
-export type SceneAction =
+export type SceneAction<TLayerKey extends string> = {
+  kind: "addObject";
+  makeObject: () => SceneObject<TLayerKey, unknown>;
+};
+
+export type SceneEvent =
   | { kind: "interact"; position: Position }
   | { kind: "tick" };
 
@@ -48,7 +55,7 @@ const applySceneObjectActions = <TLayerKey extends string>(
 export const applySceneAction = <TLayerKey extends string>(
   scene: SceneType<TLayerKey>,
   images: Record<AssetKey, HTMLImageElement>,
-  action: SceneAction
+  action: SceneEvent | SceneAction<TLayerKey>
 ): SceneType<TLayerKey> => {
   if (action.kind === "tick") {
     return scene.objects.reduce((acc, obj) => {
@@ -61,7 +68,7 @@ export const applySceneAction = <TLayerKey extends string>(
         return applySceneObjectActions(acc, objectActions, obj.id);
       }
     }, scene);
-  } else {
+  } else if (action.kind === "interact") {
     const objectsInOrder = getObjectsInOrder(
       scene.objects.filter((obj) => obj.onInteract),
       scene.layerOrder,
@@ -90,5 +97,9 @@ export const applySceneAction = <TLayerKey extends string>(
     } else {
       return applySceneObjectActions(scene, objectActions, interactObject.id);
     }
+  } else {
+    const objects = [...scene.objects, action.makeObject()];
+
+    return { ...scene, objects };
   }
 };

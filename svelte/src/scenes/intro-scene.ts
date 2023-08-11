@@ -1,7 +1,9 @@
+import { Observable, interval, map } from "rxjs";
 import {
   PosFns,
   generatePointsInShape,
   makeSceneObject,
+  type SceneAction,
   type SceneObject,
   type SceneObjectStateless,
   type SceneType,
@@ -109,11 +111,17 @@ const objects: SceneObject<LayerKey, any>[] = [
     onInteract: () => [{ kind: "show", target: speechBubble.id }],
   }),
   speechBubble,
-  makeCruisingBird("bird", PosFns.new(-160, 40), [10, 180]),
-  makeCruisingBird("bird", PosFns.new(-870, 40), [18, 188]),
 ];
+
+const actions: Observable<SceneAction<LayerKey>> = interval(1000).pipe(
+  map(() => ({
+    kind: "addObject",
+    makeObject: () => makeCruisingBird("bird", -160, [10, 180]),
+  }))
+);
 
 export const introScene: SceneType<LayerKey> = {
   objects,
   layerOrder,
+  actions,
 };
