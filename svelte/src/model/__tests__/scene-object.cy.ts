@@ -1,9 +1,9 @@
 import type { AssetKey } from "../assets";
 import { PosFns, type Position } from "../position";
-import { getBoundingBox, makeSceneObject } from "../scene-object";
+import { getObjectBoundingBox, makeSceneObject } from "../scene-object";
 
 describe("scene object", () => {
-  describe("getBoundingBox", () => {
+  describe("getObjectBoundingBox", () => {
     const makeTestImage = (width: number, height: number) => {
       const img = new Image();
       img.width = width;
@@ -40,7 +40,7 @@ describe("scene object", () => {
 
     it("empty object", () => {
       const obj = makeTestObject(PosFns.zero, []);
-      const boundingBox = getBoundingBox(obj, assets);
+      const boundingBox = getObjectBoundingBox(obj, assets);
 
       expect(boundingBox.topLeft).to.deep.equal(PosFns.zero);
       expect(boundingBox.bottomRight).to.deep.equal(PosFns.zero);
@@ -48,7 +48,7 @@ describe("scene object", () => {
 
     it("object with one image", () => {
       const obj = makeTestObject(PosFns.zero, [["background", PosFns.zero]]);
-      const boundingBox = getBoundingBox(obj, assets);
+      const boundingBox = getObjectBoundingBox(obj, assets);
 
       expect(boundingBox.topLeft).to.deep.equal(PosFns.zero);
       expect(boundingBox.bottomRight).to.deep.equal(PosFns.new(200, 150));
@@ -58,7 +58,7 @@ describe("scene object", () => {
       const obj = makeTestObject(PosFns.new(20, 30), [
         ["background", PosFns.zero],
       ]);
-      const boundingBox = getBoundingBox(obj, assets);
+      const boundingBox = getObjectBoundingBox(obj, assets);
 
       expect(boundingBox.topLeft).to.deep.equal(PosFns.new(20, 30));
       expect(boundingBox.bottomRight).to.deep.equal(PosFns.new(220, 180));
@@ -68,7 +68,7 @@ describe("scene object", () => {
       const obj = makeTestObject(PosFns.zero, [
         ["background", PosFns.new(5, -10)],
       ]);
-      const boundingBox = getBoundingBox(obj, assets);
+      const boundingBox = getObjectBoundingBox(obj, assets);
 
       expect(boundingBox.topLeft).to.deep.equal(PosFns.new(5, -10));
       expect(boundingBox.bottomRight).to.deep.equal(PosFns.new(205, 140));
@@ -79,7 +79,7 @@ describe("scene object", () => {
         ["background", PosFns.zero],
         ["tree1", PosFns.new(180, 140)], // object positioned at bottom right of prev layer
       ]);
-      const boundingBox = getBoundingBox(obj, assets);
+      const boundingBox = getObjectBoundingBox(obj, assets);
 
       expect(boundingBox.topLeft).to.deep.equal(PosFns.zero);
       expect(boundingBox.bottomRight).to.deep.equal(PosFns.new(220, 155));

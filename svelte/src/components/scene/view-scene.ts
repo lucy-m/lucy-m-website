@@ -15,7 +15,7 @@ import {
   resolveScene,
   type AssetKey,
   type Position,
-  type SceneAction,
+  type SceneEvent,
   type SceneType,
 } from "../../model";
 
@@ -85,19 +85,18 @@ export const viewScene = (
     ctx.font = "42px Quicksand";
 
     subscription = merge(
-      interval(30).pipe(map(() => ({ kind: "tick" } as SceneAction))),
+      interval(30).pipe(map(() => ({ kind: "tick" } as SceneEvent))),
       interactSub.pipe(
         map(
-          (position: Position) =>
-            ({ kind: "interact", position } as SceneAction)
+          (position: Position) => ({ kind: "interact", position } as SceneEvent)
         )
-      )
+      ),
+      initialScene.actions
     )
       .pipe(
-        scan(
-          (scene, action) => applySceneAction(scene, images, action),
-          initialScene
-        ),
+        scan((scene, action) => {
+          return applySceneAction(scene, images, action);
+        }, initialScene),
         rafThrottle(),
         startWith(initialScene)
       )

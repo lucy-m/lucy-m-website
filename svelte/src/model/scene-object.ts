@@ -17,18 +17,21 @@ export type ObjectLayerContent =
       position?: Position;
     };
 
-export type SceneObjectAction<TState> =
-  | {
-      kind: "hide";
-    }
-  | { kind: "show" }
-  | { kind: "moveBy"; by: Position }
-  | { kind: "moveTo"; to: Position }
+export type SceneObjectAction<TState = EmptyState> =
+  | ((
+      | {
+          kind: "hide";
+        }
+      | { kind: "show" }
+      | { kind: "moveBy"; by: Position }
+      | { kind: "moveTo"; to: Position }
+      | { kind: "removeObject" }
+    ) & { target?: string })
   | { kind: "updateState"; state: Partial<TState> };
 
 type EmptyState = Record<string, never>;
 
-export type SceneObject<TLayerKey extends string, TState> = {
+export type SceneObject<TLayerKey extends string, TState = EmptyState> = {
   id: string;
   position: Position;
   hidden?: boolean;
@@ -67,38 +70,60 @@ export const makeSceneObjectStateful = <TLayerKey extends string, TState>(
   };
 };
 
+type SceneObjectActionApplyResult<TLayerKey extends string, TState> =
+  | { kind: "update"; object: SceneObject<TLayerKey, TState> }
+  | { kind: "removeObject" };
+
 export const applySceneObjectAction = <TLayerKey extends string, TState>(
   obj: SceneObject<TLayerKey, TState>,
   action: SceneObjectAction<TState>
-): SceneObject<TLayerKey, TState> => {
+): SceneObjectActionApplyResult<TLayerKey, TState> => {
   switch (action.kind) {
     case "hide":
       return {
-        ...obj,
-        hidden: true,
+        kind: "update",
+        object: {
+          ...obj,
+          hidden: true,
+        },
       };
     case "show":
       return {
-        ...obj,
-        hidden: false,
+        kind: "update",
+        object: {
+          ...obj,
+          hidden: false,
+        },
       };
     case "moveBy": {
       return {
-        ...obj,
-        position: PosFns.add(obj.position, action.by),
+        kind: "update",
+        object: {
+          ...obj,
+          position: PosFns.add(obj.position, action.by),
+        },
       };
     }
     case "moveTo": {
       return {
-        ...obj,
-        position: action.to,
+        kind: "update",
+        object: {
+          ...obj,
+          position: action.to,
+        },
       };
     }
     case "updateState": {
       return {
-        ...obj,
-        state: { ...obj.state, ...action.state },
+        kind: "update",
+        object: {
+          ...obj,
+          state: { ...obj.state, ...action.state },
+        },
       };
+    }
+    case "removeObject": {
+      return { kind: "removeObject" };
     }
   }
 };
@@ -106,7 +131,7 @@ export const applySceneObjectAction = <TLayerKey extends string, TState>(
 /**
  * Gets the bounding box of the object in world co-ords.
  */
-export const getBoundingBox = (
+export const getObjectBoundingBox = (
   obj: SceneObject<string, unknown>,
   images: Record<AssetKey, HTMLImageElement>
 ): { topLeft: Position; bottomRight: Position } => {

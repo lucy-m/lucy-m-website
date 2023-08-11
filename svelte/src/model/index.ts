@@ -5,6 +5,7 @@ export * from "./observe-element-size";
 export * from "./position";
 export * from "./positioned-image";
 export * from "./raf-throttle";
+export * from "./random-interval";
 export * from "./scene";
 export * from "./scene-object";
 export * from "./shape";

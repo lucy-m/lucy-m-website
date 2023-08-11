@@ -3,8 +3,8 @@ import {
   PosFns,
   makeSceneObjectStateful,
   type NumberSpring,
-  type Position,
   type SceneObject,
+  type SceneObjectAction,
 } from "../model";
 
 interface CruisingBirdState {
@@ -16,7 +16,7 @@ interface CruisingBirdState {
 
 export const makeCruisingBird = <TLayerKey extends string>(
   layerKey: TLayerKey,
-  initial: Position,
+  initialX: number,
   rangeY: [number, number]
 ): SceneObject<TLayerKey, unknown> => {
   const rangeMin = Math.min(rangeY[0], rangeY[1]);
@@ -24,15 +24,17 @@ export const makeCruisingBird = <TLayerKey extends string>(
   const makeNewYEndPoint = () => Math.random() * rangeRange + rangeMin;
   const makeNewXEndPoint = () => Math.random() * 1 + 1.5;
 
+  const initialY = makeNewYEndPoint();
+
   return makeSceneObjectStateful<TLayerKey, CruisingBirdState>({
     layerKey,
-    position: PosFns.new(initial.x, initial.y),
+    position: PosFns.new(initialX, initialY),
     state: {
       flapUp: true,
       flapTimer: 0,
       yPosition: NumberSpringFns.make({
         endPoint: makeNewYEndPoint(),
-        position: initial.y,
+        position: initialY,
         velocity: 0,
         properties: {
           friction: 8,
@@ -74,13 +76,16 @@ export const makeCruisingBird = <TLayerKey extends string>(
       ];
     },
     onTick: (current) => {
-      const newPosition =
+      const newPosition: SceneObjectAction<TLayerKey> =
         current.position.x > 2000
-          ? PosFns.new(-180, current.position.y)
-          : PosFns.new(
-              current.position.x + current.state.xPosition.position,
-              current.state.yPosition.position
-            );
+          ? { kind: "removeObject" }
+          : {
+              kind: "moveTo",
+              to: PosFns.new(
+                current.position.x + current.state.xPosition.position,
+                current.state.yPosition.position
+              ),
+            };
 
       const newYPositionSpring = current.state.yPosition.stationary
         ? NumberSpringFns.set(current.state.yPosition, {
@@ -109,7 +114,7 @@ export const makeCruisingBird = <TLayerKey extends string>(
       })();
 
       return [
-        { kind: "moveTo", to: newPosition },
+        newPosition,
         {
           kind: "updateState",
           state: {
