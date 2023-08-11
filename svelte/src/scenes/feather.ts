@@ -6,6 +6,7 @@ import {
   type Position,
   type SceneObject,
 } from "../model";
+import { sceneSize } from "./scene-size";
 
 interface FeatherState {
   xPosition: NumberSpring;
@@ -38,12 +39,20 @@ export const makeFeather = <TLayerKey extends string>(
       yVelocity: initialVelocity.y,
     },
     onTick: (current) => {
+      if (current.position.y > sceneSize.y) {
+        return [
+          {
+            kind: "removeObject",
+          },
+        ];
+      }
+
       const newPosition = PosFns.new(
         initial.x + current.state.xPosition.position,
         current.position.y + current.state.yVelocity
       );
       const tickedSpring = NumberSpringFns.tick(current.state.xPosition, 1);
-      const yVelocity = Math.min(current.state.yVelocity + 0.2, 1);
+      const yVelocity = Math.min(current.state.yVelocity + 0.2, 1.5);
 
       return [
         {

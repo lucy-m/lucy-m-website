@@ -28,36 +28,43 @@ export type SceneEvent =
 
 const applySceneObjectActions = <TLayerKey extends string>(
   scene: SceneType<TLayerKey>,
-  objectActions: SceneObjectAction<unknown>[],
+  objectActions: SceneObjectAction<TLayerKey, unknown>[],
   interactObjectId: string
 ): SceneType<TLayerKey> => {
   const byId = objectActions.reduce<
-    Record<string, SceneObjectAction<unknown>[] | undefined>
+    Record<string, SceneObjectAction<TLayerKey, unknown>[] | undefined>
   >((acc, next) => {
     const target = ("target" in next && next.target) || interactObjectId;
 
     return { ...acc, [target]: [...(acc[target] ?? []), next] };
   }, {});
 
-  const newObjects = choose(
-    scene.objects.map((obj) => {
-      const myActions = byId[obj.id];
+  const newObjects = scene.objects.flatMap((obj) => {
+    const myActions = byId[obj.id];
 
-      const removeAction = myActions?.some((a) => a.kind === "removeObject");
+    const removeAction = myActions?.some((a) => a.kind === "removeObject");
 
-      if (removeAction) {
-        return "remove";
-      }
+    const newObjects =
+      (myActions &&
+        choose(myActions, (obj) =>
+          obj.kind === "addObject" ? obj.makeObject() : undefined
+        )) ??
+      [];
 
-      return (
-        myActions?.reduce((acc, next) => {
-          const result = applySceneObjectAction(acc, next);
-          return result.kind === "removeObject" ? acc : result.object;
-        }, obj) ?? obj
-      );
-    }),
-    (object) => (object === "remove" ? undefined : object)
-  );
+    if (removeAction) {
+      return newObjects;
+    }
+
+    const updatedObject =
+      myActions?.reduce((acc, next) => {
+        const result = applySceneObjectAction(acc, next);
+        return result.kind === "removeObject" || result.kind === "addObject"
+          ? acc
+          : result.object;
+      }, obj) ?? obj;
+
+    return [updatedObject, ...newObjects];
+  });
 
   return { ...scene, objects: newObjects };
 };
@@ -69,7 +76,7 @@ export const applySceneAction = <TLayerKey extends string>(
 ): SceneType<TLayerKey> => {
   if (action.kind === "tick") {
     return scene.objects.reduce((acc, obj) => {
-      const objectActions: SceneObjectAction<unknown>[] | undefined =
+      const objectActions: SceneObjectAction<TLayerKey, unknown>[] | undefined =
         obj.onTick && obj.onTick(obj);
 
       if (!objectActions) {

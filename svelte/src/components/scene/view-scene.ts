@@ -19,9 +19,7 @@ import {
   type SceneEvent,
   type SceneType,
 } from "../../model";
-
-const imageWidth = 1920;
-const imageHeight = 1080;
+import { sceneSize } from "../../scenes";
 
 const lineHeight = 53;
 
@@ -31,7 +29,7 @@ const redrawCanvas = (
   images: Record<AssetKey, HTMLImageElement>
 ) => {
   if (ctx) {
-    ctx.clearRect(0, 0, imageWidth, imageHeight);
+    ctx.clearRect(0, 0, sceneSize.x, sceneSize.y);
 
     const drawLayers = resolveScene(scene, images);
 
@@ -69,8 +67,8 @@ export const viewScene = (
 
   const interactSub = new Subject<Position>();
 
-  canvas.width = imageWidth;
-  canvas.height = imageHeight;
+  canvas.width = sceneSize.x;
+  canvas.height = sceneSize.y;
   canvas.onclick = (e) => {
     const x = e.offsetX * (canvas.width / canvas.clientWidth);
     const y = e.offsetY * (canvas.height / canvas.clientHeight);

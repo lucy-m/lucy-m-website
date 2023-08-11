@@ -12,7 +12,6 @@ import {
 } from "../model";
 import type { AssetKey } from "../model/assets";
 import { makeCruisingBird } from "./cruising-bird";
-import { makeFeather } from "./feather";
 
 type LayerKey = "bg" | "person" | "speechBubble" | "trees" | "bird";
 
@@ -112,9 +111,6 @@ const objects: SceneObject<LayerKey, any>[] = [
     ],
     onInteract: () => [{ kind: "show", target: speechBubble.id }],
   }),
-  makeFeather("bird", PosFns.new(400, 20), PosFns.new(-0.3, -5)),
-  makeFeather("bird", PosFns.new(400, 20), PosFns.new(0.3, -1)),
-  makeFeather("bird", PosFns.new(400, 20), PosFns.new(0.45, -2)),
   speechBubble,
 ];
 
