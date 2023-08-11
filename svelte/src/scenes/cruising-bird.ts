@@ -4,6 +4,7 @@ import {
   makeSceneObjectStateful,
   type NumberSpring,
   type SceneObject,
+  type SceneObjectAction,
 } from "../model";
 
 interface CruisingBirdState {
@@ -75,13 +76,16 @@ export const makeCruisingBird = <TLayerKey extends string>(
       ];
     },
     onTick: (current) => {
-      const newPosition =
+      const newPosition: SceneObjectAction<TLayerKey> =
         current.position.x > 2000
-          ? PosFns.new(-180, current.position.y)
-          : PosFns.new(
-              current.position.x + current.state.xPosition.position,
-              current.state.yPosition.position
-            );
+          ? { kind: "removeObject" }
+          : {
+              kind: "moveTo",
+              to: PosFns.new(
+                current.position.x + current.state.xPosition.position,
+                current.state.yPosition.position
+              ),
+            };
 
       const newYPositionSpring = current.state.yPosition.stationary
         ? NumberSpringFns.set(current.state.yPosition, {
@@ -110,7 +114,7 @@ export const makeCruisingBird = <TLayerKey extends string>(
       })();
 
       return [
-        { kind: "moveTo", to: newPosition },
+        newPosition,
         {
           kind: "updateState",
           state: {

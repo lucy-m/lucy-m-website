@@ -113,7 +113,7 @@ const objects: SceneObject<LayerKey, any>[] = [
   speechBubble,
 ];
 
-const actions: Observable<SceneAction<LayerKey>> = interval(1000).pipe(
+const actions: Observable<SceneAction<LayerKey>> = interval(5000).pipe(
   map(() => ({
     kind: "addObject",
     makeObject: () => makeCruisingBird("bird", -160, [10, 180]),

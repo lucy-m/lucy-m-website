@@ -1,4 +1,5 @@
 import type { Observable } from "rxjs";
+import { choose } from "../utils";
 import type { AssetKey } from "./assets";
 import type { Position } from "./position";
 import {
@@ -38,16 +39,25 @@ const applySceneObjectActions = <TLayerKey extends string>(
     return { ...acc, [target]: [...(acc[target] ?? []), next] };
   }, {});
 
-  const newObjects = scene.objects.map((obj) => {
-    const myActions = byId[obj.id];
+  const newObjects = choose(
+    scene.objects.map((obj) => {
+      const myActions = byId[obj.id];
 
-    return (
-      myActions?.reduce(
-        (acc, next) => applySceneObjectAction(acc, next),
-        obj
-      ) ?? obj
-    );
-  });
+      const removeAction = myActions?.some((a) => a.kind === "removeObject");
+
+      if (removeAction) {
+        return "remove";
+      }
+
+      return (
+        myActions?.reduce((acc, next) => {
+          const result = applySceneObjectAction(acc, next);
+          return result.kind === "removeObject" ? acc : result.object;
+        }, obj) ?? obj
+      );
+    }),
+    (object) => (object === "remove" ? undefined : object)
+  );
 
   return { ...scene, objects: newObjects };
 };

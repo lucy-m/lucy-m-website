@@ -25,6 +25,7 @@ export type SceneObjectAction<TState> = (
   | { kind: "moveBy"; by: Position }
   | { kind: "moveTo"; to: Position }
   | { kind: "updateState"; state: Partial<TState> }
+  | { kind: "removeObject" }
 ) & { target?: string };
 
 type EmptyState = Record<string, never>;
@@ -68,38 +69,60 @@ export const makeSceneObjectStateful = <TLayerKey extends string, TState>(
   };
 };
 
+type SceneObjectActionApplyResult<TLayerKey extends string, TState> =
+  | { kind: "update"; object: SceneObject<TLayerKey, TState> }
+  | { kind: "removeObject" };
+
 export const applySceneObjectAction = <TLayerKey extends string, TState>(
   obj: SceneObject<TLayerKey, TState>,
   action: SceneObjectAction<TState>
-): SceneObject<TLayerKey, TState> => {
+): SceneObjectActionApplyResult<TLayerKey, TState> => {
   switch (action.kind) {
     case "hide":
       return {
-        ...obj,
-        hidden: true,
+        kind: "update",
+        object: {
+          ...obj,
+          hidden: true,
+        },
       };
     case "show":
       return {
-        ...obj,
-        hidden: false,
+        kind: "update",
+        object: {
+          ...obj,
+          hidden: false,
+        },
       };
     case "moveBy": {
       return {
-        ...obj,
-        position: PosFns.add(obj.position, action.by),
+        kind: "update",
+        object: {
+          ...obj,
+          position: PosFns.add(obj.position, action.by),
+        },
       };
     }
     case "moveTo": {
       return {
-        ...obj,
-        position: action.to,
+        kind: "update",
+        object: {
+          ...obj,
+          position: action.to,
+        },
       };
     }
     case "updateState": {
       return {
-        ...obj,
-        state: { ...obj.state, ...action.state },
+        kind: "update",
+        object: {
+          ...obj,
+          state: { ...obj.state, ...action.state },
+        },
       };
+    }
+    case "removeObject": {
+      return { kind: "removeObject" };
     }
   }
 };
