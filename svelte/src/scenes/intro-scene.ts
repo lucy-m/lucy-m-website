@@ -1,4 +1,4 @@
-import { Observable, map } from "rxjs";
+import { Observable, map, merge, timer } from "rxjs";
 import {
   PosFns,
   generatePointsInShape,
@@ -114,9 +114,10 @@ const objects: SceneObject<LayerKey, any>[] = [
   speechBubble,
 ];
 
-const actions: Observable<SceneAction<LayerKey>> = randomInterval([
-  2000, 5000,
-]).pipe(
+const actions: Observable<SceneAction<LayerKey>> = merge(
+  timer(200),
+  randomInterval([6000, 15000])
+).pipe(
   map(() => ({
     kind: "addObject",
     makeObject: () => makeCruisingBird("bird", -160, [10, 180]),
