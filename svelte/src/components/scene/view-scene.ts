@@ -1,6 +1,7 @@
 import {
   Subject,
   Subscription,
+  filter,
   interval,
   map,
   merge,
@@ -94,6 +95,7 @@ export const viewScene = (
       initialScene.actions
     )
       .pipe(
+        filter(() => document.hasFocus()),
         scan((scene, action) => {
           return applySceneAction(scene, images, action);
         }, initialScene),

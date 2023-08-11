@@ -10,7 +10,7 @@ import {
 interface CruisingBirdState {
   flapUp: boolean;
   flapTimer: number;
-  xPosition: NumberSpring;
+  xVelocity: NumberSpring;
   yPosition: NumberSpring;
 }
 
@@ -43,7 +43,7 @@ export const makeCruisingBird = <TLayerKey extends string>(
           weight: 0.05,
         },
       }),
-      xPosition: NumberSpringFns.make({
+      xVelocity: NumberSpringFns.make({
         endPoint: makeNewXEndPoint(),
         position: 2,
         velocity: 0,
@@ -82,22 +82,22 @@ export const makeCruisingBird = <TLayerKey extends string>(
           : {
               kind: "moveTo",
               to: PosFns.new(
-                current.position.x + current.state.xPosition.position,
+                current.position.x + current.state.xVelocity.position,
                 current.state.yPosition.position
               ),
             };
 
-      const newYPositionSpring = current.state.yPosition.stationary
+      const newYPosition = current.state.yPosition.stationary
         ? NumberSpringFns.set(current.state.yPosition, {
             endPoint: makeNewYEndPoint(),
           })
         : NumberSpringFns.tick(current.state.yPosition, 0.1);
 
-      const newXPositionSpring = current.state.xPosition.stationary
-        ? NumberSpringFns.set(current.state.xPosition, {
+      const newXVelocity = current.state.xVelocity.stationary
+        ? NumberSpringFns.set(current.state.xVelocity, {
             endPoint: makeNewXEndPoint(),
           })
-        : NumberSpringFns.tick(current.state.xPosition, 0.1);
+        : NumberSpringFns.tick(current.state.xVelocity, 0.1);
 
       const flapState: Partial<CruisingBirdState> = (() => {
         if (current.state.yPosition.velocity > -0.2) {
@@ -118,8 +118,8 @@ export const makeCruisingBird = <TLayerKey extends string>(
         {
           kind: "updateState",
           state: {
-            yPosition: newYPositionSpring,
-            xPosition: newXPositionSpring,
+            yPosition: newYPosition,
+            xVelocity: newXVelocity,
           },
         },
         {
