@@ -10,7 +10,7 @@ import {
 
 describe("scene", () => {
   const makeTestSceneObject = (
-    onTick?: () => SceneObjectAction[]
+    onTick?: () => SceneObjectAction<string>[]
   ): SceneObject<string> =>
     makeSceneObject({
       getLayers: () => [],
@@ -159,6 +159,23 @@ describe("scene", () => {
         expect(
           tickResult.objects.find((o) => o.id === objectC.id)?.position
         ).to.deep.equal(to);
+      });
+    });
+
+    describe("add action", () => {
+      const objectB = makeTestSceneObject();
+      const objectA = makeTestSceneObject(() => [
+        { kind: "addObject", makeObject: () => objectB },
+      ]);
+
+      const scene = makeTestScene([objectA]);
+      const tickResult = applySceneAction(scene, images, { kind: "tick" });
+
+      it("adds objectB", () => {
+        expect(tickResult.objects.map((o) => o.id)).to.deep.equal([
+          objectA.id,
+          objectB.id,
+        ]);
       });
     });
   });

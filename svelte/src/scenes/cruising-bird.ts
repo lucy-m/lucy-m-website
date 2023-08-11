@@ -6,19 +6,22 @@ import {
   type SceneObject,
   type SceneObjectAction,
 } from "../model";
+import { makeFeather } from "./feather";
+import { sceneSize } from "./scene-size";
 
 interface CruisingBirdState {
   flapUp: boolean;
   flapTimer: number;
   xVelocity: NumberSpring;
   yPosition: NumberSpring;
+  feathers: number;
 }
 
 export const makeCruisingBird = <TLayerKey extends string>(
   layerKey: TLayerKey,
   initialX: number,
   rangeY: [number, number]
-): SceneObject<TLayerKey, unknown> => {
+): SceneObject<TLayerKey, CruisingBirdState> => {
   const rangeMin = Math.min(rangeY[0], rangeY[1]);
   const rangeRange = Math.abs(rangeY[0] - rangeY[1]);
   const makeNewYEndPoint = () => Math.random() * rangeRange + rangeMin;
@@ -32,6 +35,7 @@ export const makeCruisingBird = <TLayerKey extends string>(
     state: {
       flapUp: true,
       flapTimer: 0,
+      feathers: 2,
       yPosition: NumberSpringFns.make({
         endPoint: makeNewYEndPoint(),
         position: initialY,
@@ -63,6 +67,48 @@ export const makeCruisingBird = <TLayerKey extends string>(
       },
     ],
     onInteract: (current) => {
+      const feathers: SceneObjectAction<TLayerKey, CruisingBirdState>[] =
+        (() => {
+          const makeFeatherAction = (): SceneObjectAction<
+            TLayerKey,
+            unknown
+          > => ({
+            kind: "addObject",
+            makeObject: () =>
+              makeFeather(
+                layerKey,
+                current.position,
+                PosFns.new(Math.random() * 2 - 1, Math.random() * 5 - 4)
+              ),
+          });
+
+          if (Math.random() < 0.2) {
+            if (current.state.feathers > 0) {
+              return [
+                makeFeatherAction(),
+                {
+                  kind: "updateState",
+                  state: {
+                    feathers: current.state.feathers - 1,
+                  },
+                },
+              ];
+            } else {
+              return [
+                makeFeatherAction(),
+                makeFeatherAction(),
+                makeFeatherAction(),
+                makeFeatherAction(),
+                {
+                  kind: "removeObject",
+                },
+              ];
+            }
+          } else {
+            return [];
+          }
+        })();
+
       return [
         {
           kind: "updateState",
@@ -73,11 +119,12 @@ export const makeCruisingBird = <TLayerKey extends string>(
             }),
           },
         },
+        ...feathers,
       ];
     },
     onTick: (current) => {
       const newPosition: SceneObjectAction<TLayerKey> =
-        current.position.x > 2000
+        current.position.x > sceneSize.x
           ? { kind: "removeObject" }
           : {
               kind: "moveTo",

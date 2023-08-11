@@ -17,7 +17,7 @@ export type ObjectLayerContent =
       position?: Position;
     };
 
-export type SceneObjectAction<TState = EmptyState> =
+export type SceneObjectAction<TLayerKey extends string, TState = EmptyState> =
   | ((
       | {
           kind: "hide";
@@ -27,7 +27,8 @@ export type SceneObjectAction<TState = EmptyState> =
       | { kind: "moveTo"; to: Position }
       | { kind: "removeObject" }
     ) & { target?: string })
-  | { kind: "updateState"; state: Partial<TState> };
+  | { kind: "updateState"; state: Partial<TState> }
+  | { kind: "addObject"; makeObject: () => SceneObject<TLayerKey, unknown> };
 
 type EmptyState = Record<string, never>;
 
@@ -40,10 +41,10 @@ export type SceneObject<TLayerKey extends string, TState = EmptyState> = {
   getLayers: (current: SceneObject<string, TState>) => ObjectLayerContent[];
   onInteract?: (
     current: SceneObject<string, TState>
-  ) => SceneObjectAction<TState>[];
+  ) => SceneObjectAction<TLayerKey, TState>[];
   onTick?: (
     current: SceneObject<string, TState>
-  ) => SceneObjectAction<TState>[];
+  ) => SceneObjectAction<TLayerKey, TState>[];
 };
 
 export type SceneObjectStateless<TLayerKey extends string> = SceneObject<
@@ -72,11 +73,12 @@ export const makeSceneObjectStateful = <TLayerKey extends string, TState>(
 
 type SceneObjectActionApplyResult<TLayerKey extends string, TState> =
   | { kind: "update"; object: SceneObject<TLayerKey, TState> }
-  | { kind: "removeObject" };
+  | { kind: "removeObject" }
+  | { kind: "addObject"; makeObject: () => SceneObject<TLayerKey, unknown> };
 
 export const applySceneObjectAction = <TLayerKey extends string, TState>(
   obj: SceneObject<TLayerKey, TState>,
-  action: SceneObjectAction<TState>
+  action: SceneObjectAction<TLayerKey, TState>
 ): SceneObjectActionApplyResult<TLayerKey, TState> => {
   switch (action.kind) {
     case "hide":
@@ -124,6 +126,9 @@ export const applySceneObjectAction = <TLayerKey extends string, TState>(
     }
     case "removeObject": {
       return { kind: "removeObject" };
+    }
+    case "addObject": {
+      return { kind: "addObject", makeObject: action.makeObject };
     }
   }
 };
