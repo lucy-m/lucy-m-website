@@ -11,6 +11,7 @@ const imagePaths = {
   tree3: "/assets/scene-intro/trees/tree3.PNG",
   birdFlapUp: "/assets/scene-intro/bird-flap-up.png",
   birdFlapDown: "/assets/scene-intro/bird-flap-down.png",
+  feather1: "/assets/scene-intro/feather-1.png",
 };
 
 export type AssetKey = keyof typeof imagePaths;

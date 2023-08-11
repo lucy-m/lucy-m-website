@@ -18,7 +18,7 @@ export const makeCruisingBird = <TLayerKey extends string>(
   layerKey: TLayerKey,
   initialX: number,
   rangeY: [number, number]
-): SceneObject<TLayerKey, unknown> => {
+): SceneObject<TLayerKey, CruisingBirdState> => {
   const rangeMin = Math.min(rangeY[0], rangeY[1]);
   const rangeRange = Math.abs(rangeY[0] - rangeY[1]);
   const makeNewYEndPoint = () => Math.random() * rangeRange + rangeMin;
