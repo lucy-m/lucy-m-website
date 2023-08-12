@@ -6,17 +6,21 @@
   export let scene: SceneType<string>;
 
   let windowWidth = window.innerWidth;
+  let windowHeight = window.innerHeight;
 
   window.addEventListener("resize", () => {
     windowWidth = window.innerWidth;
+    windowHeight = window.innerHeight;
   });
 </script>
 
 {#if windowWidth <= 800}
-  <div class="item-wrapper">
-    Please view this page on a wider screen. Sorry, but this page may not
-    display properly on mobile devices.
-  </div>
+  {#if windowHeight >= 800}
+    <div class="item-wrapper" aria-hidden="true">
+      If you're on mobile you should rotate your device! If not, make the window
+      bigger or zoom out.
+    </div>
+  {/if}
 {/if}
 
 <div class="canvas-wrapper">
