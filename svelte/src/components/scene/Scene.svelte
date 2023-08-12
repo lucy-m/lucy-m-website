@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { type SceneType } from "../../model";
-  import { loadImages } from "../../model/assets";
+  import { loadImages, type SceneType } from "../../model";
   import SceneViewer from "./SceneViewer.svelte";
 
   export let scene: SceneType<string>;
@@ -50,6 +49,12 @@
   .loading {
     font-size: 2rem;
     display: flex;
+    align-items: baseline;
+    padding: 48px 96px;
+  }
+
+  .loading p {
+    margin-top: 0;
   }
 
   .loading > :nth-child(n + 2) {
