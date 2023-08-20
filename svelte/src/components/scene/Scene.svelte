@@ -1,8 +1,15 @@
 <script lang="ts">
+  import seedrandom, { type PRNG } from "seedrandom";
   import { loadImages, type SceneType } from "../../model";
   import SceneViewer from "./SceneViewer.svelte";
 
-  export let scene: SceneType<string>;
+  export let makeScene: (random: PRNG) => SceneType<string>;
+
+  const r = seedrandom().int32();
+  console.log("Congratulations! Your random seed is", r);
+  const prng = seedrandom(r.toString());
+
+  const scene = makeScene(prng);
 
   let windowWidth = window.innerWidth;
   let windowHeight = window.innerHeight;

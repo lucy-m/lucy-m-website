@@ -1,4 +1,5 @@
 import { Observable, map, merge, timer } from "rxjs";
+import { type PRNG } from "seedrandom";
 import {
   PosFns,
   generatePointsInShape,
@@ -7,7 +8,6 @@ import {
   type SceneAction,
   type SceneObject,
   type SceneObjectStateless,
-  type SceneType,
   type Shape,
 } from "../model";
 import type { AssetKey } from "../model/assets";
@@ -23,8 +23,8 @@ const layerOrder: LayerKey[] = [
   "speechBubble",
 ];
 
-const randomTree = (): AssetKey => {
-  const r = Math.random() * 3;
+const randomTree = (random: PRNG): AssetKey => {
+  const r = random.quick() * 3;
 
   if (r < 1) {
     return "tree1";
@@ -37,12 +37,13 @@ const randomTree = (): AssetKey => {
 
 const makeTrees = (
   target: number,
-  shape: Shape
+  shape: Shape,
+  random: PRNG
 ): SceneObjectStateless<LayerKey>[] => {
-  return generatePointsInShape(target, shape)
+  return generatePointsInShape(target, shape, random)
     .sort((a, b) => a.y - b.y)
     .map<SceneObjectStateless<LayerKey>>((position) => {
-      const assetKey = randomTree();
+      const assetKey = randomTree(random);
 
       return makeSceneObject({
         position,
@@ -81,7 +82,7 @@ const speechBubble = makeSceneObject({
   onInteract: () => [{ kind: "hide" }],
 });
 
-const objects: SceneObject<LayerKey, any>[] = [
+const makeObjects = (random: PRNG): SceneObject<LayerKey, any>[] => [
   makeSceneObject({
     position: PosFns.zero,
     layerKey: "bg",
@@ -89,19 +90,27 @@ const objects: SceneObject<LayerKey, any>[] = [
       { kind: "image", assetKey: "background", subLayer: "background" },
     ],
   }),
-  ...makeTrees(20, [
-    PosFns.new(0, 300),
-    PosFns.new(500, 250),
-    PosFns.new(750, 350),
-    PosFns.new(100, 500),
-  ]),
-  ...makeTrees(20, [
-    PosFns.new(881, 231),
-    PosFns.new(1569, 196),
-    PosFns.new(1837, 209),
-    PosFns.new(1829, 361),
-    PosFns.new(1309, 333),
-  ]),
+  ...makeTrees(
+    20,
+    [
+      PosFns.new(0, 300),
+      PosFns.new(500, 250),
+      PosFns.new(750, 350),
+      PosFns.new(100, 500),
+    ],
+    random
+  ),
+  ...makeTrees(
+    20,
+    [
+      PosFns.new(881, 231),
+      PosFns.new(1569, 196),
+      PosFns.new(1837, 209),
+      PosFns.new(1829, 361),
+      PosFns.new(1309, 333),
+    ],
+    random
+  ),
   makeSceneObject({
     layerKey: "person",
     position: PosFns.new(1260, 490),
@@ -114,18 +123,16 @@ const objects: SceneObject<LayerKey, any>[] = [
   speechBubble,
 ];
 
-const actions: Observable<SceneAction<LayerKey>> = merge(
-  timer(200),
-  randomInterval([6000, 15000])
-).pipe(
-  map(() => ({
-    kind: "addObject",
-    makeObject: () => makeCruisingBird("bird", -160, [10, 180]),
-  }))
-);
+const makeActions = (random: PRNG): Observable<SceneAction<LayerKey>> =>
+  merge(timer(200), randomInterval([6000, 15000], random)).pipe(
+    map(() => ({
+      kind: "addObject",
+      makeObject: () => makeCruisingBird("bird", -160, [10, 180], random),
+    }))
+  );
 
-export const introScene: SceneType<LayerKey> = {
-  objects,
+export const makeIntroScene = (random: PRNG) => ({
+  objects: makeObjects(random),
   layerOrder,
-  actions,
-};
+  actions: makeActions(random),
+});
