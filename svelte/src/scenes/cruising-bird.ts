@@ -1,3 +1,4 @@
+import type { PRNG } from "seedrandom";
 import {
   NumberSpringFns,
   PosFns,
@@ -20,16 +21,17 @@ interface CruisingBirdState {
 export const makeCruisingBird = <TLayerKey extends string>(
   layerKey: TLayerKey,
   initialX: number,
-  rangeY: [number, number]
+  rangeY: [number, number],
+  random: PRNG
 ): SceneObject<TLayerKey, CruisingBirdState> => {
   const rangeMin = Math.min(rangeY[0], rangeY[1]);
   const rangeRange = Math.abs(rangeY[0] - rangeY[1]);
-  const makeNewYEndPoint = () => Math.random() * rangeRange + rangeMin;
-  const makeNewXEndPoint = () => Math.random() * 1 + 1.5;
+  const makeNewYEndPoint = () => random.quick() * rangeRange + rangeMin;
+  const makeNewXEndPoint = () => random.quick() * 1 + 1.5;
 
   const initialY = makeNewYEndPoint();
 
-  return makeSceneObjectStateful<TLayerKey, CruisingBirdState>({
+  return makeSceneObjectStateful(random)<TLayerKey, CruisingBirdState>({
     layerKey,
     position: PosFns.new(initialX, initialY),
     state: {
@@ -78,11 +80,11 @@ export const makeCruisingBird = <TLayerKey extends string>(
               makeFeather(
                 layerKey,
                 current.position,
-                PosFns.new(Math.random() * 2 - 1, Math.random() * 5 - 4)
+                PosFns.new(random.quick() * 2 - 1, random.quick() * 5 - 4)
               ),
           });
 
-          if (Math.random() < 0.2) {
+          if (random.quick() < 0.2) {
             if (current.state.feathers > 0) {
               return [
                 makeFeatherAction(),

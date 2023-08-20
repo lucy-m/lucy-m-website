@@ -1,4 +1,5 @@
-import { v4 as uuid } from "uuid";
+import type { PRNG } from "seedrandom";
+import { seededUuid } from "../utils";
 import type { AssetKey } from "./assets";
 import { PosFns, type Position } from "./position";
 import type { SubLayerKey } from "./sub-layer-key";
@@ -52,24 +53,28 @@ export type SceneObjectStateless<TLayerKey extends string> = SceneObject<
   EmptyState
 >;
 
-export const makeSceneObject = <TLayerKey extends string>(
-  obj: Omit<SceneObject<TLayerKey, EmptyState>, "id" | "state">
-): SceneObject<TLayerKey, EmptyState> => {
-  return {
-    id: uuid(),
-    state: {},
-    ...obj,
+export const makeSceneObject =
+  (random: PRNG) =>
+  <TLayerKey extends string>(
+    obj: Omit<SceneObject<TLayerKey, EmptyState>, "id" | "state">
+  ): SceneObject<TLayerKey, EmptyState> => {
+    return {
+      id: seededUuid(random),
+      state: {},
+      ...obj,
+    };
   };
-};
 
-export const makeSceneObjectStateful = <TLayerKey extends string, TState>(
-  obj: Omit<SceneObject<TLayerKey, TState>, "id">
-): SceneObject<TLayerKey, TState> => {
-  return {
-    id: uuid(),
-    ...obj,
+export const makeSceneObjectStateful =
+  (random: PRNG) =>
+  <TLayerKey extends string, TState>(
+    obj: Omit<SceneObject<TLayerKey, TState>, "id">
+  ): SceneObject<TLayerKey, TState> => {
+    return {
+      id: seededUuid(random),
+      ...obj,
+    };
   };
-};
 
 type SceneObjectActionApplyResult<TLayerKey extends string, TState> =
   | { kind: "update"; object: SceneObject<TLayerKey, TState> }

@@ -1,3 +1,4 @@
+import type { PRNG } from "seedrandom";
 import { PosFns, type Position } from "./position";
 
 export type Shape = Position[];
@@ -148,7 +149,8 @@ export const getBoundingBox = (
 
 export const generatePointsInShape = (
   target: number,
-  shape: Shape
+  shape: Shape,
+  random: PRNG
 ): Position[] => {
   const boundingBox = getBoundingBox(shape);
   const maxIters = target * 4;
@@ -162,10 +164,10 @@ export const generatePointsInShape = (
         return current;
       } else {
         const x =
-          Math.random() * (boundingBox.max.x - boundingBox.min.x) +
+          random.quick() * (boundingBox.max.x - boundingBox.min.x) +
           boundingBox.min.x;
         const y =
-          Math.random() * (boundingBox.max.y - boundingBox.min.y) +
+          random.quick() * (boundingBox.max.y - boundingBox.min.y) +
           boundingBox.min.y;
 
         const point = PosFns.new(x, y);
