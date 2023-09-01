@@ -13,11 +13,12 @@ import {
 import type { AssetKey } from "../model/assets";
 import { makeCruisingBird } from "./cruising-bird";
 
-type LayerKey = "bg" | "person" | "speechBubble" | "trees" | "bird";
+type LayerKey = "bg" | "person" | "speechBubble" | "trees" | "bird" | "house";
 
 const layerOrder: LayerKey[] = [
   "bg",
   "trees",
+  "house",
   "bird",
   "person",
   "speechBubble",
@@ -80,7 +81,6 @@ export const makeIntroScene = (random: PRNG) => {
         maxWidth: 430,
       },
     ],
-    hidden: true,
     onInteract: () => [{ kind: "hide" }],
   });
 
@@ -95,8 +95,8 @@ export const makeIntroScene = (random: PRNG) => {
     ...makeTrees(20, [
       PosFns.new(0, 300),
       PosFns.new(500, 250),
-      PosFns.new(750, 350),
-      PosFns.new(100, 500),
+      PosFns.new(750, 300),
+      PosFns.new(0, 400),
     ]),
     ...makeTrees(20, [
       PosFns.new(881, 231),
@@ -105,6 +105,13 @@ export const makeIntroScene = (random: PRNG) => {
       PosFns.new(1829, 361),
       PosFns.new(1309, 333),
     ]),
+    makeSceneObjectBound({
+      layerKey: "house",
+      position: PosFns.new(285, 355),
+      getLayers: () => [
+        { kind: "image", assetKey: "houseSmall", subLayer: "background" },
+      ],
+    }),
     makeSceneObjectBound({
       layerKey: "person",
       position: PosFns.new(1260, 490),
