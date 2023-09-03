@@ -7,7 +7,7 @@ import {
   type SceneType,
 } from "../model";
 
-const layerOrder = ["bg", "house"] as const;
+const layerOrder = ["bg", "house", "bird"] as const;
 type LayerKey = (typeof layerOrder)[number];
 
 export const makeHouseScene = (random: PRNG): SceneType<LayerKey> => {

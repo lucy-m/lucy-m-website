@@ -56,7 +56,7 @@ export interface SceneType<TLayerKey extends string> {
   objects: readonly SceneObject<TLayerKey, unknown>[];
   /** Order of layer drawing, from bottom to top */
   layerOrder: readonly TLayerKey[];
-  events: Observable<SceneEvent>;
+  events: Observable<SceneEvent | SceneAction<TLayerKey>>;
 }
 
 export type SceneObjectActionApplyResult<TLayerKey extends string, TState> =

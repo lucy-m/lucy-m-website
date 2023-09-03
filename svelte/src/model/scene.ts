@@ -65,7 +65,7 @@ type ApplySceneActionResult<TLayerKey extends string> =
 export const applySceneEvent = <TLayerKey extends string>(
   scene: SceneType<TLayerKey>,
   images: Record<AssetKey, HTMLImageElement>,
-  event: SceneEvent
+  event: SceneEvent | SceneAction<TLayerKey>
 ): ApplySceneActionResult<TLayerKey> => {
   if (event.kind === "tick") {
     interface Accumulator {
@@ -98,7 +98,7 @@ export const applySceneEvent = <TLayerKey extends string>(
     );
 
     return applySceneActions(reduceResult.scene, reduceResult.sceneActions);
-  } else {
+  } else if (event.kind === "interact") {
     const objectsInOrder = getObjectsInOrder(
       scene.objects.filter((obj) => obj.onInteract),
       scene.layerOrder,
@@ -133,10 +133,12 @@ export const applySceneEvent = <TLayerKey extends string>(
 
       return applySceneActions(actionResult.scene, actionResult.sceneActions);
     }
+  } else {
+    return applySceneActions(scene, [event]);
   }
 };
 
-export const applySceneActions = <TLayerKey extends string>(
+const applySceneActions = <TLayerKey extends string>(
   scene: SceneType<TLayerKey>,
   actions: readonly SceneAction<TLayerKey>[]
 ): ApplySceneActionResult<TLayerKey> => {

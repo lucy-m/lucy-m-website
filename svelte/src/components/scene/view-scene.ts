@@ -96,6 +96,9 @@ export const viewScene = (
         filter(() => document.hasFocus()),
         scan((scene, action) => {
           const sceneEventResult = applySceneEvent(scene, images, action);
+          if (sceneEventResult.kind === "newScene") {
+            console.error("Need to switch scene action subscription");
+          }
           return sceneEventResult.scene;
         }, initialScene),
         rafThrottle(),

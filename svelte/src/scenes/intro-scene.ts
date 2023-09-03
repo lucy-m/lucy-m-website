@@ -1,4 +1,4 @@
-import { Observable, Subject, map, merge, timer } from "rxjs";
+import { Observable, map, merge, timer } from "rxjs";
 import { type PRNG } from "seedrandom";
 import {
   PosFns,
@@ -148,6 +148,6 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
   return {
     objects,
     layerOrder,
-    events: new Subject(),
+    events,
   };
 };
