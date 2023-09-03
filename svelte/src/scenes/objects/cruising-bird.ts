@@ -6,9 +6,9 @@ import {
   type NumberSpring,
   type SceneObject,
   type SceneObjectAction,
-} from "../model";
+} from "../../model";
+import { sceneSize } from "../scene-size";
 import { makeFeather } from "./feather";
-import { sceneSize } from "./scene-size";
 
 interface CruisingBirdState {
   flapUp: boolean;
@@ -80,7 +80,8 @@ export const makeCruisingBird = <TLayerKey extends string>(
               makeFeather(
                 layerKey,
                 current.position,
-                PosFns.new(random.quick() * 2 - 1, random.quick() * 5 - 4)
+                PosFns.new(random.quick() * 2 - 1, random.quick() * 5 - 4),
+                random
               ),
           });
 

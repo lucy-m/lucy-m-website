@@ -1,3 +1,4 @@
+import type { PRNG } from "seedrandom";
 import {
   NumberSpringFns,
   PosFns,
@@ -5,8 +6,8 @@ import {
   type NumberSpring,
   type Position,
   type SceneObject,
-} from "../model";
-import { sceneSize } from "./scene-size";
+} from "../../model";
+import { sceneSize } from "../scene-size";
 
 interface FeatherState {
   xPosition: NumberSpring;
@@ -16,9 +17,10 @@ interface FeatherState {
 export const makeFeather = <TLayerKey extends string>(
   layerKey: TLayerKey,
   initial: Position,
-  initialVelocity: Position
+  initialVelocity: Position,
+  random: PRNG
 ): SceneObject<TLayerKey, FeatherState> => {
-  return makeSceneObjectStateful<TLayerKey, FeatherState>({
+  return makeSceneObjectStateful(random)<TLayerKey, FeatherState>({
     layerKey,
     position: initial,
     getLayers: () => [

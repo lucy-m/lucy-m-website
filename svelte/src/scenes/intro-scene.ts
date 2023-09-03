@@ -11,7 +11,7 @@ import {
   type Shape,
 } from "../model";
 import type { AssetKey } from "../model/assets";
-import { makeCruisingBird } from "./cruising-bird";
+import { makeCruisingBird } from "./objects/cruising-bird";
 
 type LayerKey = "bg" | "person" | "speechBubble" | "trees" | "bird" | "house";
 
