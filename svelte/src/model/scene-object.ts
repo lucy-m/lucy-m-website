@@ -180,8 +180,8 @@ export const getObjectBoundingBox = (
 
 /** Gets objects in order, from top to bottom */
 export const getObjectsInOrder = <TLayerKey extends string>(
-  objects: SceneObject<TLayerKey, unknown>[],
-  layerOrder: TLayerKey[],
+  objects: readonly SceneObject<TLayerKey, unknown>[],
+  layerOrder: readonly TLayerKey[],
   order: "top-to-bottom" | "bottom-to-top"
 ): SceneObject<TLayerKey, unknown>[] => {
   const byLayer = objects.reduce<

@@ -11,9 +11,9 @@ import {
 } from "./scene-object";
 
 export interface SceneType<TLayerKey extends string> {
-  objects: SceneObject<TLayerKey, unknown>[];
+  objects: readonly SceneObject<TLayerKey, unknown>[];
   /** Order of layer drawing, from bottom to top */
-  layerOrder: TLayerKey[];
+  layerOrder: readonly TLayerKey[];
   actions: Observable<SceneAction<TLayerKey>>;
 }
 
