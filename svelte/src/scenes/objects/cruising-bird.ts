@@ -75,14 +75,17 @@ export const makeCruisingBird = <TLayerKey extends string>(
             TLayerKey,
             unknown
           > => ({
-            kind: "addObject",
-            makeObject: () =>
-              makeFeather(
-                layerKey,
-                current.position,
-                PosFns.new(random.quick() * 2 - 1, random.quick() * 5 - 4),
-                random
-              ),
+            kind: "sceneAction",
+            action: {
+              kind: "addObject",
+              makeObject: () =>
+                makeFeather(
+                  layerKey,
+                  current.position,
+                  PosFns.new(random.quick() * 2 - 1, random.quick() * 5 - 4),
+                  random
+                ),
+            },
           });
 
           if (random.quick() < 0.2) {

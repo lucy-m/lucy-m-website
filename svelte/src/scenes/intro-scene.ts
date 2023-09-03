@@ -1,4 +1,4 @@
-import { Observable, map, merge, timer } from "rxjs";
+import { Observable, Subject, map, merge, timer } from "rxjs";
 import { type PRNG } from "seedrandom";
 import {
   PosFns,
@@ -12,6 +12,7 @@ import {
   type Shape,
 } from "../model";
 import type { AssetKey } from "../model/assets";
+import { makeHouseScene } from "./house-scene";
 import { makeCruisingBird } from "./objects/cruising-bird";
 
 const layerOrder = [
@@ -112,6 +113,15 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
       getLayers: () => [
         { kind: "image", assetKey: "houseSmall", subLayer: "background" },
       ],
+      onInteract: () => [
+        {
+          kind: "sceneAction",
+          action: {
+            kind: "changeScene",
+            makeScene: () => makeHouseScene(random),
+          },
+        },
+      ],
     }),
     makeSceneObjectBound({
       layerKey: "person",
@@ -125,7 +135,7 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
     speechBubble,
   ];
 
-  const actions: Observable<SceneAction<LayerKey>> = merge(
+  const events: Observable<SceneAction<LayerKey>> = merge(
     timer(200),
     randomInterval([6000, 15000], random)
   ).pipe(
@@ -138,6 +148,6 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
   return {
     objects,
     layerOrder,
-    actions,
+    events: new Subject(),
   };
 };

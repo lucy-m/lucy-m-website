@@ -2,56 +2,12 @@ import type { PRNG } from "seedrandom";
 import { seededUuid } from "../utils";
 import type { AssetKey } from "./assets";
 import { PosFns, type Position } from "./position";
-import type { SubLayerKey } from "./sub-layer-key";
-
-export type ObjectLayerContent =
-  | {
-      kind: "text";
-      text: string[];
-      position: Position;
-      maxWidth: number;
-    }
-  | {
-      kind: "image";
-      assetKey: AssetKey;
-      subLayer: SubLayerKey;
-      position?: Position;
-    };
-
-export type SceneObjectAction<TLayerKey extends string, TState = EmptyState> =
-  | ((
-      | {
-          kind: "hide";
-        }
-      | { kind: "show" }
-      | { kind: "moveBy"; by: Position }
-      | { kind: "moveTo"; to: Position }
-      | { kind: "removeObject" }
-    ) & { target?: string })
-  | { kind: "updateState"; state: Partial<TState> }
-  | { kind: "addObject"; makeObject: () => SceneObject<TLayerKey, unknown> };
-
-type EmptyState = Record<string, never>;
-
-export type SceneObject<TLayerKey extends string, TState = EmptyState> = {
-  id: string;
-  position: Position;
-  hidden?: boolean;
-  layerKey: TLayerKey;
-  state: TState;
-  getLayers: (current: SceneObject<string, TState>) => ObjectLayerContent[];
-  onInteract?: (
-    current: SceneObject<string, TState>
-  ) => SceneObjectAction<TLayerKey, TState>[];
-  onTick?: (
-    current: SceneObject<string, TState>
-  ) => SceneObjectAction<TLayerKey, TState>[];
-};
-
-export type SceneObjectStateless<TLayerKey extends string> = SceneObject<
-  TLayerKey,
-  EmptyState
->;
+import type {
+  EmptyState,
+  SceneObject,
+  SceneObjectAction,
+  SceneObjectActionApplyResult,
+} from "./scene-types";
 
 export const makeSceneObject =
   (random: PRNG) =>
@@ -75,11 +31,6 @@ export const makeSceneObjectStateful =
       ...obj,
     };
   };
-
-type SceneObjectActionApplyResult<TLayerKey extends string, TState> =
-  | { kind: "update"; object: SceneObject<TLayerKey, TState> }
-  | { kind: "removeObject" }
-  | { kind: "addObject"; makeObject: () => SceneObject<TLayerKey, unknown> };
 
 export const applySceneObjectAction = <TLayerKey extends string, TState>(
   obj: SceneObject<TLayerKey, TState>,
@@ -132,8 +83,8 @@ export const applySceneObjectAction = <TLayerKey extends string, TState>(
     case "removeObject": {
       return { kind: "removeObject" };
     }
-    case "addObject": {
-      return { kind: "addObject", makeObject: action.makeObject };
+    case "sceneAction": {
+      return action;
     }
   }
 };

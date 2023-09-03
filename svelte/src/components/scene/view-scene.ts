@@ -10,7 +10,7 @@ import {
 } from "rxjs";
 import {
   PosFns,
-  applySceneAction,
+  applySceneEvent,
   breakText,
   rafThrottle,
   resolveScene,
@@ -90,12 +90,13 @@ export const viewScene = (
           (position: Position) => ({ kind: "interact", position } as SceneEvent)
         )
       ),
-      initialScene.actions
+      initialScene.events
     )
       .pipe(
         filter(() => document.hasFocus()),
         scan((scene, action) => {
-          return applySceneAction(scene, images, action);
+          const sceneEventResult = applySceneEvent(scene, images, action);
+          return sceneEventResult.scene;
         }, initialScene),
         rafThrottle(),
         startWith(initialScene)
