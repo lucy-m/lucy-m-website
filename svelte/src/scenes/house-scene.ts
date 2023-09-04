@@ -7,7 +7,7 @@ import {
   type SceneType,
 } from "../model";
 
-const layerOrder = ["bg", "house", "bird"] as const;
+const layerOrder = ["bg", "house"] as const;
 type LayerKey = (typeof layerOrder)[number];
 
 export const makeHouseScene = (random: PRNG): SceneType<LayerKey> => {
@@ -22,6 +22,12 @@ export const makeHouseScene = (random: PRNG): SceneType<LayerKey> => {
           kind: "image",
           assetKey: "houseSmall",
           subLayer: "background",
+        },
+        {
+          kind: "text",
+          maxWidth: 400,
+          position: PosFns.new(-500, -200),
+          text: ["There is gonna be something here I promise"],
         },
       ],
     }),
