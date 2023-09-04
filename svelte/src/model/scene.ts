@@ -1,4 +1,4 @@
-import { choose } from "../utils";
+import { choose, partitionByKind } from "../utils";
 import type { AssetKey } from "./assets";
 import {
   applySceneObjectAction,
@@ -142,19 +142,17 @@ const applySceneActions = <TLayerKey extends string>(
   scene: SceneType<TLayerKey>,
   actions: readonly SceneAction<TLayerKey>[]
 ): ApplySceneActionResult<TLayerKey> => {
-  return actions.reduce<ApplySceneActionResult<TLayerKey>>(
-    (acc, action) => {
-      if (acc.kind === "newScene") {
-        return acc;
-      } else {
-        if (action.kind === "addObject") {
-          const objects = [...acc.scene.objects, action.makeObject()];
-          return { kind: "updated", scene: { ...acc.scene, objects } };
-        } else {
-          return { kind: "newScene", scene: action.makeScene() };
-        }
-      }
-    },
-    { kind: "updated", scene }
-  );
+  const byType = partitionByKind(actions, "changeScene");
+
+  const changeSceneAction = byType.changeScene?.[0];
+  if (changeSceneAction) {
+    return { kind: "newScene", scene: changeSceneAction.makeScene() };
+  }
+
+  const updated = byType.other.reduce<SceneType<TLayerKey>>((acc, action) => {
+    const objects = [...acc.objects, action.makeObject()];
+    return { ...acc, objects };
+  }, scene);
+
+  return { kind: "updated", scene: updated };
 };
