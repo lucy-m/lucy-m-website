@@ -1,4 +1,5 @@
 import {
+  Observable,
   Subject,
   Subscription,
   filter,
@@ -7,6 +8,7 @@ import {
   merge,
   scan,
   startWith,
+  switchMap,
 } from "rxjs";
 import {
   PosFns,
@@ -16,6 +18,7 @@ import {
   resolveScene,
   type AssetKey,
   type Position,
+  type SceneAction,
   type SceneEvent,
   type SceneType,
 } from "../../model";
@@ -66,6 +69,7 @@ export const viewScene = (
   const { initialScene, images } = args;
 
   const interactSub = new Subject<Position>();
+  const eventsSub = new Subject<Observable<SceneEvent | SceneAction<string>>>();
 
   canvas.width = sceneSize.x;
   canvas.height = sceneSize.y;
@@ -90,14 +94,17 @@ export const viewScene = (
           (position: Position) => ({ kind: "interact", position } as SceneEvent)
         )
       ),
-      initialScene.events
+      eventsSub.pipe(
+        startWith(initialScene.events),
+        switchMap((v) => v)
+      )
     )
       .pipe(
         filter(() => document.hasFocus()),
         scan((scene, action) => {
           const sceneEventResult = applySceneEvent(scene, images, action);
           if (sceneEventResult.kind === "newScene") {
-            console.error("Need to switch scene action subscription");
+            eventsSub.next(sceneEventResult.scene.events);
           }
           return sceneEventResult.scene;
         }, initialScene),
