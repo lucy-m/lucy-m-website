@@ -1,4 +1,5 @@
 import {
+  Observable,
   Subject,
   Subscription,
   filter,
@@ -7,15 +8,17 @@ import {
   merge,
   scan,
   startWith,
+  switchMap,
 } from "rxjs";
 import {
   PosFns,
-  applySceneAction,
+  applySceneEvent,
   breakText,
   rafThrottle,
   resolveScene,
   type AssetKey,
   type Position,
+  type SceneAction,
   type SceneEvent,
   type SceneType,
 } from "../../model";
@@ -61,11 +64,14 @@ export const viewScene = (
   args: {
     initialScene: SceneType<string>;
     images: Record<AssetKey, HTMLImageElement>;
+    onSceneChange?: (s: SceneType<string>) => void;
+    worldClick$?: Observable<Position>;
   }
-): SvelteActionReturnType => {
-  const { initialScene, images } = args;
+) => {
+  const { initialScene, images, onSceneChange, worldClick$ } = args;
 
   const interactSub = new Subject<Position>();
+  const eventsSub = new Subject<Observable<SceneEvent | SceneAction<string>>>();
 
   canvas.width = sceneSize.x;
   canvas.height = sceneSize.y;
@@ -85,28 +91,38 @@ export const viewScene = (
 
     subscription = merge(
       interval(30).pipe(map(() => ({ kind: "tick" } as SceneEvent))),
-      interactSub.pipe(
+      (worldClick$ ? merge(interactSub, worldClick$) : interactSub).pipe(
         map(
           (position: Position) => ({ kind: "interact", position } as SceneEvent)
         )
       ),
-      initialScene.actions
+      eventsSub.pipe(
+        startWith(initialScene.events),
+        switchMap((v) => v)
+      )
     )
       .pipe(
         filter(() => document.hasFocus()),
         scan((scene, action) => {
-          return applySceneAction(scene, images, action);
+          const sceneEventResult = applySceneEvent(scene, images, action);
+          if (sceneEventResult.kind === "newScene") {
+            eventsSub.next(sceneEventResult.scene.events);
+          }
+          return sceneEventResult.scene;
         }, initialScene),
         rafThrottle(),
         startWith(initialScene)
       )
       .subscribe((scene) => {
+        onSceneChange && onSceneChange(scene);
         redrawCanvas(ctx, scene, images);
+        canvas.setAttribute("data-initialised", "true");
       });
   }
 
   return {
     destroy: () => {
+      canvas.removeAttribute("data-initialised");
       subscription?.unsubscribe();
     },
   };

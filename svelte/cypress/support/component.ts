@@ -14,11 +14,7 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import type {
-  ComponentProps,
-  ComponentType,
-  SvelteComponentTyped,
-} from "svelte";
+import type { ComponentType, SvelteComponentTyped } from "svelte";
 import "./commands";
 
 // Alternatively you can use CommonJS syntax:
@@ -26,6 +22,7 @@ import "./commands";
 
 import { mount } from "cypress/svelte";
 import Fixture from "./Fixture.svelte";
+import type { FixtureOptions } from "./fixture-options";
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.
@@ -48,7 +45,7 @@ const getByTestId = (testId: string) => {
 const mountWithFixture = <T extends Record<string, any>>(
   componentType: ComponentType<SvelteComponentTyped<T>>,
   props: T,
-  fixtureOptions?: ComponentProps<Fixture<T>>["fixtureOptions"]
+  fixtureOptions?: FixtureOptions
 ) => {
   cy.mount(Fixture, { props: { componentType, props, fixtureOptions } });
 };

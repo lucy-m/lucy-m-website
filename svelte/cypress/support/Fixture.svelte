@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { FixtureOptions } from "./fixture-options";
+
   import type { ComponentType, SvelteComponentTyped } from "svelte";
 
   type T = $$Generic<Record<string, any>>;
@@ -6,11 +8,7 @@
   export let componentType: ComponentType<SvelteComponentTyped<T>>;
   export let props: T;
 
-  export let fixtureOptions:
-    | Partial<{
-        width: string;
-      }>
-    | undefined = undefined;
+  export let fixtureOptions: FixtureOptions | undefined = undefined;
 </script>
 
 <div

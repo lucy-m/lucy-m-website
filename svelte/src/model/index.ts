@@ -8,6 +8,15 @@ export * from "./raf-throttle";
 export * from "./random-interval";
 export * from "./scene";
 export * from "./scene-object";
+export type {
+  SceneAction,
+  SceneEvent,
+  SceneEventOrAction,
+  SceneObject,
+  SceneObjectAction,
+  SceneObjectStateless,
+  SceneType,
+} from "./scene-types";
 export * from "./shape";
 export * from "./spring";
 export * from "./spring-observable";
