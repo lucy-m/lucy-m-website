@@ -111,6 +111,7 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
     ]),
     makeSceneObjectBound({
       layerKey: "house",
+      typeName: "small-house",
       position: PosFns.new(285, 355),
       getLayers: () => [
         { kind: "image", assetKey: "houseSmall", subLayer: "background" },
@@ -148,6 +149,7 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
   );
 
   return {
+    typeName: "intro-scene",
     objects,
     layerOrder,
     events,

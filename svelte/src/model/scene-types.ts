@@ -22,6 +22,7 @@ export type ObjectLayerContent =
 export type SceneObject<TLayerKey extends string, TState = EmptyState> = {
   id: string;
   position: Position;
+  typeName?: string;
   hidden?: boolean;
   layerKey: TLayerKey;
   state: TState;
@@ -53,6 +54,7 @@ export type SceneObjectAction<TLayerKey extends string, TState = EmptyState> =
   | { kind: "sceneAction"; action: SceneAction<TLayerKey> };
 
 export interface SceneType<TLayerKey extends string> {
+  typeName: string;
   objects: readonly SceneObject<TLayerKey, unknown>[];
   /** Order of layer drawing, from bottom to top */
   layerOrder: readonly TLayerKey[];

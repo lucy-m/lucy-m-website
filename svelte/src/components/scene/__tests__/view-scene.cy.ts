@@ -40,16 +40,15 @@ describe("view-scene", () => {
       cy.get("canvas").should("have.attr", "data-initialised", "true");
     });
 
-    it("works", () => {});
+    it("loads intro scene", () => {
+      expect(currentScene.typeName).to.eq("intro-scene");
+    });
 
     describe("clicking house", () => {
       beforeEach(() => {
         expect(currentScene).to.exist;
-        console.log(currentScene);
-
-        // Update to use internal names
         const house = currentScene.objects.find(
-          (obj) => obj.id === "0fd9579d-29fb-4c83-9e76-06199ce12bed"
+          (obj) => obj.typeName === "small-house"
         )!;
         expect(house).to.exist;
 
@@ -58,31 +57,17 @@ describe("view-scene", () => {
         tick(100);
       });
 
-      it.only("changes scene", () => {
-        // Update to use internal names
-        expect(currentScene.objects).to.have.length(1);
+      it("changes scene", () => {
+        expect(currentScene.typeName).to.eq("house-scene");
       });
 
       it("stops bird spawning", () => {
         tick(120_000).then(() => {
-          // Update to use internal names
-          expect(currentScene.objects).to.have.length(1);
+          expect(
+            currentScene.objects.find((o) => o.typeName === "cruising-bird")
+          ).to.be.undefined;
         });
       });
-    });
-
-    it("clicking bird", () => {
-      tick(4_000).then(() => {
-        // Update to use internal names
-        const bird = currentScene.objects.find(
-          (obj) => obj.layerKey === "bird"
-        );
-        expect(bird).to.exist;
-        worldClick$.next({ x: bird!.position.x + 5, y: bird!.position.y + 5 });
-      });
-      tick(400);
-
-      // Need some assertions
     });
   });
 });

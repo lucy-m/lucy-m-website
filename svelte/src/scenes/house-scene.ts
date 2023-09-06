@@ -34,6 +34,7 @@ export const makeHouseScene = (random: PRNG): SceneType<LayerKey> => {
   ];
 
   return {
+    typeName: "house-scene",
     objects,
     layerOrder,
     events: new Subject(),

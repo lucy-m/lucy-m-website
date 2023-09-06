@@ -32,6 +32,7 @@ export const makeCruisingBird = <TLayerKey extends string>(
   const initialY = makeNewYEndPoint();
 
   return makeSceneObjectStateful(random)<TLayerKey, CruisingBirdState>({
+    typeName: "cruising-bird",
     layerKey,
     position: PosFns.new(initialX, initialY),
     state: {
