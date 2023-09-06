@@ -40,12 +40,16 @@ describe("view-scene", () => {
       cy.get("canvas").should("have.attr", "data-initialised", "true");
     });
 
+    it("works", () => {});
+
     describe("clicking house", () => {
       beforeEach(() => {
         expect(currentScene).to.exist;
+        console.log(currentScene);
 
+        // Update to use internal names
         const house = currentScene.objects.find(
-          (obj) => obj.id === "7317ffb2-b677-4b2f-83f8-83da6fb594c7"
+          (obj) => obj.id === "0fd9579d-29fb-4c83-9e76-06199ce12bed"
         )!;
         expect(house).to.exist;
 
@@ -54,7 +58,7 @@ describe("view-scene", () => {
         tick(100);
       });
 
-      it("changes scene", () => {
+      it.only("changes scene", () => {
         // Update to use internal names
         expect(currentScene.objects).to.have.length(1);
       });

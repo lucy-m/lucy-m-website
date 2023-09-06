@@ -12,6 +12,7 @@ import {
   type Shape,
 } from "../model";
 import type { AssetKey } from "../model/assets";
+import type { ObjectLayerContent } from "../model/scene-types";
 import { makeHouseScene } from "./house-scene";
 import { makeCruisingBird } from "./objects/cruising-bird";
 
@@ -44,24 +45,25 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
   const makeTrees = (
     target: number,
     shape: Shape
-  ): SceneObjectStateless<LayerKey>[] => {
-    return generatePointsInShape(target, shape, random)
+  ): SceneObjectStateless<LayerKey> => {
+    const layers: ObjectLayerContent[] = generatePointsInShape(
+      target,
+      shape,
+      random
+    )
       .sort((a, b) => a.y - b.y)
-      .map<SceneObjectStateless<LayerKey>>((position) => {
-        const assetKey = randomTree();
+      .map((position) => ({
+        kind: "image",
+        assetKey: randomTree(),
+        subLayer: "background",
+        position,
+      }));
 
-        return makeSceneObjectBound({
-          position,
-          layerKey: "trees",
-          getLayers: () => [
-            {
-              kind: "image",
-              assetKey,
-              subLayer: "background",
-            },
-          ],
-        });
-      });
+    return makeSceneObjectBound({
+      position: PosFns.zero,
+      layerKey: "trees",
+      getLayers: () => layers,
+    });
   };
 
   const speechBubble = makeSceneObjectBound({
@@ -94,13 +96,13 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
         { kind: "image", assetKey: "background", subLayer: "background" },
       ],
     }),
-    ...makeTrees(20, [
+    makeTrees(20, [
       PosFns.new(0, 300),
       PosFns.new(500, 250),
       PosFns.new(750, 300),
       PosFns.new(0, 400),
     ]),
-    ...makeTrees(20, [
+    makeTrees(20, [
       PosFns.new(881, 231),
       PosFns.new(1569, 196),
       PosFns.new(1837, 209),
