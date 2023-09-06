@@ -1,7 +1,7 @@
 import type { ComponentProps, ComponentType } from "svelte";
 import { Scene, Talks } from "./components";
 import FromStatic from "./components/FromStatic.svelte";
-import { makeIntroScene } from "./scenes/intro-scene";
+import { makeIntroScene } from "./scenes";
 
 export const routes = {
   theFunBit: "/the-fun-bit",

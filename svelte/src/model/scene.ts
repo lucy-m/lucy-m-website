@@ -1,36 +1,26 @@
-import type { Observable } from "rxjs";
-import { choose } from "../utils";
+import { choose, partitionByKind } from "../utils";
 import type { AssetKey } from "./assets";
-import type { Position } from "./position";
 import {
   applySceneObjectAction,
   getObjectBoundingBox,
   getObjectsInOrder,
-  type SceneObject,
-  type SceneObjectAction,
 } from "./scene-object";
-
-export interface SceneType<TLayerKey extends string> {
-  objects: SceneObject<TLayerKey, unknown>[];
-  /** Order of layer drawing, from bottom to top */
-  layerOrder: TLayerKey[];
-  actions: Observable<SceneAction<TLayerKey>>;
-}
-
-export type SceneAction<TLayerKey extends string> = {
-  kind: "addObject";
-  makeObject: () => SceneObject<TLayerKey, unknown>;
-};
-
-export type SceneEvent =
-  | { kind: "interact"; position: Position }
-  | { kind: "tick" };
+import type {
+  SceneAction,
+  SceneEvent,
+  SceneObjectAction,
+  SceneType,
+} from "./scene-types";
 
 const applySceneObjectActions = <TLayerKey extends string>(
   scene: SceneType<TLayerKey>,
   objectActions: SceneObjectAction<TLayerKey, unknown>[],
   interactObjectId: string
-): SceneType<TLayerKey> => {
+): { scene: SceneType<TLayerKey>; sceneActions: SceneAction<TLayerKey>[] } => {
+  const sceneActions = choose(objectActions, (action) =>
+    action.kind === "sceneAction" ? action.action : undefined
+  );
+
   const byId = objectActions.reduce<
     Record<string, SceneObjectAction<TLayerKey, unknown>[] | undefined>
   >((acc, next) => {
@@ -39,53 +29,76 @@ const applySceneObjectActions = <TLayerKey extends string>(
     return { ...acc, [target]: [...(acc[target] ?? []), next] };
   }, {});
 
-  const newObjects = scene.objects.flatMap((obj) => {
+  const newObjects = choose(scene.objects, (obj) => {
     const myActions = byId[obj.id];
 
     const removeAction = myActions?.some((a) => a.kind === "removeObject");
 
-    const newObjects =
-      (myActions &&
-        choose(myActions, (obj) =>
-          obj.kind === "addObject" ? obj.makeObject() : undefined
-        )) ??
-      [];
-
     if (removeAction) {
-      return newObjects;
+      return undefined;
     }
 
     const updatedObject =
       myActions?.reduce((acc, next) => {
         const result = applySceneObjectAction(acc, next);
-        return result.kind === "removeObject" || result.kind === "addObject"
+        return result.kind === "removeObject" || result.kind === "sceneAction"
           ? acc
           : result.object;
       }, obj) ?? obj;
 
-    return [updatedObject, ...newObjects];
+    return updatedObject;
   });
 
-  return { ...scene, objects: newObjects };
+  return { scene: { ...scene, objects: newObjects }, sceneActions };
 };
 
-export const applySceneAction = <TLayerKey extends string>(
+type ApplySceneActionResult<TLayerKey extends string> =
+  | {
+      kind: "newScene";
+      scene: SceneType<string>;
+    }
+  | {
+      kind: "updated";
+      scene: SceneType<TLayerKey>;
+    };
+
+export const applySceneEvent = <TLayerKey extends string>(
   scene: SceneType<TLayerKey>,
   images: Record<AssetKey, HTMLImageElement>,
-  action: SceneEvent | SceneAction<TLayerKey>
-): SceneType<TLayerKey> => {
-  if (action.kind === "tick") {
-    return scene.objects.reduce((acc, obj) => {
-      const objectActions: SceneObjectAction<TLayerKey, unknown>[] | undefined =
-        obj.onTick && obj.onTick(obj);
+  event: SceneEvent | SceneAction<TLayerKey>
+): ApplySceneActionResult<TLayerKey> => {
+  if (event.kind === "tick") {
+    interface Accumulator {
+      scene: SceneType<TLayerKey>;
+      sceneActions: readonly SceneAction<TLayerKey>[];
+    }
 
-      if (!objectActions) {
-        return acc;
-      } else {
-        return applySceneObjectActions(acc, objectActions, obj.id);
-      }
-    }, scene);
-  } else if (action.kind === "interact") {
+    const reduceResult = scene.objects.reduce<Accumulator>(
+      (acc, obj) => {
+        const objectActions:
+          | SceneObjectAction<TLayerKey, unknown>[]
+          | undefined = obj.onTick && obj.onTick(obj);
+
+        if (!objectActions) {
+          return acc;
+        } else {
+          const actionResult = applySceneObjectActions(
+            acc.scene,
+            objectActions,
+            obj.id
+          );
+
+          return {
+            scene: actionResult.scene,
+            sceneActions: [...acc.sceneActions, ...actionResult.sceneActions],
+          };
+        }
+      },
+      { scene, sceneActions: [] }
+    );
+
+    return applySceneActions(reduceResult.scene, reduceResult.sceneActions);
+  } else if (event.kind === "interact") {
     const objectsInOrder = getObjectsInOrder(
       scene.objects.filter((obj) => obj.onInteract),
       scene.layerOrder,
@@ -95,28 +108,51 @@ export const applySceneAction = <TLayerKey extends string>(
     const interactObject = objectsInOrder.find((sceneObj) => {
       const boundingBox = getObjectBoundingBox(sceneObj, images);
       return (
-        action.position.x > boundingBox.topLeft.x &&
-        action.position.x < boundingBox.bottomRight.x &&
-        action.position.y > boundingBox.topLeft.y &&
-        action.position.y < boundingBox.bottomRight.y
+        event.position.x > boundingBox.topLeft.x &&
+        event.position.x < boundingBox.bottomRight.x &&
+        event.position.y > boundingBox.topLeft.y &&
+        event.position.y < boundingBox.bottomRight.y
       );
     });
 
     if (!interactObject) {
-      return scene;
+      return { kind: "updated", scene };
     }
 
     const objectActions =
       interactObject.onInteract && interactObject.onInteract(interactObject);
 
     if (!objectActions) {
-      return scene;
+      return { kind: "updated", scene };
     } else {
-      return applySceneObjectActions(scene, objectActions, interactObject.id);
+      const actionResult = applySceneObjectActions(
+        scene,
+        objectActions,
+        interactObject.id
+      );
+
+      return applySceneActions(actionResult.scene, actionResult.sceneActions);
     }
   } else {
-    const objects = [...scene.objects, action.makeObject()];
-
-    return { ...scene, objects };
+    return applySceneActions(scene, [event]);
   }
+};
+
+const applySceneActions = <TLayerKey extends string>(
+  scene: SceneType<TLayerKey>,
+  actions: readonly SceneAction<TLayerKey>[]
+): ApplySceneActionResult<TLayerKey> => {
+  const byType = partitionByKind(actions, "changeScene");
+
+  const changeSceneAction = byType.changeScene?.[0];
+  if (changeSceneAction) {
+    return { kind: "newScene", scene: changeSceneAction.makeScene() };
+  }
+
+  const updated = byType.other.reduce<SceneType<TLayerKey>>((acc, action) => {
+    const objects = [...acc.objects, action.makeObject()];
+    return { ...acc, objects };
+  }, scene);
+
+  return { kind: "updated", scene: updated };
 };

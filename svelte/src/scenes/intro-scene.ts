@@ -8,23 +8,25 @@ import {
   type SceneAction,
   type SceneObject,
   type SceneObjectStateless,
+  type SceneType,
   type Shape,
 } from "../model";
 import type { AssetKey } from "../model/assets";
-import { makeCruisingBird } from "./cruising-bird";
+import { makeHouseScene } from "./house-scene";
+import { makeCruisingBird } from "./objects/cruising-bird";
 
-type LayerKey = "bg" | "person" | "speechBubble" | "trees" | "bird" | "house";
-
-const layerOrder: LayerKey[] = [
+const layerOrder = [
   "bg",
   "trees",
   "house",
   "bird",
   "person",
   "speechBubble",
-];
+] as const;
 
-export const makeIntroScene = (random: PRNG) => {
+type LayerKey = (typeof layerOrder)[number];
+
+export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
   const makeSceneObjectBound = makeSceneObject(random);
 
   const randomTree = (): AssetKey => {
@@ -111,6 +113,15 @@ export const makeIntroScene = (random: PRNG) => {
       getLayers: () => [
         { kind: "image", assetKey: "houseSmall", subLayer: "background" },
       ],
+      onInteract: () => [
+        {
+          kind: "sceneAction",
+          action: {
+            kind: "changeScene",
+            makeScene: () => makeHouseScene(random),
+          },
+        },
+      ],
     }),
     makeSceneObjectBound({
       layerKey: "person",
@@ -124,7 +135,7 @@ export const makeIntroScene = (random: PRNG) => {
     speechBubble,
   ];
 
-  const actions: Observable<SceneAction<LayerKey>> = merge(
+  const events: Observable<SceneAction<LayerKey>> = merge(
     timer(200),
     randomInterval([6000, 15000], random)
   ).pipe(
@@ -137,6 +148,6 @@ export const makeIntroScene = (random: PRNG) => {
   return {
     objects,
     layerOrder,
-    actions,
+    events,
   };
 };
