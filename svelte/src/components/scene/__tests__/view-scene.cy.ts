@@ -31,7 +31,7 @@ describe("view-scene", () => {
         props: {
           makeScene: makeIntroScene,
           seed: "abcd",
-          onSceneChange: (s) => {
+          onSceneChange: (s: SceneType<string>) => {
             currentScene = s;
           },
           worldClick$,

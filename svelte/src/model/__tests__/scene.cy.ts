@@ -22,6 +22,7 @@ describe("scene", () => {
   const makeTestScene = (
     objects: SceneObject<string>[]
   ): SceneType<string> => ({
+    typeName: "test-scene",
     events: of(),
     layerOrder: [],
     objects,

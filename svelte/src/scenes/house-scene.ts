@@ -25,9 +25,9 @@ export const makeHouseScene = (random: PRNG): SceneType<LayerKey> => {
         },
         {
           kind: "text",
-          maxWidth: 400,
+          maxWidth: 650,
           position: PosFns.new(-500, -200),
-          text: ["There is gonna be something here I promise"],
+          text: ["There is gonna be something good here I promise"],
         },
       ],
     }),
