@@ -7,8 +7,9 @@
 
   export let makeScene: (random: PRNG) => SceneType<string>;
   export let seed: string;
-  export let onSceneChange: (scene: SceneType<string>) => void;
-  export let worldClick$: Observable<Position>;
+  export let onSceneChange: ((scene: SceneType<string>) => void) | undefined =
+    undefined;
+  export let worldClick$: Observable<Position> | undefined = undefined;
 </script>
 
 {#await loadImages() then images}

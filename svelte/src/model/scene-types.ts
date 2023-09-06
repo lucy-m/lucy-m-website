@@ -19,10 +19,12 @@ export type ObjectLayerContent =
       position?: Position;
     };
 
+export type SceneObjectTypeNames = "small-house" | "cruising-bird";
+
 export type SceneObject<TLayerKey extends string, TState = EmptyState> = {
   id: string;
   position: Position;
-  typeName?: string;
+  typeName?: SceneObjectTypeNames;
   hidden?: boolean;
   layerKey: TLayerKey;
   state: TState;
