@@ -64,9 +64,11 @@ export const viewScene = (
   args: {
     initialScene: SceneType<string>;
     images: Record<AssetKey, HTMLImageElement>;
+    onSceneChange?: (s: SceneType<string>) => void;
+    worldClick$?: Observable<Position>;
   }
 ) => {
-  const { initialScene, images } = args;
+  const { initialScene, images, onSceneChange, worldClick$ } = args;
 
   const interactSub = new Subject<Position>();
   const eventsSub = new Subject<Observable<SceneEvent | SceneAction<string>>>();
@@ -89,7 +91,7 @@ export const viewScene = (
 
     subscription = merge(
       interval(30).pipe(map(() => ({ kind: "tick" } as SceneEvent))),
-      interactSub.pipe(
+      (worldClick$ ? merge(interactSub, worldClick$) : interactSub).pipe(
         map(
           (position: Position) => ({ kind: "interact", position } as SceneEvent)
         )
@@ -112,12 +114,15 @@ export const viewScene = (
         startWith(initialScene)
       )
       .subscribe((scene) => {
+        onSceneChange && onSceneChange(scene);
         redrawCanvas(ctx, scene, images);
+        canvas.setAttribute("data-initialised", "true");
       });
   }
 
   return {
     destroy: () => {
+      canvas.removeAttribute("data-initialised");
       subscription?.unsubscribe();
     },
   };
