@@ -1,6 +1,6 @@
 import type { AssetKey } from "./assets";
 import { PosFns, type Position } from "./position";
-import type { SceneType } from "./scene";
+import type { SceneType } from "./scene-types";
 import type { SubLayerKey } from "./sub-layer-key";
 
 type LayerContent =
@@ -46,7 +46,7 @@ const addLayer = <TLayerKey extends string>(
 const sublayerOrder: SubLayerKey[] = ["background", "text"];
 
 const getLayerContentInOrder = <TLayerKey extends string>(
-  layerOrder: TLayerKey[],
+  layerOrder: readonly TLayerKey[],
   imagesByLayer: LayerByLayerKey<TLayerKey>
 ): DrawLayer[] => {
   return layerOrder.reduce<DrawLayer[]>((acc, layerKey) => {

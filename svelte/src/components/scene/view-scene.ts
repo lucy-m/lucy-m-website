@@ -65,7 +65,7 @@ export const viewScene = (
     initialScene: SceneType<string>;
     images: Record<AssetKey, HTMLImageElement>;
   }
-): SvelteActionReturnType => {
+) => {
   const { initialScene, images } = args;
 
   const interactSub = new Subject<Position>();

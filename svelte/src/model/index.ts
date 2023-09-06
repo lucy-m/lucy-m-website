@@ -11,6 +11,7 @@ export * from "./scene-object";
 export type {
   SceneAction,
   SceneEvent,
+  SceneEventOrAction,
   SceneObject,
   SceneObjectAction,
   SceneObjectStateless,

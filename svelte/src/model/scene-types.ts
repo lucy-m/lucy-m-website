@@ -77,3 +77,7 @@ export type SceneAction<TLayerKey extends string> =
 export type SceneEvent =
   | { kind: "interact"; position: Position }
   | { kind: "tick" };
+
+export type SceneEventOrAction<TLayerKey extends string> =
+  | SceneEvent
+  | SceneAction<TLayerKey>;

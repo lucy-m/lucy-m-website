@@ -1,6 +1,6 @@
 import seedrandom from "seedrandom";
 import { validate } from "uuid";
-import type { SceneAction, SceneObject, SceneType } from "../../model";
+import type { SceneEventOrAction, SceneObject, SceneType } from "../../model";
 import { makeIntroScene } from "../intro-scene";
 
 const assertObjectsMatch = (
@@ -53,18 +53,18 @@ describe("intro scene", () => {
     });
 
     describe("ticking", () => {
-      let actionsA: SceneAction<string>[];
-      let actionsB: SceneAction<string>[];
+      let actionsA: SceneEventOrAction<string>[];
+      let actionsB: SceneEventOrAction<string>[];
 
       beforeEach(() => {
         actionsA = [];
         actionsB = [];
 
-        sceneA.actions.subscribe((value) => {
+        sceneA.events.subscribe((value) => {
           actionsA.push(value);
         });
 
-        sceneB.actions.subscribe((value) => {
+        sceneB.events.subscribe((value) => {
           actionsB.push(value);
         });
       });
@@ -84,8 +84,18 @@ describe("intro scene", () => {
             expect(actionA.kind).to.equal(actionB.kind);
             expect(actionA.kind).to.equal("addObject");
 
-            const objectA = actionA.makeObject();
-            const objectB = actionB.makeObject();
+            const objectA = (
+              actionA as Extract<
+                SceneEventOrAction<string>,
+                { kind: "addObject" }
+              >
+            ).makeObject();
+            const objectB = (
+              actionB as Extract<
+                SceneEventOrAction<string>,
+                { kind: "addObject" }
+              >
+            ).makeObject();
 
             assertObjectsMatch(objectA, objectB);
           }
