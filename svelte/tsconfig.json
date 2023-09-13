@@ -15,7 +15,7 @@
     "allowJs": true,
     "checkJs": true,
     "isolatedModules": true,
-    "types": ["cypress"],
+    "types": ["cypress", "@percy/cypress"],
     "lib": ["ES2022", "dom"]
   },
   "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.js", "src/**/*.svelte", "cypress/**/*.ts"],

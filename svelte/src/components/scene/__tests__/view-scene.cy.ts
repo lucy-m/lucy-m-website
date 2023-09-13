@@ -2,7 +2,7 @@ import fc from "fast-check";
 import { Subject } from "rxjs";
 import { PosFns, type Position, type SceneType } from "../../../model";
 import { makeIntroScene } from "../../../scenes";
-import Fixture from "./Fixture.svelte";
+import Fixture from "./ViewSceneFixture.svelte";
 
 describe("view-scene", () => {
   const tick = (by: number) => {

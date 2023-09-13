@@ -11,9 +11,7 @@ import {
   switchMap,
 } from "rxjs";
 import {
-  PosFns,
   applySceneEvent,
-  breakText,
   rafThrottle,
   resolveScene,
   type AssetKey,
@@ -23,8 +21,7 @@ import {
   type SceneType,
 } from "../../model";
 import { sceneSize } from "../../scenes";
-
-const lineHeight = 53;
+import { drawLayerContent } from "./canvas-draw";
 
 const redrawCanvas = (
   ctx: CanvasRenderingContext2D,
@@ -36,26 +33,9 @@ const redrawCanvas = (
 
     const drawLayers = resolveScene(scene, images);
 
-    drawLayers.forEach((layer) => {
-      const content = layer.content;
+    const drawLayerBound = drawLayerContent(ctx);
 
-      if (content.kind === "image") {
-        ctx?.drawImage(content.image, layer.position.x, layer.position.y);
-      } else {
-        const measureText = (s: string) => ctx?.measureText(s)?.width ?? 0;
-        const lines = content.text.flatMap((t) =>
-          breakText(t, content.maxWidth, measureText)
-        );
-
-        lines.forEach((line, index) => {
-          const position = PosFns.add(
-            layer.position,
-            PosFns.new(0, index * lineHeight)
-          );
-          ctx?.fillText(line, position.x, position.y);
-        });
-      }
-    });
+    drawLayers.forEach(drawLayerBound);
   }
 };
 
