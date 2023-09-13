@@ -52,7 +52,6 @@ describe("canvas-draw", () => {
             rotation,
           };
         }),
-        only: true,
       },
     ];
 
