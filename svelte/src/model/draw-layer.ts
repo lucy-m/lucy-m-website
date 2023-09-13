@@ -17,6 +17,8 @@ type LayerContent =
 export type DrawLayer = {
   content: LayerContent;
   position: Position;
+  /** Rotation in degrees around center of object */
+  rotation?: number;
 };
 
 type LayerByLayerKey<TLayerKey extends string> = Partial<

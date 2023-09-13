@@ -2,14 +2,14 @@
   import type { DrawLayer } from "../../../model";
   import { drawLayerContent } from "../canvas-draw";
 
-  export let drawLayer: DrawLayer;
+  export let drawLayers: DrawLayer[];
 
   let canvasEl: HTMLCanvasElement | undefined;
 
   $: {
     const ctx = canvasEl?.getContext("2d");
     if (ctx) {
-      drawLayerContent(ctx)(drawLayer);
+      drawLayers.forEach(drawLayerContent(ctx));
       canvasEl?.setAttribute("data-initialised", "true");
     }
   }

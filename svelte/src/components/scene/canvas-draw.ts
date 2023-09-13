@@ -7,10 +7,21 @@ export const drawLayerContent =
   (layer: DrawLayer): void => {
     const content = layer.content;
 
+    ctx.setTransform();
+
     if (content.kind === "image") {
-      ctx?.drawImage(content.image, layer.position.x, layer.position.y);
+      if (layer.rotation) {
+        const size = PosFns.new(content.image.width, content.image.height);
+        const center = PosFns.add(layer.position, PosFns.scale(size, 0.5));
+
+        ctx.translate(center.x, center.y);
+        ctx.rotate((layer.rotation * Math.PI) / 180);
+        ctx.translate(-center.x, -center.y);
+      }
+
+      ctx.drawImage(content.image, layer.position.x, layer.position.y);
     } else {
-      const measureText = (s: string) => ctx?.measureText(s)?.width ?? 0;
+      const measureText = (s: string) => ctx.measureText(s)?.width ?? 0;
       const lines = content.text.flatMap((t) =>
         breakText(t, content.maxWidth, measureText)
       );
@@ -20,7 +31,7 @@ export const drawLayerContent =
           layer.position,
           PosFns.new(0, index * lineHeight)
         );
-        ctx?.fillText(line, position.x, position.y);
+        ctx.fillText(line, position.x, position.y);
       });
     }
   };
