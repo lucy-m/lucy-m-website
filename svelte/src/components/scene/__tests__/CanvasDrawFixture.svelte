@@ -10,6 +10,7 @@
     const ctx = canvasEl?.getContext("2d");
     if (ctx) {
       drawLayerContent(ctx)(drawLayer);
+      canvasEl?.setAttribute("data-initialised", "true");
     }
   }
 </script>

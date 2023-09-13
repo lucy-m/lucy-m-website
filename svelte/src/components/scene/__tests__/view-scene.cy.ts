@@ -73,30 +73,32 @@ describe("view-scene", () => {
   });
 
   describe("property-based", () => {
-    it("birds are spawned over two minutes", () => {
+    describe("birds are spawned over two minutes", () => {
       fc.assert(
         fc.property(fc.string(), (seed) => {
-          const allBirdIds = new Set<string>();
+          it("seed " + seed, () => {
+            const allBirdIds = new Set<string>();
 
-          cy.mount(Fixture, {
-            props: {
-              makeScene: makeIntroScene,
-              seed,
-              onSceneChange: (scene) => {
-                scene.objects
-                  .filter((obj) => obj.typeName === "cruising-bird")
-                  .forEach((bird) => allBirdIds.add(bird.id));
+            cy.mount(Fixture, {
+              props: {
+                makeScene: makeIntroScene,
+                seed,
+                onSceneChange: (scene) => {
+                  scene.objects
+                    .filter((obj) => obj.typeName === "cruising-bird")
+                    .forEach((bird) => allBirdIds.add(bird.id));
+                },
               },
-            },
-          });
-          cy.get("canvas").should("have.attr", "data-initialised", "true");
+            });
+            cy.get("canvas").should("have.attr", "data-initialised", "true");
 
-          tick(120_000).then(() => {
-            const expectedMax = 120_000 / 6_000;
-            const expectedMin = 120_000 / 15_000;
+            tick(120_000).then(() => {
+              const expectedMax = 120_000 / 6_000;
+              const expectedMin = 120_000 / 15_000;
 
-            expect(allBirdIds).length.to.be.greaterThan(expectedMin);
-            expect(allBirdIds).length.to.be.lessThan(expectedMax);
+              expect(allBirdIds).length.to.be.greaterThan(expectedMin);
+              expect(allBirdIds).length.to.be.lessThan(expectedMax);
+            });
           });
         }),
         { numRuns: 10 }
