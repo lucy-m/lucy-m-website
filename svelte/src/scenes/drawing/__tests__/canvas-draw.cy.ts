@@ -44,7 +44,7 @@ describe("canvas-draw", () => {
         drawLayers: Array.from({ length: 16 }).map((_, i) => {
           const x = 20 + (i % 4) * 100;
           const y = 20 + Math.floor(i / 4) * 100;
-          const rotation = i * 25;
+          const rotation = i * 25 - 100;
 
           return {
             assetKey: "feather1",

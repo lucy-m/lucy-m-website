@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { viewScene } from "./view-scene";
+  import { viewScene } from "../../scenes/drawing/view-scene";
 
   import { type AssetKey, type SceneType } from "../../model";
 

@@ -10,6 +10,7 @@ import {
   startWith,
   switchMap,
 } from "rxjs";
+import { sceneSize } from "..";
 import {
   applySceneEvent,
   rafThrottle,
@@ -20,7 +21,6 @@ import {
   type SceneEvent,
   type SceneType,
 } from "../../model";
-import { sceneSize } from "../../scenes";
 import { drawLayerContent } from "./canvas-draw";
 
 const redrawCanvas = (
