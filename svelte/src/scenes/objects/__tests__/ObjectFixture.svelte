@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Subject, Subscription, type Observable } from "rxjs";
+  import { Subject, Subscription, merge, type Observable } from "rxjs";
   import type { PRNG } from "seedrandom";
   import seedrandom from "seedrandom";
   import {
@@ -10,9 +10,10 @@
     type SceneType,
   } from "../../../model";
   import { viewScene } from "../../../scenes/drawing/view-scene";
+  import { choose } from "../../../utils";
   import { sceneSize } from "../../scene-size";
 
-  export let makeObject: (random: PRNG) => SceneObject<string, unknown>;
+  export let makeObjects: (random: PRNG) => SceneObject<string>[];
   export let seed: string;
   export let onSceneChange: ((scene: SceneType<string>) => void) | undefined =
     undefined;
@@ -21,15 +22,49 @@
     | Observable<(ctx: CanvasRenderingContext2D) => void>
     | undefined = undefined;
 
+  export let debugTrace:
+    | {
+        sources: (
+          sceneType: SceneType<string>
+        ) => readonly (SceneObject<string> | undefined)[];
+        colour: (args: {
+          obj: SceneObject<string>;
+          index: number;
+        }) => string | undefined;
+      }
+    | undefined = undefined;
+
   $: makeScene = (random: PRNG): SceneType<string> => {
-    const object = makeObject(random);
+    const objects = makeObjects(random);
+    const layerOrder = Array.from(new Set(objects.map((o) => o.layerKey)));
 
     return {
-      objects: [object],
+      objects: objects,
       events: new Subject(),
-      layerOrder: [object.layerKey],
+      layerOrder,
       typeName: "object-test-scene",
     };
+  };
+
+  const debugTrace$: Subject<(ctx: CanvasRenderingContext2D) => void> =
+    new Subject();
+
+  const _onSceneChange = (scene: SceneType<string>) => {
+    if (onSceneChange) {
+      onSceneChange(scene);
+    }
+
+    if (debugTrace) {
+      const objects = choose(debugTrace.sources(scene), (v) => v);
+      const colourSelector = debugTrace.colour;
+
+      objects.forEach((obj, index) => {
+        debugTrace$.next((ctx) => {
+          ctx.fillStyle = colourSelector({ obj, index }) ?? "black";
+          ctx.fillRect(obj.getPosition().x, obj.getPosition().y, 6, 6);
+        });
+      });
+    }
   };
 
   const debugOverlay = (canvas: HTMLCanvasElement): Destroyable => {
@@ -44,9 +79,11 @@
       ctx.font = "24px Quicksand";
       ctx.fillText("debug overlay", 0, 24);
 
-      subscription = debugDraw$?.subscribe((command) => {
-        command(ctx);
-      });
+      subscription = merge(debugTrace$, debugDraw$ ?? new Subject()).subscribe(
+        (command) => {
+          command(ctx);
+        }
+      );
     }
 
     return {
@@ -64,7 +101,7 @@
       use:viewScene={{
         initialScene: makeScene(seedrandom(seed)),
         images,
-        onSceneChange,
+        onSceneChange: _onSceneChange,
         worldClick$,
       }}
     />
