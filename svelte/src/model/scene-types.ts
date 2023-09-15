@@ -28,7 +28,7 @@ export type SceneObject<TLayerKey extends string> = {
   typeName?: SceneObjectTypeNames;
   hidden?: boolean;
   layerKey: TLayerKey;
-  getPosition: () => number;
+  getPosition: () => Position;
   getLayers: () => ObjectLayerContent[];
   onInteract?: () => SceneObjectAction<TLayerKey>[];
   onTick?: () => SceneObjectAction<TLayerKey>[];

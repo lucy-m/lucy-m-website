@@ -58,6 +58,37 @@ describe("feather", () => {
     cy.viewport(1200, 800);
   });
 
+  it.only("works", () => {
+    const debugDrawSub: Subject<(ctx: CanvasRenderingContext2D) => void> =
+      new Subject();
+
+    cy.mount(ObjectFixture, {
+      props: {
+        makeObject: (seed) =>
+          makeFeather("feather", PosFns.new(500, 50), PosFns.new(1, 0), seed),
+        seed: "abcd",
+        onSceneChange: (scene) => {
+          const feather = scene.objects[0];
+
+          if (feather) {
+            debugDrawSub.next((ctx) => {
+              const rotation = getFeatherRotation(feather);
+              ctx.fillStyle =
+                rotation !== undefined ? `hsl(${rotation}, 50%, 60%)` : "black";
+              ctx.fillRect(
+                feather.getPosition().x,
+                feather.getPosition().y,
+                6,
+                6
+              );
+            });
+          }
+        },
+        debugDraw$: debugDrawSub,
+      },
+    });
+  });
+
   describe("falling feather", () => {
     let scenes: SceneType<string>[];
     let debugDrawSub: Subject<(ctx: CanvasRenderingContext2D) => void>;

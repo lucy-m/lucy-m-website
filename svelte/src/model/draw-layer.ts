@@ -73,7 +73,7 @@ export const resolveScene = <TLayerKey extends string>(
     .filter((obj) => !obj.hidden)
     .flatMap((obj) => {
       return obj
-        .getLayers(obj)
+        .getLayers()
         .map<[TLayerKey, SubLayerKey, DrawLayer]>((objectLayerContent) => {
           return [
             obj.layerKey,
@@ -94,7 +94,7 @@ export const resolveScene = <TLayerKey extends string>(
                     },
               position: PosFns.add(
                 objectLayerContent.position ?? PosFns.zero,
-                obj.position
+                obj.getPosition()
               ),
               rotation:
                 objectLayerContent.kind === "image"

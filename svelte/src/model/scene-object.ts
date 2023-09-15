@@ -3,7 +3,6 @@ import { seededUuid } from "../utils";
 import type { AssetKey } from "./assets";
 import { PosFns, type Position } from "./position";
 import type {
-  EmptyState,
   SceneObject,
   SceneObjectAction,
   SceneObjectActionApplyResult,
@@ -12,20 +11,20 @@ import type {
 export const makeSceneObject =
   (random: PRNG) =>
   <TLayerKey extends string>(
-    obj: Omit<SceneObject<TLayerKey, EmptyState>, "id" | "state">
-  ): SceneObject<TLayerKey, EmptyState> => {
+    obj: Omit<SceneObject<TLayerKey>, "id" | "state">
+  ): SceneObject<TLayerKey> => {
     return {
       id: seededUuid(random),
-      state: {},
       ...obj,
     };
   };
 
+// TODO: delete
 export const makeSceneObjectStateful =
   (random: PRNG) =>
-  <TLayerKey extends string, TState>(
-    obj: Omit<SceneObject<TLayerKey, TState>, "id">
-  ): SceneObject<TLayerKey, TState> => {
+  <TLayerKey extends string>(
+    obj: Omit<SceneObject<TLayerKey>, "id">
+  ): SceneObject<TLayerKey> => {
     return {
       id: seededUuid(random),
       ...obj,
