@@ -5,9 +5,9 @@ import { makeFeather } from "../feather";
 import ObjectFixture from "./ObjectFixture.svelte";
 
 const getFeatherRotation = (
-  feather: SceneObject<string, unknown>
+  feather: SceneObject<string>
 ): number | undefined => {
-  const firstLayer = feather.getLayers(feather)[0];
+  const firstLayer = feather.getLayers()[0];
 
   if (
     firstLayer &&
@@ -21,12 +21,12 @@ const getFeatherRotation = (
 const getFeatherPositionLimit = (
   scenes: SceneType<string>[],
   type: "min" | "max"
-): readonly [number, SceneObject<string, unknown>] => {
+): readonly [number, SceneObject<string>] => {
   return (type === "max" ? maxBy : minBy)(
     choose(scenes, (scene) => {
       const firstObject = scene.objects[0];
       if (firstObject) {
-        return [firstObject.position.x, firstObject] as const;
+        return [firstObject.getPosition().x, firstObject] as const;
       }
       return undefined;
     }),
@@ -37,7 +37,7 @@ const getFeatherPositionLimit = (
 const getFeatherRotationLimit = (
   scenes: SceneType<string>[],
   type: "min" | "max"
-): readonly [number, SceneObject<string, unknown>] => {
+): readonly [number, SceneObject<string>] => {
   return (type === "max" ? maxBy : minBy)(
     choose(scenes, (scene) => {
       const firstObject = scene.objects[0];
