@@ -62,16 +62,20 @@ export interface SceneType<TLayerKey extends string, TSceneState> {
   objects: readonly SceneObject<TLayerKey, unknown>[];
   /** Order of layer drawing, from bottom to top */
   layerOrder: readonly TLayerKey[];
-  events: Observable<SceneEvent | SceneAction<TLayerKey>>;
-  state: TSceneState;
-  getWorldStateObjects: (
+  events: Observable<SceneEventOrAction<TLayerKey, TSceneState>>;
+  state?: TSceneState;
+  /** Objects whose state is controlled by the world state */
+  getWorldStateObjects?: (
     state: TSceneState
   ) => readonly SceneObjectStateless<TLayerKey>[];
+  onInteract?: (
+    current: TSceneState
+  ) => (SceneAction<TLayerKey> | SceneOnlyAction<TSceneState>)[];
 }
 
-export type SceneTypeStateless<TLayerKey extends string> = SceneType<
-  TLayerKey,
-  EmptyState
+export type SceneTypeStateless<TLayerKey extends string> = Omit<
+  SceneType<TLayerKey, unknown>,
+  "getWorldStateObjects" | "onInteract"
 >;
 
 export type SceneObjectActionApplyResult<TLayerKey extends string, TState> =
@@ -86,13 +90,19 @@ export type SceneAction<TLayerKey extends string> =
     }
   | {
       kind: "changeScene";
-      makeScene: () => SceneType<string, unknown>;
+      makeScene: () => SceneType<string, any>;
     };
+
+export type SceneOnlyAction<TSceneState> = {
+  kind: "updateSceneState";
+  newState: TSceneState;
+};
 
 export type SceneEvent =
   | { kind: "interact"; position: Position }
   | { kind: "tick" };
 
-export type SceneEventOrAction<TLayerKey extends string> =
+export type SceneEventOrAction<TLayerKey extends string, TSceneState> =
   | SceneEvent
-  | SceneAction<TLayerKey>;
+  | SceneAction<TLayerKey>
+  | SceneOnlyAction<TSceneState>;

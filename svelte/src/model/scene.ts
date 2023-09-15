@@ -8,8 +8,9 @@ import {
 import type {
   EmptyState,
   SceneAction,
-  SceneEvent,
+  SceneEventOrAction,
   SceneObjectAction,
+  SceneOnlyAction,
   SceneType,
   SceneTypeStateless,
 } from "./scene-types";
@@ -27,8 +28,6 @@ export const makeSceneTypeStateless = <TLayerKey extends string>(
   >
 ): SceneTypeStateless<TLayerKey> => ({
   ...sceneType,
-  state: {},
-  getWorldStateObjects: () => [],
 });
 
 const applySceneObjectActions = <TLayerKey extends string, TSceneState>(
@@ -77,17 +76,17 @@ const applySceneObjectActions = <TLayerKey extends string, TSceneState>(
 type ApplySceneActionResult<TLayerKey extends string, TSceneState> =
   | {
       kind: "newScene";
-      scene: SceneType<string, TSceneState>;
+      scene: SceneType<string, unknown>;
     }
   | {
       kind: "updated";
       scene: SceneType<TLayerKey, TSceneState>;
     };
 
-export const applySceneEvent = <TLayerKey extends string>(
+export const applySceneEvent = <TLayerKey extends string, TSceneState>(
   scene: SceneType<TLayerKey, unknown>,
   images: Record<AssetKey, HTMLImageElement>,
-  event: SceneEvent | SceneAction<TLayerKey>
+  event: SceneEventOrAction<TLayerKey, TSceneState>
 ): ApplySceneActionResult<TLayerKey, unknown> => {
   if (event.kind === "tick") {
     interface Accumulator {
@@ -138,6 +137,10 @@ export const applySceneEvent = <TLayerKey extends string>(
     });
 
     if (!interactObject) {
+      if (scene.onInteract) {
+        const sceneActions = scene.onInteract(scene.state);
+        return applySceneActions(scene, sceneActions);
+      }
       return { kind: "updated", scene };
     }
 
@@ -162,7 +165,7 @@ export const applySceneEvent = <TLayerKey extends string>(
 
 const applySceneActions = <TLayerKey extends string, TSceneState>(
   scene: SceneType<TLayerKey, TSceneState>,
-  actions: readonly SceneAction<TLayerKey>[]
+  actions: readonly (SceneAction<TLayerKey> | SceneOnlyAction<TSceneState>)[]
 ): ApplySceneActionResult<TLayerKey, unknown> => {
   const byType = partitionByKind(actions, "changeScene");
 
@@ -173,8 +176,15 @@ const applySceneActions = <TLayerKey extends string, TSceneState>(
 
   const updated = byType.other.reduce<SceneType<TLayerKey, unknown>>(
     (acc, action) => {
-      const objects = [...acc.objects, action.makeObject()];
-      return { ...acc, objects };
+      if (action.kind === "addObject") {
+        const objects = [...acc.objects, action.makeObject()];
+        return { ...acc, objects };
+      } else {
+        return {
+          ...acc,
+          state: action.newState,
+        };
+      }
     },
     scene as SceneType<TLayerKey, unknown>
   );

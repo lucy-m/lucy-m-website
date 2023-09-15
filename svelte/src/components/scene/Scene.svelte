@@ -3,7 +3,7 @@
   import { loadImages, type SceneType } from "../../model";
   import SceneViewer from "./SceneViewer.svelte";
 
-  export let makeScene: (random: PRNG) => SceneType<string>;
+  export let makeScene: (random: PRNG) => SceneType<string, unknown>;
 
   const r = seedrandom().int32();
   console.log("Congratulations! Your random seed is", r);

@@ -3,9 +3,7 @@
 
   import { type AssetKey, type SceneType } from "../../model";
 
-  type TLayerKey = $$Generic<string>;
-
-  export let scene: SceneType<TLayerKey>;
+  export let scene: SceneType<string, unknown>;
   export let images: Record<AssetKey, HTMLImageElement>;
 </script>
 

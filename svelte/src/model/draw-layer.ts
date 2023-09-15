@@ -69,9 +69,12 @@ export const resolveScene = <TLayerKey extends string, TSceneState>(
   scene: SceneType<TLayerKey, TSceneState>,
   images: Record<AssetKey, HTMLImageElement>
 ): DrawLayer[] => {
-  const worldStateObjects = scene
-    .getWorldStateObjects(scene.state)
-    .map((v) => v as SceneObject<TLayerKey, unknown>);
+  const worldStateObjects =
+    scene.getWorldStateObjects && scene.state
+      ? scene
+          .getWorldStateObjects(scene.state)
+          .map((v) => v as SceneObject<TLayerKey, unknown>)
+      : [];
   const allObjects = [...scene.objects, ...worldStateObjects];
 
   const sceneLayers: [TLayerKey, SubLayerKey, DrawLayer][] = allObjects

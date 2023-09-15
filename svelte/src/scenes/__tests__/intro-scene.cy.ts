@@ -43,8 +43,8 @@ describe("intro scene", () => {
           });
 
           describe("ticking", () => {
-            let actionsA: SceneEventOrAction<string>[];
-            let actionsB: SceneEventOrAction<string>[];
+            let actionsA: SceneEventOrAction<string, unknown>[];
+            let actionsB: SceneEventOrAction<string, unknown>[];
 
             beforeEach(() => {
               actionsA = [];
@@ -78,13 +78,13 @@ describe("intro scene", () => {
 
                   const objectA = (
                     actionA as Extract<
-                      SceneEventOrAction<string>,
+                      SceneEventOrAction<string, unknown>,
                       { kind: "addObject" }
                     >
                   ).makeObject();
                   const objectB = (
                     actionB as Extract<
-                      SceneEventOrAction<string>,
+                      SceneEventOrAction<string, unknown>,
                       { kind: "addObject" }
                     >
                   ).makeObject();

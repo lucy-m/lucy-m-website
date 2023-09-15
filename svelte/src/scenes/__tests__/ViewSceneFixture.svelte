@@ -5,10 +5,10 @@
   import { loadImages, type Position, type SceneType } from "../../model";
   import { viewScene } from "../../scenes/drawing/view-scene";
 
-  export let makeScene: (random: PRNG) => SceneType<string, unknown>;
+  export let makeScene: (random: PRNG) => SceneType<string, any>;
   export let seed: string;
   export let onSceneChange:
-    | ((scene: SceneType<string, unknown>) => void)
+    | ((scene: SceneType<string, any>) => void)
     | undefined = undefined;
   export let worldClick$: Observable<Position> | undefined = undefined;
 </script>

@@ -41,5 +41,14 @@ export const makeFishingScene = (
     objects: [],
     state: { kind: "idle" },
     getWorldStateObjects,
+    onInteract: () => {
+      console.log("World interact");
+      return [
+        {
+          kind: "updateSceneState",
+          newState: { kind: "cast-out" },
+        },
+      ];
+    },
   });
 };

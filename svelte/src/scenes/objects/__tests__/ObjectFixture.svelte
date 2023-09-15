@@ -22,7 +22,7 @@
     | Observable<(ctx: CanvasRenderingContext2D) => void>
     | undefined = undefined;
 
-  $: makeScene = (random: PRNG): SceneType<string> => {
+  $: makeScene = (random: PRNG): SceneType<string, unknown> => {
     const object = makeObject(random);
 
     return {

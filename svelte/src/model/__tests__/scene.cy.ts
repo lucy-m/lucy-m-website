@@ -4,11 +4,7 @@ import type { AssetKey } from "../assets";
 import { PosFns } from "../position";
 import { applySceneEvent, makeSceneTypeStateless } from "../scene";
 import { makeSceneObjectStateless } from "../scene-object";
-import type {
-  SceneObject,
-  SceneObjectAction,
-  SceneTypeStateless,
-} from "../scene-types";
+import type { SceneObject, SceneObjectAction, SceneType } from "../scene-types";
 
 describe("scene", () => {
   const random = seedrandom();
@@ -25,7 +21,7 @@ describe("scene", () => {
 
   const makeTestScene = (
     objects: SceneObject<string, unknown>[]
-  ): SceneTypeStateless<string> =>
+  ): SceneType<string, unknown> =>
     makeSceneTypeStateless({
       typeName: "test-scene",
       events: of(),
