@@ -2,8 +2,8 @@
   import type { Observable } from "rxjs";
   import type { PRNG } from "seedrandom";
   import seedrandom from "seedrandom";
-  import { loadImages, type Position, type SceneType } from "../../../model";
-  import { viewScene } from "../../../scenes/drawing/view-scene";
+  import { loadImages, type Position, type SceneType } from "../../model";
+  import { viewScene } from "../drawing/view-scene";
 
   export let makeScene: (random: PRNG) => SceneType<string>;
   export let seed: string;

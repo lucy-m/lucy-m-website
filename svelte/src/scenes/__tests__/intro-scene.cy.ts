@@ -1,26 +1,11 @@
 import fc from "fast-check";
+import { Subject } from "rxjs";
 import seedrandom from "seedrandom";
 import { validate } from "uuid";
-import type { SceneEventOrAction, SceneObject, SceneType } from "../../model";
+import type { SceneEventOrAction, SceneType } from "../../model";
+import { PosFns, type Position } from "../../model";
 import { makeIntroScene } from "../intro-scene";
-
-const assertObjectsMatch = (
-  objectA: SceneObject<string>,
-  objectB: SceneObject<string>
-) => {
-  expect(objectA.getLayers()).to.deep.equal(objectB.getLayers());
-
-  for (const key in objectA) {
-    const valueA = (objectA as Record<string, unknown>)[key];
-
-    if (typeof valueA === "function") {
-      continue;
-    } else {
-      const valueB = (objectB as Record<string, unknown>)[key];
-      expect(valueA).to.deep.equal(valueB);
-    }
-  }
-};
+import Fixture from "./ViewSceneFixture.svelte";
 
 describe("intro scene", () => {
   describe("scenes with same seed", () => {
@@ -48,7 +33,7 @@ describe("intro scene", () => {
               const objectA = sceneA.objects[index];
               const objectB = sceneB.objects[index];
 
-              assertObjectsMatch(objectA, objectB);
+              cy.assertObjectsMatch(objectA, objectB);
             }
           });
 
@@ -99,7 +84,7 @@ describe("intro scene", () => {
                     >
                   ).makeObject();
 
-                  assertObjectsMatch(objectA, objectB);
+                  cy.assertObjectsMatch(objectA, objectB);
                 }
               });
             });
@@ -108,5 +93,97 @@ describe("intro scene", () => {
       }),
       { numRuns: 20 }
     );
+  });
+
+  describe("rendering tests", () => {
+    beforeEach(() => {
+      cy.viewport(1400, 900);
+      cy.clock();
+    });
+
+    describe("intro-scene", () => {
+      let currentScene: SceneType<string>;
+      let worldClick$: Subject<Position>;
+
+      beforeEach(() => {
+        worldClick$ = new Subject<Position>();
+
+        cy.mount(Fixture, {
+          props: {
+            makeScene: makeIntroScene,
+            seed: "abcd",
+            onSceneChange: (s: SceneType<string>) => {
+              currentScene = s;
+            },
+            worldClick$,
+          },
+        });
+        cy.get("canvas").should("have.attr", "data-initialised", "true");
+      });
+
+      it("loads intro scene", () => {
+        expect(currentScene.typeName).to.eq("intro-scene");
+      });
+
+      describe("clicking house", () => {
+        beforeEach(() => {
+          expect(currentScene).to.exist;
+          const house = currentScene.objects.find(
+            (obj) => obj.typeName === "small-house"
+          )!;
+          expect(house).to.exist;
+
+          worldClick$.next(PosFns.add(house.getPosition(), PosFns.new(5, 5)));
+
+          cy.steppedTick(100);
+        });
+
+        it("changes scene", () => {
+          expect(currentScene.typeName).to.eq("house-scene");
+        });
+
+        it("stops bird spawning", () => {
+          cy.steppedTick(120_000).then(() => {
+            expect(
+              currentScene.objects.find((o) => o.typeName === "cruising-bird")
+            ).to.be.undefined;
+          });
+        });
+      });
+    });
+
+    describe("property-based", () => {
+      describe("birds are spawned over two minutes", () => {
+        fc.assert(
+          fc.property(fc.string(), (seed) => {
+            it("seed " + seed, () => {
+              const allBirdIds = new Set<string>();
+
+              cy.mount(Fixture, {
+                props: {
+                  makeScene: makeIntroScene,
+                  seed,
+                  onSceneChange: (scene) => {
+                    scene.objects
+                      .filter((obj) => obj.typeName === "cruising-bird")
+                      .forEach((bird) => allBirdIds.add(bird.id));
+                  },
+                },
+              });
+              cy.get("canvas").should("have.attr", "data-initialised", "true");
+
+              cy.steppedTick(120_000).then(() => {
+                const expectedMax = 120_000 / 6_000;
+                const expectedMin = 120_000 / 15_000;
+
+                expect(allBirdIds).length.to.be.greaterThan(expectedMin);
+                expect(allBirdIds).length.to.be.lessThan(expectedMax);
+              });
+            });
+          }),
+          { numRuns: 10 }
+        );
+      });
+    });
   });
 });
