@@ -9,6 +9,7 @@ import {
   scan,
   startWith,
   switchMap,
+  tap,
 } from "rxjs";
 import { sceneSize } from "..";
 import {
@@ -91,11 +92,13 @@ export const viewScene = (
           }
           return sceneEventResult.scene;
         }, initialScene),
+        tap((scene) => {
+          onSceneChange && onSceneChange(scene);
+        }),
         rafThrottle(),
         startWith(initialScene)
       )
       .subscribe((scene) => {
-        onSceneChange && onSceneChange(scene);
         redrawCanvas(ctx, scene, images);
         canvas.setAttribute("data-initialised", "true");
       });
