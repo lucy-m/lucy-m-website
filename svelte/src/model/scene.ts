@@ -13,9 +13,18 @@ import type {
   SceneTypeStateless,
 } from "./scene-types";
 
+export const makeSceneTypeStateful = <TLayerKey extends string, TSceneState>(
+  sceneType: SceneType<TLayerKey, TSceneState>
+): SceneType<TLayerKey, TSceneState> => {
+  return sceneType;
+};
+
 export const makeSceneTypeStateless = <TLayerKey extends string>(
-  sceneType: SceneType<TLayerKey>
-): SceneTypeStateless<TLayerKey> => sceneType;
+  sceneType: Omit<SceneType<TLayerKey>, "state">
+): SceneTypeStateless<TLayerKey> => ({
+  ...sceneType,
+  state: {},
+});
 
 const applySceneObjectActions = <TLayerKey extends string>(
   scene: SceneType<TLayerKey>,

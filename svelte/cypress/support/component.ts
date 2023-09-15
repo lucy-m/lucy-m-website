@@ -22,6 +22,7 @@ import "./commands";
 // require('./commands')
 
 import { mount } from "cypress/svelte";
+import type { SceneObject } from "../../src/model";
 import Fixture from "./Fixture.svelte";
 import type { FixtureOptions } from "./fixture-options";
 
@@ -36,6 +37,7 @@ declare global {
       mountWithFixture: typeof mountWithFixture;
       getByTestId: typeof getByTestId;
       steppedTick: typeof steppedTick;
+      assertObjectsMatch: typeof assertObjectsMatch;
     }
   }
 }
@@ -63,7 +65,26 @@ const steppedTick = (by: number) => {
   return cy.tick(dt, { log: false });
 };
 
+const assertObjectsMatch = (
+  objectA: SceneObject<string, unknown>,
+  objectB: SceneObject<string, unknown>
+) => {
+  expect(objectA.getLayers(objectA)).to.deep.equal(objectB.getLayers(objectB));
+
+  for (const key in objectA) {
+    const valueA = (objectA as Record<string, unknown>)[key];
+
+    if (typeof valueA === "function") {
+      continue;
+    } else {
+      const valueB = (objectB as Record<string, unknown>)[key];
+      expect(valueA).to.deep.equal(valueB);
+    }
+  }
+};
+
 Cypress.Commands.add("mount", mount);
 Cypress.Commands.add("mountWithFixture", mountWithFixture);
 Cypress.Commands.add("getByTestId", getByTestId);
 Cypress.Commands.add("steppedTick", steppedTick);
+Cypress.Commands.add("assertObjectsMatch", assertObjectsMatch);
