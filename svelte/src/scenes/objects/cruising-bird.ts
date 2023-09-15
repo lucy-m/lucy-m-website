@@ -3,20 +3,11 @@ import {
   NumberSpringFns,
   PosFns,
   makeSceneObject,
-  type NumberSpring,
   type SceneObject,
   type SceneObjectAction,
 } from "../../model";
 import { sceneSize } from "../scene-size";
 import { makeFeather } from "./feather";
-
-interface CruisingBirdState {
-  flapUp: boolean;
-  flapTimer: number;
-  xVelocity: NumberSpring;
-  yPosition: NumberSpring;
-  feathers: number;
-}
 
 export const makeCruisingBird = <TLayerKey extends string>(
   layerKey: TLayerKey,
