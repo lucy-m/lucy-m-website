@@ -71,6 +71,8 @@ export const viewScene = (
   if (ctx) {
     ctx.font = "42px Quicksand";
 
+    onSceneChange && onSceneChange(initialScene);
+
     subscription = merge(
       interval(30).pipe(map(() => ({ kind: "tick" } as SceneEvent))),
       (worldClick$ ? merge(interactSub, worldClick$) : interactSub).pipe(

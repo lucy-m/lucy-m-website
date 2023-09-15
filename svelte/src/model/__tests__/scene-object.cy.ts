@@ -28,7 +28,7 @@ describe("scene object", () => {
             position,
           })),
         layerKey: "",
-        position,
+        getPosition: () => position,
       });
     };
 

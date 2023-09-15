@@ -5,10 +5,10 @@ import type { SceneEventOrAction, SceneObject, SceneType } from "../../model";
 import { makeIntroScene } from "../intro-scene";
 
 const assertObjectsMatch = (
-  objectA: SceneObject<string, unknown>,
-  objectB: SceneObject<string, unknown>
+  objectA: SceneObject<string>,
+  objectB: SceneObject<string>
 ) => {
-  expect(objectA.getLayers(objectA)).to.deep.equal(objectB.getLayers(objectB));
+  expect(objectA.getLayers()).to.deep.equal(objectB.getLayers());
 
   for (const key in objectA) {
     const valueA = (objectA as Record<string, unknown>)[key];

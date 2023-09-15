@@ -30,7 +30,7 @@ describe("view-scene", () => {
       cy.get("canvas").should("have.attr", "data-initialised", "true");
     });
 
-    it.only("loads intro scene", () => {
+    it("loads intro scene", () => {
       expect(currentScene.typeName).to.eq("intro-scene");
     });
 
@@ -42,7 +42,7 @@ describe("view-scene", () => {
         )!;
         expect(house).to.exist;
 
-        worldClick$.next(PosFns.add(house.position, PosFns.new(5, 5)));
+        worldClick$.next(PosFns.add(house.getPosition(), PosFns.new(5, 5)));
 
         cy.steppedTick(100);
       });
