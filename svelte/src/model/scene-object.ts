@@ -19,22 +19,10 @@ export const makeSceneObject =
     };
   };
 
-// TODO: delete
-export const makeSceneObjectStateful =
-  (random: PRNG) =>
-  <TLayerKey extends string>(
-    obj: Omit<SceneObject<TLayerKey>, "id">
-  ): SceneObject<TLayerKey> => {
-    return {
-      id: seededUuid(random),
-      ...obj,
-    };
-  };
-
-export const applySceneObjectAction = <TLayerKey extends string, TState>(
-  obj: SceneObject<TLayerKey, TState>,
-  action: SceneObjectAction<TLayerKey, TState>
-): SceneObjectActionApplyResult<TLayerKey, TState> => {
+export const applySceneObjectAction = <TLayerKey extends string>(
+  obj: SceneObject<TLayerKey>,
+  action: SceneObjectAction<TLayerKey>
+): SceneObjectActionApplyResult<TLayerKey> => {
   switch (action.kind) {
     case "hide":
       return {
@@ -52,33 +40,6 @@ export const applySceneObjectAction = <TLayerKey extends string, TState>(
           hidden: false,
         },
       };
-    case "moveBy": {
-      return {
-        kind: "update",
-        object: {
-          ...obj,
-          position: PosFns.add(obj.position, action.by),
-        },
-      };
-    }
-    case "moveTo": {
-      return {
-        kind: "update",
-        object: {
-          ...obj,
-          position: action.to,
-        },
-      };
-    }
-    case "updateState": {
-      return {
-        kind: "update",
-        object: {
-          ...obj,
-          state: { ...obj.state, ...action.state },
-        },
-      };
-    }
     case "removeObject": {
       return { kind: "removeObject" };
     }
@@ -92,11 +53,11 @@ export const applySceneObjectAction = <TLayerKey extends string, TState>(
  * Gets the bounding box of the object in world co-ords.
  */
 export const getObjectBoundingBox = (
-  obj: SceneObject<string, unknown>,
+  obj: SceneObject<string>,
   images: Record<AssetKey, HTMLImageElement>
 ): { topLeft: Position; bottomRight: Position } => {
   const relativeBoundingBox = obj
-    .getLayers(obj)
+    .getLayers()
     .reduce<readonly [Position, Position] | undefined>((acc, next) => {
       if (next.kind === "text") {
         return acc;
@@ -121,8 +82,8 @@ export const getObjectBoundingBox = (
   if (!relativeBoundingBox) {
     return { topLeft: PosFns.zero, bottomRight: PosFns.zero };
   } else {
-    const topLeft = PosFns.add(relativeBoundingBox[0], obj.position);
-    const bottomRight = PosFns.add(relativeBoundingBox[1], obj.position);
+    const topLeft = PosFns.add(relativeBoundingBox[0], obj.getPosition());
+    const bottomRight = PosFns.add(relativeBoundingBox[1], obj.getPosition());
 
     return { topLeft, bottomRight };
   }
@@ -130,12 +91,12 @@ export const getObjectBoundingBox = (
 
 /** Gets objects in order, from top to bottom */
 export const getObjectsInOrder = <TLayerKey extends string>(
-  objects: readonly SceneObject<TLayerKey, unknown>[],
+  objects: readonly SceneObject<TLayerKey>[],
   layerOrder: readonly TLayerKey[],
   order: "top-to-bottom" | "bottom-to-top"
-): SceneObject<TLayerKey, unknown>[] => {
+): SceneObject<TLayerKey>[] => {
   const byLayer = objects.reduce<
-    Partial<Record<TLayerKey, SceneObject<TLayerKey, unknown>[]>>
+    Partial<Record<TLayerKey, SceneObject<TLayerKey>[]>>
   >(
     (acc, next) => ({
       ...acc,
@@ -144,7 +105,7 @@ export const getObjectsInOrder = <TLayerKey extends string>(
     {}
   );
 
-  const bottomToTop = layerOrder.reduce<SceneObject<TLayerKey, unknown>[]>(
+  const bottomToTop = layerOrder.reduce<SceneObject<TLayerKey>[]>(
     (acc, layer) => [...acc, ...(byLayer[layer] ?? [])],
     []
   );

@@ -60,7 +60,7 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
       }));
 
     return makeSceneObjectBound({
-      position: PosFns.zero,
+      getPosition: () => PosFns.zero,
       layerKey: "trees",
       getLayers: () => layers,
     });
@@ -68,7 +68,7 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
 
   const speechBubble = makeSceneObjectBound({
     layerKey: "speechBubble",
-    position: PosFns.new(730, 260),
+    getPosition: () => PosFns.new(730, 260),
     getLayers: () => [
       {
         kind: "image",
@@ -88,9 +88,9 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
     onInteract: () => [{ kind: "hide" }],
   });
 
-  const objects: SceneObject<LayerKey, any>[] = [
+  const objects: SceneObject<LayerKey>[] = [
     makeSceneObjectBound({
-      position: PosFns.zero,
+      getPosition: () => PosFns.zero,
       layerKey: "bg",
       getLayers: () => [
         { kind: "image", assetKey: "background", subLayer: "background" },
@@ -112,7 +112,7 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
     makeSceneObjectBound({
       layerKey: "house",
       typeName: "small-house",
-      position: PosFns.new(285, 355),
+      getPosition: () => PosFns.new(285, 355),
       getLayers: () => [
         { kind: "image", assetKey: "houseSmall", subLayer: "background" },
       ],
@@ -128,7 +128,7 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
     }),
     makeSceneObjectBound({
       layerKey: "person",
-      position: PosFns.new(1260, 490),
+      getPosition: () => PosFns.new(1260, 490),
       getLayers: () => [
         { kind: "image", assetKey: "personSitting", subLayer: "background" },
         { kind: "image", assetKey: "personHead", subLayer: "background" },

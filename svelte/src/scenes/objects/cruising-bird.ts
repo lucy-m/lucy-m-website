@@ -2,7 +2,7 @@ import type { PRNG } from "seedrandom";
 import {
   NumberSpringFns,
   PosFns,
-  makeSceneObjectStateful,
+  makeSceneObject,
   type NumberSpring,
   type SceneObject,
   type SceneObjectAction,
@@ -60,7 +60,7 @@ export const makeCruisingBird = <TLayerKey extends string>(
 
   const getPosition = () => PosFns.new(positionX, yPosition.position);
 
-  return makeSceneObjectStateful(random)<TLayerKey>({
+  return makeSceneObject(random)<TLayerKey>({
     typeName: "cruising-bird",
     layerKey,
     getPosition,
@@ -73,10 +73,7 @@ export const makeCruisingBird = <TLayerKey extends string>(
     ],
     onInteract: () => {
       const spawnFeathersActions: SceneObjectAction<TLayerKey>[] = (() => {
-        const makeFeatherAction = (): SceneObjectAction<
-          TLayerKey,
-          unknown
-        > => ({
+        const makeFeatherAction = (): SceneObjectAction<TLayerKey> => ({
           kind: "sceneAction",
           action: {
             kind: "addObject",

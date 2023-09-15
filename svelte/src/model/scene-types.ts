@@ -37,17 +37,14 @@ export type SceneObject<TLayerKey extends string> = {
 export type SceneObjectStateless<TLayerKey extends string> =
   SceneObject<TLayerKey>;
 
-export type SceneObjectAction<TLayerKey extends string, TState = EmptyState> =
+export type SceneObjectAction<TLayerKey extends string> =
   | ((
       | {
           kind: "hide";
         }
       | { kind: "show" }
-      | { kind: "moveBy"; by: Position }
-      | { kind: "moveTo"; to: Position }
       | { kind: "removeObject" }
     ) & { target?: string })
-  | { kind: "updateState"; state: Partial<TState> }
   | { kind: "sceneAction"; action: SceneAction<TLayerKey> };
 
 export interface SceneType<TLayerKey extends string> {
@@ -58,7 +55,7 @@ export interface SceneType<TLayerKey extends string> {
   events: Observable<SceneEvent | SceneAction<TLayerKey>>;
 }
 
-export type SceneObjectActionApplyResult<TLayerKey extends string, TState> =
+export type SceneObjectActionApplyResult<TLayerKey extends string> =
   | { kind: "update"; object: SceneObject<TLayerKey> }
   | { kind: "removeObject" }
   | { kind: "sceneAction"; action: SceneAction<TLayerKey> };

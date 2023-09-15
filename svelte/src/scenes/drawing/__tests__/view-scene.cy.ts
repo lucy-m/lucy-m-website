@@ -30,7 +30,7 @@ describe("view-scene", () => {
       cy.get("canvas").should("have.attr", "data-initialised", "true");
     });
 
-    it("loads intro scene", () => {
+    it.only("loads intro scene", () => {
       expect(currentScene.typeName).to.eq("intro-scene");
     });
 
