@@ -14,7 +14,7 @@ import type {
 
 const applySceneObjectActions = <TLayerKey extends string>(
   scene: SceneType<TLayerKey>,
-  objectActions: SceneObjectAction<TLayerKey, unknown>[],
+  objectActions: SceneObjectAction<TLayerKey>[],
   interactObjectId: string
 ): { scene: SceneType<TLayerKey>; sceneActions: SceneAction<TLayerKey>[] } => {
   const sceneActions = choose(objectActions, (action) =>
@@ -22,7 +22,7 @@ const applySceneObjectActions = <TLayerKey extends string>(
   );
 
   const byId = objectActions.reduce<
-    Record<string, SceneObjectAction<TLayerKey, unknown>[] | undefined>
+    Record<string, SceneObjectAction<TLayerKey>[] | undefined>
   >((acc, next) => {
     const target = ("target" in next && next.target) || interactObjectId;
 
@@ -75,9 +75,8 @@ export const applySceneEvent = <TLayerKey extends string>(
 
     const reduceResult = scene.objects.reduce<Accumulator>(
       (acc, obj) => {
-        const objectActions:
-          | SceneObjectAction<TLayerKey, unknown>[]
-          | undefined = obj.onTick && obj.onTick(obj);
+        const objectActions: SceneObjectAction<TLayerKey>[] | undefined =
+          obj.onTick && obj.onTick();
 
         if (!objectActions) {
           return acc;
@@ -120,7 +119,7 @@ export const applySceneEvent = <TLayerKey extends string>(
     }
 
     const objectActions =
-      interactObject.onInteract && interactObject.onInteract(interactObject);
+      interactObject.onInteract && interactObject.onInteract();
 
     if (!objectActions) {
       return { kind: "updated", scene };
