@@ -65,6 +65,8 @@ export interface SceneType<TLayerKey extends string> {
   events: Observable<SceneEvent | SceneAction<TLayerKey>>;
 }
 
+export type SceneTypeStateless<TLayerKey extends string> = SceneType<TLayerKey>;
+
 export type SceneObjectActionApplyResult<TLayerKey extends string, TState> =
   | { kind: "update"; object: SceneObject<TLayerKey, TState> }
   | { kind: "removeObject" }

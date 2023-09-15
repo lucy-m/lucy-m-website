@@ -10,7 +10,12 @@ import type {
   SceneEvent,
   SceneObjectAction,
   SceneType,
+  SceneTypeStateless,
 } from "./scene-types";
+
+export const makeSceneTypeStateless = <TLayerKey extends string>(
+  sceneType: SceneType<TLayerKey>
+): SceneTypeStateless<TLayerKey> => sceneType;
 
 const applySceneObjectActions = <TLayerKey extends string>(
   scene: SceneType<TLayerKey>,

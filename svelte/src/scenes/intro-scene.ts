@@ -3,7 +3,8 @@ import { type PRNG } from "seedrandom";
 import {
   PosFns,
   generatePointsInShape,
-  makeSceneObject,
+  makeSceneObjectStateless,
+  makeSceneTypeStateless,
   randomInterval,
   type SceneAction,
   type SceneObject,
@@ -12,7 +13,7 @@ import {
   type Shape,
 } from "../model";
 import type { AssetKey } from "../model/assets";
-import type { ObjectLayerContent } from "../model/scene-types";
+import { type ObjectLayerContent } from "../model/scene-types";
 import { makeHouseScene } from "./house-scene";
 import { makeCruisingBird } from "./objects/cruising-bird";
 
@@ -28,7 +29,7 @@ const layerOrder = [
 type LayerKey = (typeof layerOrder)[number];
 
 export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
-  const makeSceneObjectBound = makeSceneObject(random);
+  const makeSceneObjectBound = makeSceneObjectStateless(random);
 
   const randomTree = (): AssetKey => {
     const r = random.quick() * 3;
@@ -148,10 +149,10 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
     }))
   );
 
-  return {
+  return makeSceneTypeStateless({
     typeName: "intro-scene",
     objects,
     layerOrder,
     events,
-  };
+  });
 };

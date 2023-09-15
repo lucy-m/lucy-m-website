@@ -1,7 +1,10 @@
 import seedrandom from "seedrandom";
 import type { AssetKey } from "../assets";
 import { PosFns, type Position } from "../position";
-import { getObjectBoundingBox, makeSceneObject } from "../scene-object";
+import {
+  getObjectBoundingBox,
+  makeSceneObjectStateless,
+} from "../scene-object";
 
 describe("scene object", () => {
   describe("getObjectBoundingBox", () => {
@@ -19,7 +22,7 @@ describe("scene object", () => {
       position: Position,
       layers: [AssetKey, Position][]
     ) => {
-      return makeSceneObject(random)({
+      return makeSceneObjectStateless(random)({
         getLayers: () =>
           layers.map(([assetKey, position]) => ({
             kind: "image",

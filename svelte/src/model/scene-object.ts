@@ -9,7 +9,7 @@ import type {
   SceneObjectActionApplyResult,
 } from "./scene-types";
 
-export const makeSceneObject =
+export const makeSceneObjectStateless =
   (random: PRNG) =>
   <TLayerKey extends string>(
     obj: Omit<SceneObject<TLayerKey, EmptyState>, "id" | "state">

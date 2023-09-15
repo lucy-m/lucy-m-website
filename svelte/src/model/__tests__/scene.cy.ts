@@ -3,7 +3,7 @@ import seedrandom from "seedrandom";
 import type { AssetKey } from "../assets";
 import { PosFns } from "../position";
 import { applySceneEvent } from "../scene";
-import { makeSceneObject } from "../scene-object";
+import { makeSceneObjectStateless } from "../scene-object";
 import type { SceneObject, SceneObjectAction, SceneType } from "../scene-types";
 
 describe("scene", () => {
@@ -12,7 +12,7 @@ describe("scene", () => {
   const makeTestSceneObject = (
     onTick?: () => SceneObjectAction<string>[]
   ): SceneObject<string> =>
-    makeSceneObject(random)({
+    makeSceneObjectStateless(random)({
       getLayers: () => [],
       layerKey: "",
       position: PosFns.new(0, 0),
