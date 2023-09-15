@@ -22,27 +22,20 @@ export type ObjectLayerContent =
 
 export type SceneObjectTypeNames = "small-house" | "cruising-bird" | "feather";
 
-export type SceneObject<TLayerKey extends string, TState = EmptyState> = {
+export type SceneObject<TLayerKey extends string> = {
   id: string;
-  position: Position;
   rotation?: number;
   typeName?: SceneObjectTypeNames;
   hidden?: boolean;
   layerKey: TLayerKey;
-  state: TState;
-  getLayers: (current: SceneObject<string, TState>) => ObjectLayerContent[];
-  onInteract?: (
-    current: SceneObject<string, TState>
-  ) => SceneObjectAction<TLayerKey, TState>[];
-  onTick?: (
-    current: SceneObject<string, TState>
-  ) => SceneObjectAction<TLayerKey, TState>[];
+  getPosition: () => number;
+  getLayers: () => ObjectLayerContent[];
+  onInteract?: () => SceneObjectAction<TLayerKey>[];
+  onTick?: () => SceneObjectAction<TLayerKey>[];
 };
 
-export type SceneObjectStateless<TLayerKey extends string> = SceneObject<
-  TLayerKey,
-  EmptyState
->;
+export type SceneObjectStateless<TLayerKey extends string> =
+  SceneObject<TLayerKey>;
 
 export type SceneObjectAction<TLayerKey extends string, TState = EmptyState> =
   | ((
@@ -59,21 +52,21 @@ export type SceneObjectAction<TLayerKey extends string, TState = EmptyState> =
 
 export interface SceneType<TLayerKey extends string> {
   typeName: string;
-  objects: readonly SceneObject<TLayerKey, unknown>[];
+  objects: readonly SceneObject<TLayerKey>[];
   /** Order of layer drawing, from bottom to top */
   layerOrder: readonly TLayerKey[];
   events: Observable<SceneEvent | SceneAction<TLayerKey>>;
 }
 
 export type SceneObjectActionApplyResult<TLayerKey extends string, TState> =
-  | { kind: "update"; object: SceneObject<TLayerKey, TState> }
+  | { kind: "update"; object: SceneObject<TLayerKey> }
   | { kind: "removeObject" }
   | { kind: "sceneAction"; action: SceneAction<TLayerKey> };
 
 export type SceneAction<TLayerKey extends string> =
   | {
       kind: "addObject";
-      makeObject: () => SceneObject<TLayerKey, unknown>;
+      makeObject: () => SceneObject<TLayerKey>;
     }
   | {
       kind: "changeScene";
