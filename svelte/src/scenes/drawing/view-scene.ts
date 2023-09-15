@@ -16,6 +16,7 @@ import {
   rafThrottle,
   resolveScene,
   type AssetKey,
+  type Destroyable,
   type Position,
   type SceneAction,
   type SceneEvent,
@@ -47,7 +48,7 @@ export const viewScene = (
     onSceneChange?: (s: SceneType<string>) => void;
     worldClick$?: Observable<Position>;
   }
-) => {
+): Destroyable => {
   const { initialScene, images, onSceneChange, worldClick$ } = args;
 
   const interactSub = new Subject<Position>();

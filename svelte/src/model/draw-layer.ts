@@ -82,7 +82,7 @@ export const resolveScene = <TLayerKey extends string>(
               : "background",
             {
               content:
-                objectLayerContent.kind == "image"
+                objectLayerContent.kind === "image"
                   ? {
                       kind: "image",
                       image: images[objectLayerContent.assetKey],
@@ -96,6 +96,10 @@ export const resolveScene = <TLayerKey extends string>(
                 objectLayerContent.position ?? PosFns.zero,
                 obj.position
               ),
+              rotation:
+                objectLayerContent.kind === "image"
+                  ? objectLayerContent.rotation
+                  : undefined,
             },
           ];
         });

@@ -17,13 +17,15 @@ export type ObjectLayerContent =
       assetKey: AssetKey;
       subLayer: SubLayerKey;
       position?: Position;
+      rotation?: number;
     };
 
-export type SceneObjectTypeNames = "small-house" | "cruising-bird";
+export type SceneObjectTypeNames = "small-house" | "cruising-bird" | "feather";
 
 export type SceneObject<TLayerKey extends string, TState = EmptyState> = {
   id: string;
   position: Position;
+  rotation?: number;
   typeName?: SceneObjectTypeNames;
   hidden?: boolean;
   layerKey: TLayerKey;

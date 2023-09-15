@@ -58,7 +58,7 @@ describe("view-scene", () => {
         tick(100);
       });
 
-      it.only("changes scene", () => {
+      it("changes scene", () => {
         expect(currentScene.typeName).to.eq("house-scene");
       });
 
