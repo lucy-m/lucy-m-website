@@ -5,17 +5,6 @@ import { makeIntroScene } from "../../../scenes";
 import Fixture from "./ViewSceneFixture.svelte";
 
 describe("view-scene", () => {
-  const tick = (by: number) => {
-    cy.log(`Tick ${by}`);
-
-    const dt = 30;
-    Array.from({ length: by / dt - 1 }).forEach(() => {
-      cy.tick(dt, { log: false });
-    });
-
-    return cy.tick(dt, { log: false });
-  };
-
   beforeEach(() => {
     cy.viewport(1400, 900);
     cy.clock();
@@ -55,7 +44,7 @@ describe("view-scene", () => {
 
         worldClick$.next(PosFns.add(house.position, PosFns.new(5, 5)));
 
-        tick(100);
+        cy.steppedTick(100);
       });
 
       it("changes scene", () => {
@@ -63,7 +52,7 @@ describe("view-scene", () => {
       });
 
       it("stops bird spawning", () => {
-        tick(120_000).then(() => {
+        cy.steppedTick(120_000).then(() => {
           expect(
             currentScene.objects.find((o) => o.typeName === "cruising-bird")
           ).to.be.undefined;
@@ -92,7 +81,7 @@ describe("view-scene", () => {
             });
             cy.get("canvas").should("have.attr", "data-initialised", "true");
 
-            tick(120_000).then(() => {
+            cy.steppedTick(120_000).then(() => {
               const expectedMax = 120_000 / 6_000;
               const expectedMin = 120_000 / 15_000;
 
