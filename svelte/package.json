@@ -9,9 +9,13 @@
     "build": "vite build",
     "preview": "vite preview",
     "check-svelte": "svelte-check --tsconfig ./tsconfig.json",
-    "check-ts": "tsc --noEmit --project ./tsconfig.json"
+    "check-ts": "tsc --noEmit --project ./tsconfig.json",
+    "test": "cypress open",
+    "test-percy-snapshots": "percy exec -- cypress run --component --spec '**/canvas-draw.cy.ts,**/scenes/objects/__tests__/*.cy.ts'"
   },
   "devDependencies": {
+    "@percy/cli": "^1.27.1",
+    "@percy/cypress": "^3.1.2",
     "@sveltejs/vite-plugin-svelte": "^2.0.3",
     "@tsconfig/svelte": "^4.0.1",
     "@types/seedrandom": "^3.0.5",

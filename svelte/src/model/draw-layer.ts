@@ -17,6 +17,8 @@ type LayerContent =
 export type DrawLayer = {
   content: LayerContent;
   position: Position;
+  /** Rotation in degrees around center of object */
+  rotation?: number;
 };
 
 type LayerByLayerKey<TLayerKey extends string> = Partial<
@@ -80,7 +82,7 @@ export const resolveScene = <TLayerKey extends string>(
               : "background",
             {
               content:
-                objectLayerContent.kind == "image"
+                objectLayerContent.kind === "image"
                   ? {
                       kind: "image",
                       image: images[objectLayerContent.assetKey],
@@ -94,6 +96,10 @@ export const resolveScene = <TLayerKey extends string>(
                 objectLayerContent.position ?? PosFns.zero,
                 obj.position
               ),
+              rotation:
+                objectLayerContent.kind === "image"
+                  ? objectLayerContent.rotation
+                  : undefined,
             },
           ];
         });

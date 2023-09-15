@@ -12,6 +12,7 @@ import { sceneSize } from "../scene-size";
 interface FeatherState {
   xPosition: NumberSpring;
   yVelocity: number;
+  rotation: number;
 }
 
 export const makeFeather = <TLayerKey extends string>(
@@ -21,10 +22,16 @@ export const makeFeather = <TLayerKey extends string>(
   random: PRNG
 ): SceneObject<TLayerKey, FeatherState> => {
   return makeSceneObjectStateful(random)<TLayerKey, FeatherState>({
+    typeName: "feather",
     layerKey,
     position: initial,
-    getLayers: () => [
-      { kind: "image", assetKey: "feather1", subLayer: "background" },
+    getLayers: (current) => [
+      {
+        kind: "image",
+        assetKey: "feather1",
+        subLayer: "background",
+        rotation: current.state.rotation,
+      },
     ],
     state: {
       xPosition: NumberSpringFns.make({
@@ -39,6 +46,7 @@ export const makeFeather = <TLayerKey extends string>(
         },
       }),
       yVelocity: initialVelocity.y,
+      rotation: 40,
     },
     onTick: (current) => {
       if (current.position.y > sceneSize.y) {
@@ -66,6 +74,7 @@ export const makeFeather = <TLayerKey extends string>(
           state: {
             xPosition: tickedSpring,
             yVelocity,
+            rotation: current.state.rotation - current.state.xPosition.velocity,
           },
         },
       ];

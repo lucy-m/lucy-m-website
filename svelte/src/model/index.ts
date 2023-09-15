@@ -1,5 +1,6 @@
 export * from "./assets";
 export * from "./break-text";
+export * from "./destroyable";
 export * from "./draw-layer";
 export * from "./observe-element-size";
 export * from "./position";

@@ -14,6 +14,7 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
+import "@percy/cypress";
 import type { ComponentType, SvelteComponentTyped } from "svelte";
 import "./commands";
 
@@ -34,6 +35,7 @@ declare global {
       mount: typeof mount;
       mountWithFixture: typeof mountWithFixture;
       getByTestId: typeof getByTestId;
+      steppedTick: typeof steppedTick;
     }
   }
 }
@@ -50,6 +52,18 @@ const mountWithFixture = <T extends Record<string, any>>(
   cy.mount(Fixture, { props: { componentType, props, fixtureOptions } });
 };
 
+const steppedTick = (by: number) => {
+  cy.log(`Tick ${by}`);
+
+  const dt = 30;
+  Array.from({ length: by / dt - 1 }).forEach(() => {
+    cy.tick(dt, { log: false });
+  });
+
+  return cy.tick(dt, { log: false });
+};
+
 Cypress.Commands.add("mount", mount);
 Cypress.Commands.add("mountWithFixture", mountWithFixture);
 Cypress.Commands.add("getByTestId", getByTestId);
+Cypress.Commands.add("steppedTick", steppedTick);
