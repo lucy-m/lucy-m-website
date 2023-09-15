@@ -1,17 +1,17 @@
 import { Subject } from "rxjs";
 import type { PRNG } from "seedrandom";
+import type { SceneTypeStateless } from "../model";
 import {
   makeSceneObjectStateless,
   makeSceneTypeStateless,
   PosFns,
   type SceneObject,
-  type SceneType,
 } from "../model";
 
 const layerOrder = ["bg", "house"] as const;
 type LayerKey = (typeof layerOrder)[number];
 
-export const makeHouseScene = (random: PRNG): SceneType<LayerKey> => {
+export const makeHouseScene = (random: PRNG): SceneTypeStateless<LayerKey> => {
   const makeSceneObjectBound = makeSceneObjectStateless(random);
 
   const objects: SceneObject<LayerKey, any>[] = [

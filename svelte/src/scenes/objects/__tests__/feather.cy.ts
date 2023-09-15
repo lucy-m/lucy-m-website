@@ -19,7 +19,7 @@ const getFeatherRotation = (
 };
 
 const getFeatherPositionLimit = (
-  scenes: SceneType<string>[],
+  scenes: SceneType<string, unknown>[],
   type: "min" | "max"
 ): readonly [number, SceneObject<string, unknown>] => {
   return (type === "max" ? maxBy : minBy)(
@@ -35,7 +35,7 @@ const getFeatherPositionLimit = (
 };
 
 const getFeatherRotationLimit = (
-  scenes: SceneType<string>[],
+  scenes: SceneType<string, unknown>[],
   type: "min" | "max"
 ): readonly [number, SceneObject<string, unknown>] => {
   return (type === "max" ? maxBy : minBy)(
@@ -59,7 +59,7 @@ describe("feather", () => {
   });
 
   describe("falling feather", () => {
-    let scenes: SceneType<string>[];
+    let scenes: SceneType<string, unknown>[];
     let debugDrawSub: Subject<(ctx: CanvasRenderingContext2D) => void>;
 
     beforeEach(() => {

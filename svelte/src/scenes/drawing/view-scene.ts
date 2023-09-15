@@ -27,7 +27,7 @@ import { drawLayerContent } from "./canvas-draw";
 
 const redrawCanvas = (
   ctx: CanvasRenderingContext2D,
-  scene: SceneType<string>,
+  scene: SceneType<string, unknown>,
   images: Record<AssetKey, HTMLImageElement>
 ) => {
   if (ctx) {
@@ -44,9 +44,9 @@ const redrawCanvas = (
 export const viewScene = (
   canvas: HTMLCanvasElement,
   args: {
-    initialScene: SceneType<string>;
+    initialScene: SceneType<string, unknown>;
     images: Record<AssetKey, HTMLImageElement>;
-    onSceneChange?: (s: SceneType<string>) => void;
+    onSceneChange?: (s: SceneType<string, unknown>) => void;
     worldClick$?: Observable<Position>;
   }
 ): Destroyable => {

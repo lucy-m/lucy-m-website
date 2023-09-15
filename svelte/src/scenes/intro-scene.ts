@@ -9,11 +9,13 @@ import {
   type SceneAction,
   type SceneObject,
   type SceneObjectStateless,
-  type SceneType,
   type Shape,
 } from "../model";
 import type { AssetKey } from "../model/assets";
-import { type ObjectLayerContent } from "../model/scene-types";
+import {
+  type ObjectLayerContent,
+  type SceneTypeStateless,
+} from "../model/scene-types";
 import { makeHouseScene } from "./house-scene";
 import { makeCruisingBird } from "./objects/cruising-bird";
 
@@ -28,7 +30,7 @@ const layerOrder = [
 
 type LayerKey = (typeof layerOrder)[number];
 
-export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
+export const makeIntroScene = (random: PRNG): SceneTypeStateless<LayerKey> => {
   const makeSceneObjectBound = makeSceneObjectStateless(random);
 
   const randomTree = (): AssetKey => {

@@ -22,7 +22,7 @@ export type ObjectLayerContent =
 
 export type SceneObjectTypeNames = "small-house" | "cruising-bird" | "feather";
 
-export type SceneObject<TLayerKey extends string, TState = EmptyState> = {
+export type SceneObject<TLayerKey extends string, TState> = {
   id: string;
   position: Position;
   rotation?: number;
@@ -57,7 +57,7 @@ export type SceneObjectAction<TLayerKey extends string, TState = EmptyState> =
   | { kind: "updateState"; state: Partial<TState> }
   | { kind: "sceneAction"; action: SceneAction<TLayerKey> };
 
-export interface SceneType<TLayerKey extends string, TState = EmptyState> {
+export interface SceneType<TLayerKey extends string, TState> {
   typeName: string;
   objects: readonly SceneObject<TLayerKey, unknown>[];
   /** Order of layer drawing, from bottom to top */
@@ -83,7 +83,7 @@ export type SceneAction<TLayerKey extends string> =
     }
   | {
       kind: "changeScene";
-      makeScene: () => SceneType<string>;
+      makeScene: () => SceneType<string, unknown>;
     };
 
 export type SceneEvent =

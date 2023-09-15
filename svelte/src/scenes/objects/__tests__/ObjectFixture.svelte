@@ -14,8 +14,9 @@
 
   export let makeObject: (random: PRNG) => SceneObject<string, unknown>;
   export let seed: string;
-  export let onSceneChange: ((scene: SceneType<string>) => void) | undefined =
-    undefined;
+  export let onSceneChange:
+    | ((scene: SceneType<string, unknown>) => void)
+    | undefined = undefined;
   export let worldClick$: Observable<Position> | undefined = undefined;
   export let debugDraw$:
     | Observable<(ctx: CanvasRenderingContext2D) => void>

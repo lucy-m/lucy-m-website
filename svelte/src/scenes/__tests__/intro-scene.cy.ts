@@ -7,6 +7,7 @@ import {
   type Position,
   type SceneEventOrAction,
   type SceneType,
+  type SceneTypeStateless,
 } from "../../model";
 import { makeIntroScene } from "../intro-scene";
 import ViewSceneFixture from "./ViewSceneFixture.svelte";
@@ -16,8 +17,8 @@ describe("intro scene", () => {
     fc.assert(
       fc.property(fc.string(), (seed) => {
         describe("seed = " + seed, () => {
-          let sceneA: SceneType<string>;
-          let sceneB: SceneType<string>;
+          let sceneA: SceneTypeStateless<string>;
+          let sceneB: SceneTypeStateless<string>;
 
           beforeEach(() => {
             sceneA = makeIntroScene(seedrandom(seed));
@@ -105,7 +106,7 @@ describe("intro scene", () => {
       cy.clock();
     });
 
-    let currentScene: SceneType<string>;
+    let currentScene: SceneType<string, unknown>;
     let worldClick$: Subject<Position>;
 
     beforeEach(() => {
@@ -115,7 +116,7 @@ describe("intro scene", () => {
         props: {
           makeScene: makeIntroScene,
           seed: "abcd",
-          onSceneChange: (s: SceneType<string>) => {
+          onSceneChange: (s: SceneType<string, unknown>) => {
             currentScene = s;
           },
           worldClick$,

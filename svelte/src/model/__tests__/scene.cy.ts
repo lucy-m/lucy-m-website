@@ -2,16 +2,20 @@ import { of } from "rxjs";
 import seedrandom from "seedrandom";
 import type { AssetKey } from "../assets";
 import { PosFns } from "../position";
-import { applySceneEvent } from "../scene";
+import { applySceneEvent, makeSceneTypeStateless } from "../scene";
 import { makeSceneObjectStateless } from "../scene-object";
-import type { SceneObject, SceneObjectAction, SceneType } from "../scene-types";
+import type {
+  SceneObject,
+  SceneObjectAction,
+  SceneTypeStateless,
+} from "../scene-types";
 
 describe("scene", () => {
   const random = seedrandom();
 
   const makeTestSceneObject = (
     onTick?: () => SceneObjectAction<string>[]
-  ): SceneObject<string> =>
+  ): SceneObject<string, unknown> =>
     makeSceneObjectStateless(random)({
       getLayers: () => [],
       layerKey: "",
@@ -20,13 +24,14 @@ describe("scene", () => {
     });
 
   const makeTestScene = (
-    objects: SceneObject<string>[]
-  ): SceneType<string> => ({
-    typeName: "test-scene",
-    events: of(),
-    layerOrder: [],
-    objects,
-  });
+    objects: SceneObject<string, unknown>[]
+  ): SceneTypeStateless<string> =>
+    makeSceneTypeStateless({
+      typeName: "test-scene",
+      events: of(),
+      layerOrder: [],
+      objects,
+    });
 
   const images = {} as Record<AssetKey, HTMLImageElement>;
 

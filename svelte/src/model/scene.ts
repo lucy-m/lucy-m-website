@@ -6,6 +6,7 @@ import {
   getObjectsInOrder,
 } from "./scene-object";
 import type {
+  EmptyState,
   SceneAction,
   SceneEvent,
   SceneObjectAction,
@@ -20,17 +21,20 @@ export const makeSceneTypeStateful = <TLayerKey extends string, TSceneState>(
 };
 
 export const makeSceneTypeStateless = <TLayerKey extends string>(
-  sceneType: Omit<SceneType<TLayerKey>, "state">
+  sceneType: Omit<SceneType<TLayerKey, EmptyState>, "state">
 ): SceneTypeStateless<TLayerKey> => ({
   ...sceneType,
   state: {},
 });
 
-const applySceneObjectActions = <TLayerKey extends string>(
-  scene: SceneType<TLayerKey>,
+const applySceneObjectActions = <TLayerKey extends string, TSceneState>(
+  scene: SceneType<TLayerKey, TSceneState>,
   objectActions: SceneObjectAction<TLayerKey, unknown>[],
   interactObjectId: string
-): { scene: SceneType<TLayerKey>; sceneActions: SceneAction<TLayerKey>[] } => {
+): {
+  scene: SceneType<TLayerKey, TSceneState>;
+  sceneActions: SceneAction<TLayerKey>[];
+} => {
   const sceneActions = choose(objectActions, (action) =>
     action.kind === "sceneAction" ? action.action : undefined
   );
@@ -66,24 +70,24 @@ const applySceneObjectActions = <TLayerKey extends string>(
   return { scene: { ...scene, objects: newObjects }, sceneActions };
 };
 
-type ApplySceneActionResult<TLayerKey extends string> =
+type ApplySceneActionResult<TLayerKey extends string, TSceneState> =
   | {
       kind: "newScene";
-      scene: SceneType<string>;
+      scene: SceneType<string, TSceneState>;
     }
   | {
       kind: "updated";
-      scene: SceneType<TLayerKey>;
+      scene: SceneType<TLayerKey, TSceneState>;
     };
 
-export const applySceneEvent = <TLayerKey extends string>(
-  scene: SceneType<TLayerKey>,
+export const applySceneEvent = <TLayerKey extends string, TSceneState>(
+  scene: SceneType<TLayerKey, TSceneState>,
   images: Record<AssetKey, HTMLImageElement>,
   event: SceneEvent | SceneAction<TLayerKey>
-): ApplySceneActionResult<TLayerKey> => {
+): ApplySceneActionResult<TLayerKey, unknown> => {
   if (event.kind === "tick") {
     interface Accumulator {
-      scene: SceneType<TLayerKey>;
+      scene: SceneType<TLayerKey, TSceneState>;
       sceneActions: readonly SceneAction<TLayerKey>[];
     }
 
@@ -152,10 +156,10 @@ export const applySceneEvent = <TLayerKey extends string>(
   }
 };
 
-const applySceneActions = <TLayerKey extends string>(
-  scene: SceneType<TLayerKey>,
+const applySceneActions = <TLayerKey extends string, TSceneState>(
+  scene: SceneType<TLayerKey, TSceneState>,
   actions: readonly SceneAction<TLayerKey>[]
-): ApplySceneActionResult<TLayerKey> => {
+): ApplySceneActionResult<TLayerKey, unknown> => {
   const byType = partitionByKind(actions, "changeScene");
 
   const changeSceneAction = byType.changeScene?.[0];
@@ -163,10 +167,13 @@ const applySceneActions = <TLayerKey extends string>(
     return { kind: "newScene", scene: changeSceneAction.makeScene() };
   }
 
-  const updated = byType.other.reduce<SceneType<TLayerKey>>((acc, action) => {
-    const objects = [...acc.objects, action.makeObject()];
-    return { ...acc, objects };
-  }, scene);
+  const updated = byType.other.reduce<SceneType<TLayerKey, unknown>>(
+    (acc, action) => {
+      const objects = [...acc.objects, action.makeObject()];
+      return { ...acc, objects };
+    },
+    scene
+  );
 
   return { kind: "updated", scene: updated };
 };

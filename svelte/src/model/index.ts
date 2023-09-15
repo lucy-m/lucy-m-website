@@ -17,6 +17,7 @@ export type {
   SceneObjectAction,
   SceneObjectStateless,
   SceneType,
+  SceneTypeStateless,
 } from "./scene-types";
 export * from "./shape";
 export * from "./spring";

@@ -65,8 +65,8 @@ const getLayerContentInOrder = <TLayerKey extends string>(
   }, []);
 };
 
-export const resolveScene = <TLayerKey extends string>(
-  scene: SceneType<TLayerKey>,
+export const resolveScene = <TLayerKey extends string, TSceneState>(
+  scene: SceneType<TLayerKey, TSceneState>,
   images: Record<AssetKey, HTMLImageElement>
 ): DrawLayer[] => {
   const sceneLayers: [TLayerKey, SubLayerKey, DrawLayer][] = scene.objects
