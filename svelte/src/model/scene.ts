@@ -21,10 +21,14 @@ export const makeSceneTypeStateful = <TLayerKey extends string, TSceneState>(
 };
 
 export const makeSceneTypeStateless = <TLayerKey extends string>(
-  sceneType: Omit<SceneType<TLayerKey, EmptyState>, "state">
+  sceneType: Omit<
+    SceneType<TLayerKey, EmptyState>,
+    "state" | "getWorldStateObjects"
+  >
 ): SceneTypeStateless<TLayerKey> => ({
   ...sceneType,
   state: {},
+  getWorldStateObjects: () => [],
 });
 
 const applySceneObjectActions = <TLayerKey extends string, TSceneState>(
@@ -80,14 +84,14 @@ type ApplySceneActionResult<TLayerKey extends string, TSceneState> =
       scene: SceneType<TLayerKey, TSceneState>;
     };
 
-export const applySceneEvent = <TLayerKey extends string, TSceneState>(
-  scene: SceneType<TLayerKey, TSceneState>,
+export const applySceneEvent = <TLayerKey extends string>(
+  scene: SceneType<TLayerKey, unknown>,
   images: Record<AssetKey, HTMLImageElement>,
   event: SceneEvent | SceneAction<TLayerKey>
 ): ApplySceneActionResult<TLayerKey, unknown> => {
   if (event.kind === "tick") {
     interface Accumulator {
-      scene: SceneType<TLayerKey, TSceneState>;
+      scene: SceneType<TLayerKey, unknown>;
       sceneActions: readonly SceneAction<TLayerKey>[];
     }
 
@@ -172,7 +176,7 @@ const applySceneActions = <TLayerKey extends string, TSceneState>(
       const objects = [...acc.objects, action.makeObject()];
       return { ...acc, objects };
     },
-    scene
+    scene as SceneType<TLayerKey, unknown>
   );
 
   return { kind: "updated", scene: updated };

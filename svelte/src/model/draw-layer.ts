@@ -1,6 +1,6 @@
 import type { AssetKey } from "./assets";
 import { PosFns, type Position } from "./position";
-import type { SceneType } from "./scene-types";
+import type { SceneObject, SceneType } from "./scene-types";
 import type { SubLayerKey } from "./sub-layer-key";
 
 type LayerContent =
@@ -69,7 +69,12 @@ export const resolveScene = <TLayerKey extends string, TSceneState>(
   scene: SceneType<TLayerKey, TSceneState>,
   images: Record<AssetKey, HTMLImageElement>
 ): DrawLayer[] => {
-  const sceneLayers: [TLayerKey, SubLayerKey, DrawLayer][] = scene.objects
+  const worldStateObjects = scene
+    .getWorldStateObjects(scene.state)
+    .map((v) => v as SceneObject<TLayerKey, unknown>);
+  const allObjects = [...scene.objects, ...worldStateObjects];
+
+  const sceneLayers: [TLayerKey, SubLayerKey, DrawLayer][] = allObjects
     .filter((obj) => !obj.hidden)
     .flatMap((obj) => {
       return obj

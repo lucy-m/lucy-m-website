@@ -4,7 +4,7 @@ import {
   makeSceneObjectStateless,
   makeSceneTypeStateful,
   PosFns,
-  type SceneObject,
+  type SceneObjectStateless,
   type SceneType,
 } from "../../model";
 import type { AnyFishingState } from "./fishing-state";
@@ -17,7 +17,9 @@ export const makeFishingScene = (
 ): SceneType<LayerKey, AnyFishingState> => {
   const makeSceneObjectBound = makeSceneObjectStateless(random);
 
-  const objects: SceneObject<LayerKey, any>[] = [
+  const getWorldStateObjects = (
+    state: AnyFishingState
+  ): SceneObjectStateless<LayerKey>[] => [
     makeSceneObjectBound({
       layerKey: "debug",
       position: PosFns.new(400, 500),
@@ -26,17 +28,18 @@ export const makeFishingScene = (
           kind: "text",
           maxWidth: 500,
           position: PosFns.zero,
-          text: ["Some text"],
+          text: [state.kind],
         },
       ],
     }),
   ];
 
-  return makeSceneTypeStateful({
+  return makeSceneTypeStateful<LayerKey, AnyFishingState>({
     typeName: "fishing",
     events: new Subject(),
     layerOrder,
-    objects,
+    objects: [],
     state: { kind: "idle" },
+    getWorldStateObjects,
   });
 };

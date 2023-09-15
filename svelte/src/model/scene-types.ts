@@ -57,13 +57,16 @@ export type SceneObjectAction<TLayerKey extends string, TState = EmptyState> =
   | { kind: "updateState"; state: Partial<TState> }
   | { kind: "sceneAction"; action: SceneAction<TLayerKey> };
 
-export interface SceneType<TLayerKey extends string, TState> {
+export interface SceneType<TLayerKey extends string, TSceneState> {
   typeName: string;
   objects: readonly SceneObject<TLayerKey, unknown>[];
   /** Order of layer drawing, from bottom to top */
   layerOrder: readonly TLayerKey[];
   events: Observable<SceneEvent | SceneAction<TLayerKey>>;
-  state: TState;
+  state: TSceneState;
+  getWorldStateObjects: (
+    state: TSceneState
+  ) => readonly SceneObjectStateless<TLayerKey>[];
 }
 
 export type SceneTypeStateless<TLayerKey extends string> = SceneType<
