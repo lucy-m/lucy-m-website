@@ -5,7 +5,7 @@ import { validate } from "uuid";
 import type { SceneEventOrAction, SceneType } from "../../model";
 import { PosFns, type Position } from "../../model";
 import { makeIntroScene } from "../intro-scene";
-import Fixture from "./ViewSceneFixture.svelte";
+import ViewSceneFixture from "./ViewSceneFixture.svelte";
 
 describe("intro scene", () => {
   describe("scenes with same seed", () => {
@@ -108,7 +108,7 @@ describe("intro scene", () => {
       beforeEach(() => {
         worldClick$ = new Subject<Position>();
 
-        cy.mount(Fixture, {
+        cy.mount(ViewSceneFixture, {
           props: {
             makeScene: makeIntroScene,
             seed: "abcd",
@@ -159,7 +159,7 @@ describe("intro scene", () => {
             it("seed " + seed, () => {
               const allBirdIds = new Set<string>();
 
-              cy.mount(Fixture, {
+              cy.mount(ViewSceneFixture, {
                 props: {
                   makeScene: makeIntroScene,
                   seed,
