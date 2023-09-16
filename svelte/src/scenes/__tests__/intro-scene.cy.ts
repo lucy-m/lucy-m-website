@@ -12,8 +12,8 @@ describe("intro scene", () => {
     fc.assert(
       fc.property(fc.string(), (seed) => {
         describe("seed = " + seed, () => {
-          let sceneA: SceneType<string>;
-          let sceneB: SceneType<string>;
+          let sceneA: SceneType;
+          let sceneB: SceneType;
 
           beforeEach(() => {
             sceneA = makeIntroScene(seedrandom(seed));
@@ -23,23 +23,23 @@ describe("intro scene", () => {
           });
 
           it("all IDs are valid", () => {
-            for (const object of sceneA.objects) {
+            for (const object of sceneA.getObjects()) {
               expect(validate(object.id)).to.be.true;
             }
           });
 
           it("produces same objects", () => {
-            for (const index in sceneA.objects) {
-              const objectA = sceneA.objects[index];
-              const objectB = sceneB.objects[index];
+            for (const index in sceneA.getObjects()) {
+              const objectA = sceneA.getObjects()[index];
+              const objectB = sceneB.getObjects()[index];
 
               cy.assertObjectsMatch(objectA, objectB);
             }
           });
 
           describe("ticking", () => {
-            let actionsA: SceneEventOrAction<string>[];
-            let actionsB: SceneEventOrAction<string>[];
+            let actionsA: SceneEventOrAction[];
+            let actionsB: SceneEventOrAction[];
 
             beforeEach(() => {
               actionsA = [];
@@ -73,13 +73,13 @@ describe("intro scene", () => {
 
                   const objectA = (
                     actionA as Extract<
-                      SceneEventOrAction<string>,
+                      SceneEventOrAction,
                       { kind: "addObject" }
                     >
                   ).makeObject();
                   const objectB = (
                     actionB as Extract<
-                      SceneEventOrAction<string>,
+                      SceneEventOrAction,
                       { kind: "addObject" }
                     >
                   ).makeObject();
@@ -97,16 +97,13 @@ describe("intro scene", () => {
 
   describe("rendering tests", () => {
     const findByTypeName = (
-      scene: SceneType<string>,
+      scene: SceneType,
       typeName: string
-    ): SceneObject<string> | undefined => {
-      return scene.objects.find((obj) => obj.typeName === typeName);
+    ): SceneObject | undefined => {
+      return scene.getObjects().find((obj) => obj.typeName === typeName);
     };
 
-    const getByTypeName = (
-      scene: SceneType<string>,
-      typeName: string
-    ): SceneObject<string> => {
+    const getByTypeName = (scene: SceneType, typeName: string): SceneObject => {
       const obj = findByTypeName(scene, typeName);
 
       if (!obj) {
@@ -122,7 +119,7 @@ describe("intro scene", () => {
     });
 
     describe("intro-scene", () => {
-      let currentScene: SceneType<string>;
+      let currentScene: SceneType;
       let worldClick$: Subject<Position>;
 
       beforeEach(() => {
@@ -132,7 +129,7 @@ describe("intro scene", () => {
           props: {
             makeScene: makeIntroScene,
             seed: "abcd",
-            onSceneChange: (s: SceneType<string>) => {
+            onSceneChange: (s: SceneType) => {
               currentScene = s;
             },
             worldClick$,
@@ -160,7 +157,9 @@ describe("intro scene", () => {
         it("stops bird spawning", () => {
           cy.steppedTick(120_000).then(() => {
             expect(
-              currentScene.objects.find((o) => o.typeName === "cruising-bird")
+              currentScene
+                .getObjects()
+                .find((o) => o.typeName === "cruising-bird")
             ).to.be.undefined;
           });
         });
@@ -213,7 +212,8 @@ describe("intro scene", () => {
                   makeScene: makeIntroScene,
                   seed,
                   onSceneChange: (scene) => {
-                    scene.objects
+                    scene
+                      .getObjects()
                       .filter((obj) => obj.typeName === "cruising-bird")
                       .forEach((bird) => allBirdIds.add(bird.id));
                   },

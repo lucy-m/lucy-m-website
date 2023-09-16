@@ -8,12 +8,12 @@ import {
 } from "../../model";
 import { sceneSize } from "../scene-size";
 
-export const makeFeather = <TLayerKey extends string>(
-  layerKey: TLayerKey,
+export const makeFeather = (
+  layerKey: string,
   initial: Position,
   initialVelocity: Position,
   random: PRNG
-): SceneObject<TLayerKey> => {
+): SceneObject => {
   let position = initial;
   let xPosition = NumberSpringFns.make({
     endPoint: initialVelocity.x < 0 ? -200 : 200,
@@ -29,7 +29,7 @@ export const makeFeather = <TLayerKey extends string>(
   let yVelocity = initialVelocity.y;
   let rotation = 40;
 
-  return makeSceneObject(random)<TLayerKey>((id) => ({
+  return makeSceneObject(random)((id) => ({
     typeName: "feather",
     layerKey,
     getPosition: () => position,

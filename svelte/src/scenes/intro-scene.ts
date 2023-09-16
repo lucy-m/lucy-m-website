@@ -28,7 +28,7 @@ const layerOrder = [
 
 type LayerKey = (typeof layerOrder)[number];
 
-export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
+export const makeIntroScene = (random: PRNG): SceneType => {
   const makeSceneObjectBound = makeSceneObject(random);
 
   const randomTree = (): AssetKey => {
@@ -90,7 +90,7 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
     onInteract: () => [{ kind: "removeObject", target: id }],
   }));
 
-  const objects: SceneObject<LayerKey>[] = [
+  const objects: SceneObject[] = [
     makeSceneObjectBound({
       getPosition: () => PosFns.zero,
       layerKey: "bg",
@@ -143,7 +143,7 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
     speechBubble,
   ];
 
-  const events: Observable<SceneAction<LayerKey>> = merge(
+  const events: Observable<SceneAction> = merge(
     timer(200),
     randomInterval([6000, 15000], random)
   ).pipe(

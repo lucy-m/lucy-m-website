@@ -11,10 +11,10 @@ import {
 const layerOrder = ["bg", "house"] as const;
 type LayerKey = (typeof layerOrder)[number];
 
-export const makeHouseScene = (random: PRNG): SceneType<LayerKey> => {
+export const makeHouseScene = (random: PRNG): SceneType => {
   const makeSceneObjectBound = makeSceneObject(random);
 
-  const objects: SceneObject<LayerKey>[] = [
+  const objects: SceneObject[] = [
     makeSceneObjectBound({
       layerKey: "house",
       getPosition: () => PosFns.new(1200, 500),

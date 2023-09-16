@@ -14,8 +14,6 @@ export type {
   SceneEvent,
   SceneEventOrAction,
   SceneObject,
-  SceneObjectAction,
-  SceneObjectStateless,
   SceneType,
 } from "./scene-types";
 export * from "./shape";

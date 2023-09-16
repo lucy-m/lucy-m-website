@@ -3,18 +3,18 @@ import {
   NumberSpringFns,
   PosFns,
   makeSceneObject,
+  type SceneAction,
   type SceneObject,
-  type SceneObjectAction,
 } from "../../model";
 import { sceneSize } from "../scene-size";
 import { makeFeather } from "./feather";
 
-export const makeCruisingBird = <TLayerKey extends string>(
-  layerKey: TLayerKey,
+export const makeCruisingBird = (
+  layerKey: string,
   initialX: number,
   rangeY: [number, number],
   random: PRNG
-): SceneObject<TLayerKey> => {
+): SceneObject => {
   const rangeMin = Math.min(rangeY[0], rangeY[1]);
   const rangeRange = Math.abs(rangeY[0] - rangeY[1]);
   const makeNewYEndPoint = () => random.quick() * rangeRange + rangeMin;
@@ -51,7 +51,7 @@ export const makeCruisingBird = <TLayerKey extends string>(
 
   const getPosition = () => PosFns.new(positionX, yPosition.position);
 
-  return makeSceneObject(random)<TLayerKey>((id) => ({
+  return makeSceneObject(random)((id) => ({
     typeName: "cruising-bird",
     layerKey,
     getPosition,
@@ -66,19 +66,16 @@ export const makeCruisingBird = <TLayerKey extends string>(
       flapUp,
     }),
     onInteract: () => {
-      const spawnFeathersActions: SceneObjectAction<TLayerKey>[] = (() => {
-        const makeFeatherAction = (): SceneObjectAction<TLayerKey> => ({
-          kind: "sceneAction",
-          action: {
-            kind: "addObject",
-            makeObject: () =>
-              makeFeather(
-                layerKey,
-                getPosition(),
-                PosFns.new(random.quick() * 2 - 1, random.quick() * 5 - 4),
-                random
-              ),
-          },
+      const spawnFeathersActions: SceneAction[] = (() => {
+        const makeFeatherAction = (): SceneAction => ({
+          kind: "addObject",
+          makeObject: () =>
+            makeFeather(
+              layerKey,
+              getPosition(),
+              PosFns.new(random.quick() * 2 - 1, random.quick() * 5 - 4),
+              random
+            ),
         });
 
         if (random.quick() < 0.2) {
@@ -94,6 +91,7 @@ export const makeCruisingBird = <TLayerKey extends string>(
               makeFeatherAction(),
               {
                 kind: "removeObject",
+                target: id,
               },
             ];
           }

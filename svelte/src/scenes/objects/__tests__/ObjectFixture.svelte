@@ -4,6 +4,7 @@
   import seedrandom from "seedrandom";
   import {
     loadImages,
+    makeSceneType,
     type Destroyable,
     type Position,
     type SceneObject,
@@ -13,9 +14,9 @@
   import { choose } from "../../../utils";
   import { sceneSize } from "../../scene-size";
 
-  export let makeObjects: (random: PRNG) => SceneObject<string>[];
+  export let makeObjects: (random: PRNG) => SceneObject[];
   export let seed: string;
-  export let onSceneChange: ((scene: SceneType<string>) => void) | undefined =
+  export let onSceneChange: ((scene: SceneType) => void) | undefined =
     undefined;
   export let worldClick$: Observable<Position> | undefined = undefined;
   export let debugDraw$:
@@ -24,32 +25,30 @@
 
   export let debugTrace:
     | {
-        sources: (
-          sceneType: SceneType<string>
-        ) => readonly (SceneObject<string> | undefined)[];
+        sources: (sceneType: SceneType) => readonly (SceneObject | undefined)[];
         colour: (args: {
-          obj: SceneObject<string>;
+          obj: SceneObject;
           index: number;
         }) => string | undefined;
       }
     | undefined = undefined;
 
-  $: makeScene = (random: PRNG): SceneType<string> => {
+  $: makeScene = (random: PRNG): SceneType => {
     const objects = makeObjects(random);
     const layerOrder = Array.from(new Set(objects.map((o) => o.layerKey)));
 
-    return {
+    return makeSceneType({
       objects: objects,
       events: new Subject(),
       layerOrder,
       typeName: "object-test-scene",
-    };
+    });
   };
 
   const debugTrace$: Subject<(ctx: CanvasRenderingContext2D) => void> =
     new Subject();
 
-  const _onSceneChange = (scene: SceneType<string>) => {
+  const _onSceneChange = (scene: SceneType) => {
     if (onSceneChange) {
       onSceneChange(scene);
     }
@@ -79,11 +78,12 @@
       ctx.font = "24px Quicksand";
       ctx.fillText("debug overlay", 0, 24);
 
-      subscription = merge(debugTrace$, debugDraw$ ?? new Subject()).subscribe(
-        (command) => {
-          command(ctx);
-        }
-      );
+      subscription = merge(
+        debugDraw$ ?? new Subject<(ctx: CanvasRenderingContext2D) => void>(),
+        debugTrace$
+      ).subscribe((command) => {
+        command(ctx);
+      });
     }
 
     return {

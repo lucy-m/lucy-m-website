@@ -23,7 +23,7 @@ describe("cruising bird", () => {
         ],
         seed: "abcde",
         debugTrace: {
-          sources: (scene) => scene.objects,
+          sources: (scene) => scene.getObjects(),
           colour: ({ obj, index }) => {
             const flapUp = obj._getDebugInfo && obj._getDebugInfo()?.flapUp;
 
@@ -94,11 +94,11 @@ describe("cruising bird", () => {
           makeCruisingBird("bird", 10, [100, 1000], seed),
         ],
         onSceneChange: (scene) => {
-          birdPosition = scene.objects[0]?.getPosition();
+          birdPosition = scene.getObjects()[0]?.getPosition();
         },
         seed: "wwwwow",
         debugTrace: {
-          sources: (scene) => scene.objects,
+          sources: (scene) => scene.getObjects(),
           colour: ({ obj }) => {
             const flapUp = obj._getDebugInfo && obj._getDebugInfo()?.flapUp;
 

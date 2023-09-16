@@ -27,7 +27,7 @@ import { drawLayerContent } from "./canvas-draw";
 
 const redrawCanvas = (
   ctx: CanvasRenderingContext2D,
-  scene: SceneType<string>,
+  scene: SceneType,
   images: Record<AssetKey, HTMLImageElement>
 ) => {
   if (ctx) {
@@ -44,16 +44,16 @@ const redrawCanvas = (
 export const viewScene = (
   canvas: HTMLCanvasElement,
   args: {
-    initialScene: SceneType<string>;
+    initialScene: SceneType;
     images: Record<AssetKey, HTMLImageElement>;
-    onSceneChange?: (s: SceneType<string>) => void;
+    onSceneChange?: (s: SceneType) => void;
     worldClick$?: Observable<Position>;
   }
 ): Destroyable => {
   const { initialScene, images, onSceneChange, worldClick$ } = args;
 
   const interactSub = new Subject<Position>();
-  const eventsSub = new Subject<Observable<SceneEvent | SceneAction<string>>>();
+  const eventsSub = new Subject<Observable<SceneEvent | SceneAction>>();
 
   canvas.width = sceneSize.x;
   canvas.height = sceneSize.y;
@@ -91,8 +91,9 @@ export const viewScene = (
           const sceneEventResult = applySceneEvent(scene, images, action);
           if (sceneEventResult.kind === "newScene") {
             eventsSub.next(sceneEventResult.scene.events);
+            return sceneEventResult.scene;
           }
-          return sceneEventResult.scene;
+          return scene;
         }, initialScene),
         tap((scene) => {
           onSceneChange && onSceneChange(scene);

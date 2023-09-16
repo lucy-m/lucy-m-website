@@ -2,16 +2,14 @@ import { of } from "rxjs";
 import seedrandom from "seedrandom";
 import type { AssetKey } from "../assets";
 import { PosFns } from "../position";
-import { applySceneEvent } from "../scene";
+import { applySceneEvent, makeSceneType } from "../scene";
 import { makeSceneObject } from "../scene-object";
-import type { SceneObject, SceneType } from "../scene-types";
+import type { SceneAction, SceneObject, SceneType } from "../scene-types";
 
 describe("scene", () => {
   const random = seedrandom();
 
-  const makeTestSceneObject = (
-    onTick?: () => SceneAction<string>[]
-  ): SceneObject<string> =>
+  const makeTestSceneObject = (onTick?: () => SceneAction[]): SceneObject =>
     makeSceneObject(random)({
       getLayers: () => [],
       layerKey: "",
@@ -19,14 +17,13 @@ describe("scene", () => {
       onTick,
     });
 
-  const makeTestScene = (
-    objects: SceneObject<string>[]
-  ): SceneType<string> => ({
-    typeName: "test-scene",
-    events: of(),
-    layerOrder: [],
-    objects,
-  });
+  const makeTestScene = (objects: SceneObject[]): SceneType =>
+    makeSceneType({
+      typeName: "test-scene",
+      events: of(),
+      layerOrder: [],
+      objects,
+    });
 
   const images = {} as Record<AssetKey, HTMLImageElement>;
 
@@ -38,10 +35,10 @@ describe("scene", () => {
       ]);
 
       const scene = makeTestScene([objectA, objectB]);
-      const tickResult = applySceneEvent(scene, images, { kind: "tick" });
+      applySceneEvent(scene, images, { kind: "tick" });
 
       it("objectB is removed", () => {
-        expect(tickResult.scene.objects.map((o) => o.id)).to.be.deep.equal([
+        expect(scene.getObjects().map((o) => o.id)).to.be.deep.equal([
           objectA.id,
         ]);
       });
@@ -54,10 +51,10 @@ describe("scene", () => {
       ]);
 
       const scene = makeTestScene([objectA]);
-      const tickResult = applySceneEvent(scene, images, { kind: "tick" });
+      applySceneEvent(scene, images, { kind: "tick" });
 
       it("adds objectB", () => {
-        expect(tickResult.scene.objects.map((o) => o.id)).to.deep.equal([
+        expect(scene.getObjects().map((o) => o.id)).to.deep.equal([
           objectA.id,
           objectB.id,
         ]);

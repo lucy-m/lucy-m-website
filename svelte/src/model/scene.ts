@@ -1,31 +1,53 @@
 import { partitionByAllKinds } from "../utils";
 import type { AssetKey } from "./assets";
 import { getObjectBoundingBox, getObjectsInOrder } from "./scene-object";
-import type { SceneAction, SceneEvent, SceneType } from "./scene-types";
+import type {
+  SceneAction,
+  SceneEvent,
+  SceneObject,
+  SceneType,
+} from "./scene-types";
 
-type ApplySceneActionResult<TLayerKey extends string> =
+type ApplySceneActionResult =
   | {
       kind: "newScene";
-      scene: SceneType<string>;
+      scene: SceneType;
     }
   | {
       kind: "updated";
-      scene: SceneType<TLayerKey>;
-    };
+    }
+  | { kind: "noChange" };
 
-export const makeSceneType = <TLayerKey extends string>(
-  scene: SceneType<TLayerKey>
-): SceneType<TLayerKey> => ({
-  ...scene,
-});
+export const makeSceneType = (
+  scene: Omit<SceneType, "getObjects" | "addObject" | "removeObject"> & {
+    objects: readonly SceneObject[];
+  }
+): SceneType => {
+  let objects = [...scene.objects];
 
-export const applySceneEvent = <TLayerKey extends string>(
-  scene: SceneType<TLayerKey>,
+  const getObjects = () => objects;
+  const addObject = (obj: SceneObject) => {
+    objects.push(obj);
+  };
+  const removeObject = (id: string) => {
+    objects = objects.filter((obj) => obj.id !== id);
+  };
+
+  return {
+    ...scene,
+    getObjects,
+    addObject,
+    removeObject,
+  };
+};
+
+export const applySceneEvent = (
+  scene: SceneType,
   images: Record<AssetKey, HTMLImageElement>,
-  event: SceneEvent | SceneAction<TLayerKey>
-): ApplySceneActionResult<TLayerKey> => {
+  event: SceneEvent | SceneAction
+): ApplySceneActionResult => {
   if (event.kind === "tick") {
-    const tickActions = scene.objects.flatMap((obj) => {
+    const tickActions = scene.getObjects().flatMap((obj) => {
       if (obj.onTick) {
         return obj.onTick();
       } else {
@@ -36,7 +58,7 @@ export const applySceneEvent = <TLayerKey extends string>(
     return applySceneActions(scene, tickActions);
   } else if (event.kind === "interact") {
     const objectsInOrder = getObjectsInOrder(
-      scene.objects.filter((obj) => obj.onInteract),
+      scene.getObjects().filter((obj) => obj.onInteract),
       scene.layerOrder,
       "top-to-bottom"
     );
@@ -52,14 +74,14 @@ export const applySceneEvent = <TLayerKey extends string>(
     });
 
     if (!interactObject) {
-      return { kind: "updated", scene };
+      return { kind: "noChange" };
     }
 
     const objectActions =
       interactObject.onInteract && interactObject.onInteract();
 
     if (!objectActions) {
-      return { kind: "updated", scene };
+      return { kind: "noChange" };
     } else {
       return applySceneActions(scene, objectActions);
     }
@@ -68,10 +90,10 @@ export const applySceneEvent = <TLayerKey extends string>(
   }
 };
 
-const applySceneActions = <TLayerKey extends string>(
-  scene: SceneType<TLayerKey>,
-  actions: readonly SceneAction<TLayerKey>[]
-): ApplySceneActionResult<TLayerKey> => {
+const applySceneActions = (
+  scene: SceneType,
+  actions: readonly SceneAction[]
+): ApplySceneActionResult => {
   const byType = partitionByAllKinds(actions);
 
   const changeSceneAction = byType.changeScene?.[0];
@@ -85,16 +107,10 @@ const applySceneActions = <TLayerKey extends string>(
     byType.removeObject?.map(({ target }) => target) ?? []
   );
 
-  const newObjects = [
-    ...scene.objects.filter((obj) => !removedIds.has(obj.id)),
-    ...addedObjects,
-  ];
+  addedObjects.forEach((obj) => scene.addObject(obj));
+  removedIds.forEach((id) => scene.removeObject(id));
 
   return {
     kind: "updated",
-    scene: {
-      ...scene,
-      objects: newObjects,
-    },
   };
 };

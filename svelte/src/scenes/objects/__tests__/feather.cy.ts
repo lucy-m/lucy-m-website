@@ -11,9 +11,7 @@ import ObjectFixture from "./ObjectFixture.svelte";
 
 const interactive = Cypress.config("isInteractive");
 
-const getFeatherRotation = (
-  feather: SceneObject<string>
-): number | undefined => {
+const getFeatherRotation = (feather: SceneObject): number | undefined => {
   const firstLayer = feather.getLayers()[0];
 
   if (
@@ -38,7 +36,7 @@ describe("feather", () => {
         ],
         seed: "abcd",
         debugTrace: {
-          sources: (scene) => scene.objects,
+          sources: (scene) => scene.getObjects(),
           colour: ({ obj }) => {
             const rotation = getFeatherRotation(obj);
             return rotation !== undefined
@@ -56,7 +54,7 @@ describe("feather", () => {
   }
 
   describe("falling feather", () => {
-    let scenes: SceneType<string>[];
+    let scenes: SceneType[];
     let debugDrawSub: Subject<(ctx: CanvasRenderingContext2D) => void>;
     let featherPositionData: FeatherPositionData[];
 
@@ -68,7 +66,7 @@ describe("feather", () => {
           ],
           seed: "abcd",
           onSceneChange: (scene) => {
-            const feather = scene.objects[0];
+            const feather = scene.getObjects()[0];
             if (feather) {
               const position = feather.getPosition();
               const rotation = getFeatherRotation(feather);
@@ -79,7 +77,7 @@ describe("feather", () => {
             }
           },
           debugTrace: {
-            sources: (scene) => scene.objects,
+            sources: (scene) => scene.getObjects(),
             colour: ({ obj }) => {
               const rotation = getFeatherRotation(obj);
               return rotation !== undefined

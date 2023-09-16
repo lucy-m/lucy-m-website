@@ -64,10 +64,7 @@ const steppedTick = (by: number): Cypress.Chainable => {
   return cy.tick(dt, { log: false });
 };
 
-const assertObjectsMatch = (
-  objectA: SceneObject<string>,
-  objectB: SceneObject<string>
-) => {
+const assertObjectsMatch = (objectA: SceneObject, objectB: SceneObject) => {
   expect(objectA.getLayers()).to.deep.equal(objectB.getLayers());
 
   for (const key in objectA) {
