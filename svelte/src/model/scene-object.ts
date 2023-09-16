@@ -2,11 +2,7 @@ import type { PRNG } from "seedrandom";
 import { seededUuid } from "../utils";
 import type { AssetKey } from "./assets";
 import { PosFns, type Position } from "./position";
-import type {
-  SceneObject,
-  SceneObjectAction,
-  SceneObjectActionApplyResult,
-} from "./scene-types";
+import type { SceneObject } from "./scene-types";
 
 export const makeSceneObject =
   (random: PRNG) =>
@@ -18,36 +14,6 @@ export const makeSceneObject =
       ...obj,
     };
   };
-
-export const applySceneObjectAction = <TLayerKey extends string>(
-  obj: SceneObject<TLayerKey>,
-  action: SceneObjectAction<TLayerKey>
-): SceneObjectActionApplyResult<TLayerKey> => {
-  switch (action.kind) {
-    case "hide":
-      return {
-        kind: "update",
-        object: {
-          ...obj,
-          hidden: true,
-        },
-      };
-    case "show":
-      return {
-        kind: "update",
-        object: {
-          ...obj,
-          hidden: false,
-        },
-      };
-    case "removeObject": {
-      return { kind: "removeObject" };
-    }
-    case "sceneAction": {
-      return action;
-    }
-  }
-};
 
 /**
  * Gets the bounding box of the object in world co-ords.

@@ -20,32 +20,21 @@ export type ObjectLayerContent =
       rotation?: number;
     };
 
-export type SceneObjectTypeNames = "small-house" | "cruising-bird" | "feather";
-
 export type SceneObject<TLayerKey extends string> = {
   id: string;
   rotation?: number;
-  typeName?: SceneObjectTypeNames;
+  typeName?: string;
   hidden?: boolean;
   layerKey: TLayerKey;
+  events$?: Observable<any>;
   getPosition: () => Position;
   getLayers: () => ObjectLayerContent[];
-  onInteract?: () => SceneObjectAction<TLayerKey>[];
-  onTick?: () => SceneObjectAction<TLayerKey>[];
+  onInteract?: () => SceneAction<TLayerKey>[];
+  onTick?: () => SceneAction<TLayerKey>[];
 };
 
 export type SceneObjectStateless<TLayerKey extends string> =
   SceneObject<TLayerKey>;
-
-export type SceneObjectAction<TLayerKey extends string> =
-  | ((
-      | {
-          kind: "hide";
-        }
-      | { kind: "show" }
-      | { kind: "removeObject" }
-    ) & { target?: string })
-  | { kind: "sceneAction"; action: SceneAction<TLayerKey> };
 
 export interface SceneType<TLayerKey extends string> {
   typeName: string;
@@ -55,11 +44,6 @@ export interface SceneType<TLayerKey extends string> {
   events: Observable<SceneEvent | SceneAction<TLayerKey>>;
 }
 
-export type SceneObjectActionApplyResult<TLayerKey extends string> =
-  | { kind: "update"; object: SceneObject<TLayerKey> }
-  | { kind: "removeObject" }
-  | { kind: "sceneAction"; action: SceneAction<TLayerKey> };
-
 export type SceneAction<TLayerKey extends string> =
   | {
       kind: "addObject";
@@ -68,6 +52,10 @@ export type SceneAction<TLayerKey extends string> =
   | {
       kind: "changeScene";
       makeScene: () => SceneType<string>;
+    }
+  | {
+      kind: "removeObject";
+      target: string;
     };
 
 export type SceneEvent =

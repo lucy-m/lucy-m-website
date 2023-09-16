@@ -9,19 +9,44 @@ export const makeFishingScene = (random: PRNG): SceneType<LayerKey> => {
   const makeSceneObjectBound = makeSceneObject(random);
 
   const objects = [
-    makeSceneObjectBound({
-      layerKey: "debug",
-      getPosition: () => PosFns.new(400, 500),
-      getLayers: () => [
-        {
-          kind: "text",
-          maxWidth: 500,
-          position: PosFns.zero,
-          text: ["debug"],
-        },
-      ],
-    }),
+    makeSceneObjectBound(
+      (() => {
+        const eventSub = new Subject<any>();
+
+        return {
+          layerKey: "debug",
+          getPosition: () => PosFns.new(400, 500),
+          getLayers: () => [
+            {
+              kind: "text",
+              maxWidth: 500,
+              position: PosFns.zero,
+              text: ["debug"],
+            },
+            {
+              kind: "image",
+              assetKey: "birdFlapDown",
+              position: PosFns.new(0, 50),
+              subLayer: "background",
+            },
+          ],
+          onInteract: () => {
+            eventSub.next("Hello");
+            return [];
+          },
+          events$: eventSub,
+        };
+      })()
+    ),
   ];
+
+  objects.forEach((obj) => {
+    if (obj.events$) {
+      obj.events$.subscribe((val) => {
+        console.log("Event value", val);
+      });
+    }
+  });
 
   return {
     typeName: "fishing",

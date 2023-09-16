@@ -150,6 +150,30 @@ describe("intro scene", () => {
           });
         });
       });
+
+      describe("clicking speech bubble", () => {
+        beforeEach(() => {
+          expect(currentScene).to.exist;
+          const speechBubble = currentScene.objects.find(
+            (obj) => obj.typeName === "speech-bubble"
+          )!;
+          expect(speechBubble).to.exist;
+
+          worldClick$.next(
+            PosFns.add(speechBubble.getPosition(), PosFns.new(5, 5))
+          );
+
+          cy.steppedTick(100);
+        });
+
+        it.only("disappears", () => {
+          expect(currentScene).to.exist;
+          const speechBubble = currentScene.objects.find(
+            (obj) => obj.typeName === "speech-bubble"
+          )!;
+          expect(speechBubble).not.to.exist;
+        });
+      });
     });
 
     describe("property-based", () => {
