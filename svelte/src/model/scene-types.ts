@@ -21,34 +21,21 @@ export type ObjectLayerContent =
       rotation?: number;
     };
 
-export type SceneObjectEvent =
-  | {
-      kind: "sceneAction";
-      action: SceneAction;
-    }
-  | {
-      kind: "arbitrary";
-      event: unknown;
-    };
-
 export type SceneObject = {
   id: string;
   rotation?: number;
   typeName?: string;
   hidden?: boolean;
   layerKey: string;
-  events$?: Observable<SceneObjectEvent>;
+  events$?: Observable<SceneAction>;
   getPosition: () => Position;
   getLayers: () => ObjectLayerContent[];
-  onInteract?: () => SceneAction[];
-  onTick?: () => SceneAction[];
+  onInteract?: () => SceneAction[] | void;
+  onTick?: () => SceneAction[] | void;
   _getDebugInfo?: () => any;
 };
 
-export type ObjectEventHandler = (event: {
-  sourceObjectId: string;
-  event: unknown;
-}) => void;
+export type ObjectEventHandler = (event: unknown) => void;
 
 export interface SceneType {
   typeName: string;
@@ -82,7 +69,10 @@ export type SceneAction =
   | {
       kind: "removeObject";
       target: string;
-    };
+    }
+  | { kind: "emitEvent"; event: unknown };
+
+export type SceneActionWithSource = SceneAction & { sourceObjectId: string };
 
 export type SceneEvent =
   | { kind: "interact"; position: Position }

@@ -30,7 +30,7 @@ export const makeSceneType =
       if (event.kind === "tick") {
         const tickActions = getObjects().flatMap((obj) => {
           if (obj.onTick) {
-            return obj.onTick();
+            return obj.onTick() ?? [];
           } else {
             return [];
           }
@@ -85,6 +85,9 @@ export const makeSceneType =
         byType.removeObject?.map(({ target }) => target) ?? []
       );
 
+      byType.emitEvent?.forEach(
+        ({ event }) => scene.onObjectEvent && scene.onObjectEvent(event)
+      );
       addedObjects.forEach((obj) => addObject(obj));
       removedIds.forEach((id) => removeObject(id));
     };
@@ -104,14 +107,10 @@ export const makeSceneType =
       if (!objects.find((so) => so.id === obj.id)) {
         if (obj.events$) {
           const subscription = obj.events$.subscribe((event) => {
-            if (event.kind === "arbitrary") {
-              scene.onObjectEvent &&
-                scene.onObjectEvent({
-                  sourceObjectId: obj.id,
-                  event: event.event,
-                });
+            if (event.kind === "emitEvent") {
+              scene.onObjectEvent && scene.onObjectEvent(event.event);
             } else {
-              objectSceneActions.next(event.action);
+              objectSceneActions.next(event);
             }
           });
           eventSubscriptions[obj.id] = subscription;

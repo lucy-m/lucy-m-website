@@ -5,7 +5,7 @@ import type { AssetKey } from "../assets";
 import { PosFns } from "../position";
 import { makeSceneType } from "../scene";
 import { makeSceneObject } from "../scene-object";
-import type { SceneObject, SceneObjectEvent, SceneType } from "../scene-types";
+import type { SceneAction, SceneObject, SceneType } from "../scene-types";
 
 describe("scene", () => {
   const random = seedrandom();
@@ -43,7 +43,7 @@ describe("scene", () => {
 
   describe("object events", () => {
     let objectA: SceneObject;
-    let objectAEvents: Subject<SceneObjectEvent>;
+    let objectAEvents: Subject<SceneAction>;
     let scene: SceneType;
 
     const getOnObjectEventSpy = () =>
@@ -62,33 +62,27 @@ describe("scene", () => {
 
     it("abitrary objectA event calls onObjectEvent", () => {
       const event = { a: "hello", b: "world" };
-      objectAEvents.next({ kind: "arbitrary", event });
+      objectAEvents.next({ kind: "emitEvent", event });
 
       getOnObjectEventSpy()
         .should("have.been.calledOnce")
-        .should("have.been.calledWith", { sourceObjectId: objectA.id, event });
+        .should("have.been.calledWith", event);
     });
 
     it("sceneAction addObject event updates the scene", () => {
       const newObject = makeTestSceneObject();
-      objectAEvents.next({
-        kind: "sceneAction",
-        action: { kind: "addObject", makeObject: () => newObject },
-      });
+      objectAEvents.next({ kind: "addObject", makeObject: () => newObject });
       expect(scene.getObjects()).to.have.length(2);
     });
 
     it("sceneAction removeObject event updates the scene", () => {
-      objectAEvents.next({
-        kind: "sceneAction",
-        action: { kind: "removeObject", target: objectA.id },
-      });
+      objectAEvents.next({ kind: "removeObject", target: objectA.id });
       expect(scene.getObjects()).to.have.length(0);
     });
 
     describe("adding objectB", () => {
       let objectB: SceneObject;
-      let objectBEvents: Subject<SceneObjectEvent>;
+      let objectBEvents: Subject<SceneAction>;
 
       beforeEach(() => {
         objectBEvents = new Subject();
@@ -99,16 +93,13 @@ describe("scene", () => {
         scene.addObject(objectB);
       });
 
-      it("arbitrary objectB event calls onObjectEvent", () => {
+      it("emitEvent objectB event calls onObjectEvent", () => {
         const event = ["foo", 3];
-        objectBEvents.next({ kind: "arbitrary", event });
+        objectBEvents.next({ kind: "emitEvent", event });
 
         getOnObjectEventSpy()
           .should("have.been.calledOnce")
-          .should("have.been.calledWith", {
-            sourceObjectId: objectB.id,
-            event,
-          });
+          .should("have.been.calledWith", event);
       });
     });
 
@@ -117,9 +108,9 @@ describe("scene", () => {
         scene.removeObject(objectA.id);
       });
 
-      it("arbitrary objectA event does not call onObjectEvent", () => {
+      it("emitEvent objectA event does not call onObjectEvent", () => {
         const event = { a: "hello", b: "world" };
-        objectAEvents.next({ kind: "arbitrary", event });
+        objectAEvents.next({ kind: "emitEvent", event });
 
         getOnObjectEventSpy().should("not.have.been.called");
       });
@@ -130,9 +121,9 @@ describe("scene", () => {
         scene.destroy();
       });
 
-      it("arbitrary objectA event does not call onObjectEvent", () => {
+      it("emitEvent objectA event does not call onObjectEvent", () => {
         const event = { a: "hello", b: "world" };
-        objectAEvents.next({ kind: "arbitrary", event });
+        objectAEvents.next({ kind: "emitEvent", event });
 
         getOnObjectEventSpy().should("not.have.been.called");
       });

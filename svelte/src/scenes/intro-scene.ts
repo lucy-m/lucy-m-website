@@ -88,7 +88,7 @@ export const makeIntroScene: SceneSpec = (random: PRNG) => {
       getPosition: () => PosFns.zero,
       layerKey: "bg",
       getLayers: () => [
-        { kind: "image", assetKey: "background", subLayer: "background" },
+        { kind: "image", assetKey: "introBackground", subLayer: "background" },
       ],
     }),
     makeTrees(20, [
