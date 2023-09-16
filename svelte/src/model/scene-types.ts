@@ -31,6 +31,7 @@ export type SceneObject<TLayerKey extends string> = {
   getLayers: () => ObjectLayerContent[];
   onInteract?: () => SceneAction<TLayerKey>[];
   onTick?: () => SceneAction<TLayerKey>[];
+  _getDebugInfo?: () => any;
 };
 
 export type SceneObjectStateless<TLayerKey extends string> =

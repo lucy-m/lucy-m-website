@@ -9,6 +9,8 @@ import { maxBy, minBy } from "../../../utils";
 import { makeFeather } from "../feather";
 import ObjectFixture from "./ObjectFixture.svelte";
 
+const interactive = Cypress.config("isInteractive");
+
 const getFeatherRotation = (
   feather: SceneObject<string>
 ): number | undefined => {
@@ -58,13 +60,7 @@ describe("feather", () => {
     let debugDrawSub: Subject<(ctx: CanvasRenderingContext2D) => void>;
     let featherPositionData: FeatherPositionData[];
 
-    beforeEach(() => {
-      scenes = [];
-      featherPositionData = [];
-      debugDrawSub = new Subject();
-
-      cy.clock();
-
+    const render = () => {
       cy.mount(ObjectFixture, {
         props: {
           makeObjects: (seed) => [
@@ -96,67 +92,87 @@ describe("feather", () => {
       });
 
       cy.get("canvas").should("have.attr", "data-initialised", "true");
-      cy.steppedTick(25_000);
+    };
+
+    beforeEach(() => {
+      scenes = [];
+      featherPositionData = [];
+      debugDrawSub = new Subject();
     });
 
-    it("snapshot", () => {
+    it("works", () => {
+      if (!interactive) {
+        cy.clock();
+      }
+      render();
+      if (!interactive) {
+        cy.steppedTick(25_000);
+      }
       cy.percySnapshot();
     });
 
-    it("min rotation is reached at max x", () => {
-      const maxX = maxBy(featherPositionData, (d) => d.position.x);
-      const minRotation = minBy(featherPositionData, (d) => d.rotation);
-
-      debugDrawSub.next((ctx) => {
-        ctx.fillStyle = "darkred";
-        ctx.fillRect(maxX.position.x, maxX.position.y, 10, 30);
-        ctx.fillText(
-          `max X (${maxX.position.x.toFixed(2)}, ${maxX.position.y.toFixed(
-            2
-          )})`,
-          maxX.position.x,
-          maxX.position.y + 50
-        );
-
-        ctx.fillStyle = "navy";
-        ctx.fillRect(minRotation.position.x, minRotation.position.y, 30, 10);
-        ctx.fillText(
-          `min rotation ${minRotation.rotation.toFixed(2)}deg `,
-          minRotation.position.x + 40,
-          minRotation.position.y + 14
-        );
+    describe("rotation/position", () => {
+      beforeEach(() => {
+        cy.clock();
+        render();
+        cy.steppedTick(25_000);
       });
 
-      expect(maxX.position.x - 1).to.be.lessThan(minRotation.position.x);
-      expect(maxX.position.x + 1).to.be.greaterThan(minRotation.position.x);
-    });
+      it("min rotation is reached at max x", () => {
+        const maxX = maxBy(featherPositionData, (d) => d.position.x);
+        const minRotation = minBy(featherPositionData, (d) => d.rotation);
 
-    it("max rotation is reached at min x", () => {
-      const minX = minBy(featherPositionData, (d) => d.position.x);
-      const maxRotation = maxBy(featherPositionData, (d) => d.rotation);
+        debugDrawSub.next((ctx) => {
+          ctx.fillStyle = "darkred";
+          ctx.fillRect(maxX.position.x, maxX.position.y, 10, 30);
+          ctx.fillText(
+            `max X (${maxX.position.x.toFixed(2)}, ${maxX.position.y.toFixed(
+              2
+            )})`,
+            maxX.position.x,
+            maxX.position.y + 50
+          );
 
-      debugDrawSub.next((ctx) => {
-        ctx.fillStyle = "darkred";
-        ctx.fillRect(minX.position.x, minX.position.y, 10, 30);
-        ctx.fillText(
-          `max X (${minX.position.x.toFixed(2)}, ${minX.position.y.toFixed(
-            2
-          )})`,
-          minX.position.x,
-          minX.position.y + 50
-        );
+          ctx.fillStyle = "navy";
+          ctx.fillRect(minRotation.position.x, minRotation.position.y, 30, 10);
+          ctx.fillText(
+            `min rotation ${minRotation.rotation.toFixed(2)}deg `,
+            minRotation.position.x + 40,
+            minRotation.position.y + 14
+          );
+        });
 
-        ctx.fillStyle = "navy";
-        ctx.fillRect(maxRotation.position.x, maxRotation.position.y, 30, 10);
-        ctx.fillText(
-          `min rotation ${maxRotation.rotation.toFixed(2)}deg `,
-          maxRotation.position.x + 40,
-          maxRotation.position.y + 14
-        );
+        expect(maxX.position.x - 1).to.be.lessThan(minRotation.position.x);
+        expect(maxX.position.x + 1).to.be.greaterThan(minRotation.position.x);
       });
 
-      expect(minX.position.x - 1).to.be.lessThan(maxRotation.position.x);
-      expect(minX.position.x + 1).to.be.greaterThan(maxRotation.position.x);
+      it("max rotation is reached at min x", () => {
+        const minX = minBy(featherPositionData, (d) => d.position.x);
+        const maxRotation = maxBy(featherPositionData, (d) => d.rotation);
+
+        debugDrawSub.next((ctx) => {
+          ctx.fillStyle = "darkred";
+          ctx.fillRect(minX.position.x, minX.position.y, 10, 30);
+          ctx.fillText(
+            `max X (${minX.position.x.toFixed(2)}, ${minX.position.y.toFixed(
+              2
+            )})`,
+            minX.position.x,
+            minX.position.y + 50
+          );
+
+          ctx.fillStyle = "navy";
+          ctx.fillRect(maxRotation.position.x, maxRotation.position.y, 30, 10);
+          ctx.fillText(
+            `min rotation ${maxRotation.rotation.toFixed(2)}deg `,
+            maxRotation.position.x + 40,
+            maxRotation.position.y + 14
+          );
+        });
+
+        expect(minX.position.x - 1).to.be.lessThan(maxRotation.position.x);
+        expect(minX.position.x + 1).to.be.greaterThan(maxRotation.position.x);
+      });
     });
   });
 });

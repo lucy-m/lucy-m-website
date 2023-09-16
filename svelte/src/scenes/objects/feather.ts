@@ -3,17 +3,10 @@ import {
   NumberSpringFns,
   PosFns,
   makeSceneObject,
-  type NumberSpring,
   type Position,
   type SceneObject,
 } from "../../model";
 import { sceneSize } from "../scene-size";
-
-interface FeatherState {
-  xPosition: NumberSpring;
-  yVelocity: number;
-  rotation: number;
-}
 
 export const makeFeather = <TLayerKey extends string>(
   layerKey: TLayerKey,
@@ -36,7 +29,7 @@ export const makeFeather = <TLayerKey extends string>(
   let yVelocity = initialVelocity.y;
   let rotation = 40;
 
-  return makeSceneObject(random)<TLayerKey>({
+  return makeSceneObject(random)<TLayerKey>((id) => ({
     typeName: "feather",
     layerKey,
     getPosition: () => position,
@@ -53,6 +46,7 @@ export const makeFeather = <TLayerKey extends string>(
         return [
           {
             kind: "removeObject",
+            target: id,
           },
         ];
       }
@@ -68,5 +62,5 @@ export const makeFeather = <TLayerKey extends string>(
 
       return [];
     },
-  });
+  }));
 };

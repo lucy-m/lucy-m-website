@@ -51,7 +51,7 @@ export const makeCruisingBird = <TLayerKey extends string>(
 
   const getPosition = () => PosFns.new(positionX, yPosition.position);
 
-  return makeSceneObject(random)<TLayerKey>({
+  return makeSceneObject(random)<TLayerKey>((id) => ({
     typeName: "cruising-bird",
     layerKey,
     getPosition,
@@ -62,6 +62,9 @@ export const makeCruisingBird = <TLayerKey extends string>(
         subLayer: "background",
       },
     ],
+    _getDebugInfo: () => ({
+      flapUp,
+    }),
     onInteract: () => {
       const spawnFeathersActions: SceneObjectAction<TLayerKey>[] = (() => {
         const makeFeatherAction = (): SceneObjectAction<TLayerKey> => ({
@@ -108,7 +111,12 @@ export const makeCruisingBird = <TLayerKey extends string>(
     },
     onTick: () => {
       if (positionX > sceneSize.x) {
-        return [{ kind: "removeObject" }];
+        return [
+          {
+            kind: "removeObject",
+            target: id,
+          },
+        ];
       }
 
       positionX += xVelocity.position;
@@ -142,5 +150,5 @@ export const makeCruisingBird = <TLayerKey extends string>(
 
       return [];
     },
-  });
+  }));
 };
