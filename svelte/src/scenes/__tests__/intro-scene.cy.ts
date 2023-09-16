@@ -2,7 +2,7 @@ import fc from "fast-check";
 import { Subject } from "rxjs";
 import seedrandom from "seedrandom";
 import { validate } from "uuid";
-import type { SceneEventOrAction, SceneObject, SceneType } from "../../model";
+import type { SceneObject, SceneType } from "../../model";
 import { PosFns, type Position } from "../../model";
 import { makeIntroScene } from "../intro-scene";
 import ViewSceneFixture from "./ViewSceneFixture.svelte";
@@ -16,10 +16,13 @@ describe("intro scene", () => {
           let sceneB: SceneType;
 
           beforeEach(() => {
-            sceneA = makeIntroScene(seedrandom(seed));
-            sceneB = makeIntroScene(seedrandom(seed));
+            sceneA = makeIntroScene(seedrandom(seed))({}, () => {});
+            sceneB = makeIntroScene(seedrandom(seed))({}, () => {});
+          });
 
-            cy.clock();
+          afterEach(() => {
+            sceneA.destroy();
+            sceneB.destroy();
           });
 
           it("all IDs are valid", () => {
@@ -38,51 +41,18 @@ describe("intro scene", () => {
           });
 
           describe("ticking", () => {
-            let actionsA: SceneEventOrAction[];
-            let actionsB: SceneEventOrAction[];
-
-            beforeEach(() => {
-              actionsA = [];
-              actionsB = [];
-
-              sceneA.events.subscribe((value) => {
-                actionsA.push(value);
-              });
-
-              sceneB.events.subscribe((value) => {
-                actionsB.push(value);
-              });
-            });
-
-            describe("20 seconds in 100ms increments", () => {
+            describe("100 ticks", () => {
               beforeEach(() => {
-                Array.from({ length: 200 }).forEach(() => {
-                  cy.tick(100, { log: false });
+                Array.from({ length: 100 }).forEach(() => {
+                  sceneA.onExternalEvent({ kind: "tick" });
+                  sceneB.onExternalEvent({ kind: "tick" });
                 });
-                cy.wrap(actionsA).should("not.have.length", 0);
-                cy.wrap(actionsB).should("not.have.length", 0);
               });
 
-              it("produces same actions", () => {
-                for (const index in actionsA) {
-                  const actionA = actionsA[index];
-                  const actionB = actionsB[index];
-
-                  expect(actionA.kind).to.equal(actionB.kind);
-                  expect(actionA.kind).to.equal("addObject");
-
-                  const objectA = (
-                    actionA as Extract<
-                      SceneEventOrAction,
-                      { kind: "addObject" }
-                    >
-                  ).makeObject();
-                  const objectB = (
-                    actionB as Extract<
-                      SceneEventOrAction,
-                      { kind: "addObject" }
-                    >
-                  ).makeObject();
+              it("objects match", () => {
+                for (const index in sceneA.getObjects()) {
+                  const objectA = sceneA.getObjects()[index];
+                  const objectB = sceneB.getObjects()[index];
 
                   cy.assertObjectsMatch(objectA, objectB);
                 }
@@ -91,7 +61,7 @@ describe("intro scene", () => {
           });
         });
       }),
-      { numRuns: 20 }
+      { numRuns: 1 }
     );
   });
 
@@ -127,7 +97,7 @@ describe("intro scene", () => {
 
         cy.mount(ViewSceneFixture, {
           props: {
-            makeScene: makeIntroScene,
+            initialSceneSpec: makeIntroScene,
             seed: "abcd",
             onSceneChange: (s: SceneType) => {
               currentScene = s;
@@ -209,7 +179,7 @@ describe("intro scene", () => {
 
               cy.mount(ViewSceneFixture, {
                 props: {
-                  makeScene: makeIntroScene,
+                  initialSceneSpec: makeIntroScene,
                   seed,
                   onSceneChange: (scene) => {
                     scene

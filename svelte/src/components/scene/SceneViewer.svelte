@@ -1,16 +1,21 @@
 <script lang="ts">
   import { viewScene } from "../../scenes/drawing/view-scene";
+  import seedrandom from "seedrandom";
 
   import { type AssetKey, type SceneType } from "../../model";
 
-  export let scene: SceneType;
+  export let sceneSpec: SceneSpec;
   export let images: Record<AssetKey, HTMLImageElement>;
+
+  const r = seedrandom().int32();
+  console.log("Congratulations! Your random seed is", r);
 </script>
 
 <canvas
   use:viewScene={{
-    initialScene: scene,
+    initialSceneSpec: sceneSpec,
     images,
+    seed: r.toString(),
   }}
 />
 

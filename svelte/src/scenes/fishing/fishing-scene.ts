@@ -7,9 +7,8 @@ import {
   type Position,
   type SceneAction,
   type SceneObject,
-  type SceneType,
 } from "../../model";
-import type { ObjectEventHandler } from "../../model/scene-types";
+import type { ObjectEventHandler, SceneSpec } from "../../model/scene-types";
 import {
   AnyFishingActionCls,
   fishingSceneReducer,
@@ -19,7 +18,7 @@ import {
 
 const layerOrder = ["bg", "debug"] as const;
 
-export const makeFishingScene = (random: PRNG): SceneType => {
+export const makeFishingScene: SceneSpec = (random: PRNG) => {
   const makeSceneObjectBound = makeSceneObject(random);
 
   const makeDebugText = (
@@ -38,7 +37,12 @@ export const makeFishingScene = (random: PRNG): SceneType => {
           text: [text],
         },
       ],
-      events$: timer(1000).pipe(map(() => new AnyFishingActionCls(action))),
+      events$: timer(1000).pipe(
+        map(() => ({
+          kind: "arbitrary",
+          event: new AnyFishingActionCls(action),
+        }))
+      ),
     });
   };
 

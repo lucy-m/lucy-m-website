@@ -1,4 +1,5 @@
 import type { Observable } from "rxjs";
+import type { PRNG } from "seedrandom";
 import type { AssetKey } from "./assets";
 import type { Position } from "./position";
 import type { SubLayerKey } from "./sub-layer-key";
@@ -56,11 +57,18 @@ export interface SceneType {
   removeObject: (id: string) => void;
   /** Order of layer drawing, from bottom to top */
   layerOrder: readonly string[];
+  onExternalEvent: (event: SceneEvent) => void;
   onObjectEvent?: ObjectEventHandler;
-  onSceneChange: (newScene: SceneType) => void;
   /** Removes all active subscriptions */
   destroy: () => void;
 }
+
+export type SceneSpec = (
+  random: PRNG
+) => (
+  images: Record<string, HTMLImageElement>,
+  onSceneChange: (newScene: SceneSpec) => void
+) => SceneType;
 
 export type SceneAction =
   | {
@@ -69,7 +77,7 @@ export type SceneAction =
     }
   | {
       kind: "changeScene";
-      makeScene: () => SceneType;
+      newScene: SceneSpec;
     }
   | {
       kind: "removeObject";

@@ -8,11 +8,10 @@ import {
   randomInterval,
   type SceneAction,
   type SceneObject,
-  type SceneType,
   type Shape,
 } from "../model";
 import type { AssetKey } from "../model/assets";
-import type { ObjectLayerContent } from "../model/scene-types";
+import type { ObjectLayerContent, SceneSpec } from "../model/scene-types";
 import { makeHouseScene } from "./house-scene";
 import { makeCruisingBird } from "./objects/cruising-bird";
 
@@ -25,7 +24,7 @@ const layerOrder = [
   "speechBubble",
 ] as const;
 
-export const makeIntroScene = (random: PRNG): SceneType => {
+export const makeIntroScene: SceneSpec = (random: PRNG) => {
   const makeSceneObjectBound = makeSceneObject(random);
 
   const randomTree = (): AssetKey => {
@@ -115,7 +114,7 @@ export const makeIntroScene = (random: PRNG): SceneType => {
       onInteract: () => [
         {
           kind: "changeScene",
-          makeScene: () => makeHouseScene(random),
+          newScene: makeHouseScene,
         },
       ],
     }),

@@ -3,26 +3,24 @@ import {
   Subject,
   Subscription,
   filter,
+  finalize,
   interval,
   map,
   merge,
-  scan,
   startWith,
   switchMap,
   tap,
 } from "rxjs";
+import seedrandom from "seedrandom";
 import { sceneSize } from "..";
 import {
-  applySceneEvent,
-  rafThrottle,
   resolveScene,
   type AssetKey,
   type Destroyable,
   type Position,
-  type SceneEvent,
-  type SceneEventOrAction,
   type SceneType,
 } from "../../model";
+import type { SceneEvent, SceneSpec } from "../../model/scene-types";
 import { drawLayerContent } from "./canvas-draw";
 
 const redrawCanvas = (
@@ -44,16 +42,16 @@ const redrawCanvas = (
 export const viewScene = (
   canvas: HTMLCanvasElement,
   args: {
-    initialScene: SceneType;
+    initialSceneSpec: SceneSpec;
     images: Record<AssetKey, HTMLImageElement>;
-    onSceneChange?: (s: SceneType) => void;
+    onSceneChange?: (scene: SceneType) => void;
     worldClick$?: Observable<Position>;
+    seed: string;
   }
 ): Destroyable => {
-  const { initialScene, images, onSceneChange, worldClick$ } = args;
+  const { initialSceneSpec, images, onSceneChange, worldClick$, seed } = args;
 
   const interactSub = new Subject<Position>();
-  const eventsSub = new Subject<Observable<SceneEventOrAction>>();
 
   canvas.width = sceneSize.x;
   canvas.height = sceneSize.y;
@@ -66,55 +64,55 @@ export const viewScene = (
 
   const ctx = canvas.getContext("2d");
 
+  const prng = seedrandom(seed);
+
   let subscription: Subscription | undefined;
-  let destroyScene: (() => void) | undefined;
 
   if (ctx) {
     ctx.font = "42px Quicksand";
 
-    onSceneChange && onSceneChange(initialScene);
+    const changeSceneSub = new Subject<SceneSpec>();
+    const onNewScene = (newScene: SceneSpec) => {
+      changeSceneSub.next(newScene);
+    };
 
-    subscription = merge(
-      interval(30).pipe(map(() => ({ kind: "tick" } as SceneEvent))),
-      (worldClick$ ? merge(interactSub, worldClick$) : interactSub).pipe(
-        map(
-          (position: Position) => ({ kind: "interact", position } as SceneEvent)
-        )
-      ),
-      eventsSub.pipe(
-        startWith(initialScene.events),
-        switchMap((v) => v)
-      )
-    )
+    subscription = changeSceneSub
       .pipe(
-        filter(() => document.hasFocus()),
-        scan((scene, action) => {
-          const sceneEventResult = applySceneEvent(scene, images, action);
-          if (sceneEventResult.kind === "newScene") {
-            eventsSub.next(sceneEventResult.scene.events);
-            scene.destroy();
-            return sceneEventResult.scene;
-          }
-          return scene;
-        }, initialScene),
-        tap((scene) => {
-          onSceneChange && onSceneChange(scene);
+        startWith(initialSceneSpec),
+        map((sceneSpec) => sceneSpec(prng)(images, onNewScene)),
+        tap((currentScene) => {
+          redrawCanvas(ctx, currentScene, images);
+          onSceneChange && onSceneChange(currentScene);
+          canvas.setAttribute("data-initialised", "true");
         }),
-        rafThrottle(),
-        startWith(initialScene)
+        switchMap((currentScene) =>
+          merge(
+            interval(30)
+              .pipe(map(() => ({ kind: "tick" } as SceneEvent)))
+              .pipe(filter(() => document.hasFocus())),
+            (worldClick$ ? merge(interactSub, worldClick$) : interactSub).pipe(
+              map(
+                (position: Position) =>
+                  ({ kind: "interact", position } as SceneEvent)
+              )
+            )
+          ).pipe(
+            finalize(() => currentScene.destroy()),
+            tap((event) => currentScene.onExternalEvent(event)),
+            tap(() => {
+              redrawCanvas(ctx, currentScene, images);
+              onSceneChange && onSceneChange(currentScene);
+            })
+          )
+        )
       )
-      .subscribe((scene) => {
-        redrawCanvas(ctx, scene, images);
-        canvas.setAttribute("data-initialised", "true");
-        destroyScene = scene.destroy;
-      });
+      .subscribe();
   }
 
   return {
     destroy: () => {
       canvas.removeAttribute("data-initialised");
       subscription?.unsubscribe();
-      destroyScene && destroyScene();
     },
   };
 };

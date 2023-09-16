@@ -5,13 +5,13 @@ import {
   makeSceneType,
   PosFns,
   type SceneObject,
-  type SceneType,
+  type SceneSpec,
 } from "../model";
+import { makeFishingScene } from "./fishing";
 
 const layerOrder = ["bg", "house"] as const;
-type LayerKey = (typeof layerOrder)[number];
 
-export const makeHouseScene = (random: PRNG): SceneType => {
+export const makeHouseScene: SceneSpec = (random: PRNG) => {
   const makeSceneObjectBound = makeSceneObject(random);
 
   const objects: SceneObject[] = [
@@ -31,6 +31,7 @@ export const makeHouseScene = (random: PRNG): SceneType => {
           text: ["There is gonna be something good here I promise"],
         },
       ],
+      onInteract: () => [{ kind: "changeScene", newScene: makeFishingScene }],
     }),
   ];
 

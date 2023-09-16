@@ -8,7 +8,7 @@ describe("fishing scene", () => {
 
       cy.mount(ViewSceneFixture, {
         props: {
-          makeScene: makeFishingScene,
+          initialSceneSpec: makeFishingScene,
           seed: "abcd",
         },
       });

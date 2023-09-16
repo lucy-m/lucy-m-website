@@ -32,9 +32,7 @@ describe("scene", () => {
       layerOrder: [],
       objects,
       onObjectEvent: optional?.onObjectEvent,
-      images,
-      onSceneChange: () => {},
-    });
+    })(images, () => {});
 
   it("does not add duplicate objects", () => {
     const object = makeTestSceneObject();
