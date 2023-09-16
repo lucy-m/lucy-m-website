@@ -43,6 +43,8 @@ export interface SceneType {
   layerOrder: readonly string[];
   events: Observable<SceneEvent | SceneAction>;
   onObjectEvent?: (source: string, event: any) => void;
+  /** Removes all active subscriptions */
+  destroy: () => void;
 }
 
 export type SceneAction =

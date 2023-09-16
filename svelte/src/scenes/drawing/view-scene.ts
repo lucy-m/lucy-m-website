@@ -67,6 +67,7 @@ export const viewScene = (
   const ctx = canvas.getContext("2d");
 
   let subscription: Subscription | undefined;
+  let destroyScene: (() => void) | undefined;
 
   if (ctx) {
     ctx.font = "42px Quicksand";
@@ -91,6 +92,7 @@ export const viewScene = (
           const sceneEventResult = applySceneEvent(scene, images, action);
           if (sceneEventResult.kind === "newScene") {
             eventsSub.next(sceneEventResult.scene.events);
+            scene.destroy();
             return sceneEventResult.scene;
           }
           return scene;
@@ -104,6 +106,7 @@ export const viewScene = (
       .subscribe((scene) => {
         redrawCanvas(ctx, scene, images);
         canvas.setAttribute("data-initialised", "true");
+        destroyScene = scene.destroy;
       });
   }
 
@@ -111,6 +114,7 @@ export const viewScene = (
     destroy: () => {
       canvas.removeAttribute("data-initialised");
       subscription?.unsubscribe();
+      destroyScene && destroyScene();
     },
   };
 };

@@ -140,5 +140,18 @@ describe("scene", () => {
         getOnObjectEventSpy().should("not.have.been.called");
       });
     });
+
+    describe("calling onDestroy", () => {
+      beforeEach(() => {
+        scene.destroy();
+      });
+
+      it("objectA event does not call onObjectEvent", () => {
+        const event = { a: "hello", b: "world" };
+        objectAEvents.next(event);
+
+        getOnObjectEventSpy().should("not.have.been.called");
+      });
+    });
   });
 });

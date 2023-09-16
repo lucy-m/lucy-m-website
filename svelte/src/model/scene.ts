@@ -20,7 +20,10 @@ type ApplySceneActionResult =
   | { kind: "noChange" };
 
 export const makeSceneType = (
-  scene: Omit<SceneType, "getObjects" | "addObject" | "removeObject"> & {
+  scene: Pick<
+    SceneType,
+    "typeName" | "layerOrder" | "events" | "onObjectEvent"
+  > & {
     objects: readonly SceneObject[];
   }
 ): SceneType => {
@@ -39,12 +42,17 @@ export const makeSceneType = (
       objects.push(obj);
     }
   };
+
   const removeObject = (id: string) => {
     objects = objects.filter((obj) => obj.id !== id);
 
     const sub = eventSubscriptions[id];
     sub?.unsubscribe();
     delete eventSubscriptions[id];
+  };
+
+  const destroy = () => {
+    Object.values(eventSubscriptions).forEach((sub) => sub.unsubscribe());
   };
 
   scene.objects.forEach(addObject);
@@ -54,6 +62,7 @@ export const makeSceneType = (
     getObjects,
     addObject,
     removeObject,
+    destroy,
   };
 };
 
