@@ -19,6 +19,10 @@ export type FishingState<T extends AnyFishingState["kind"]> = Extract<
   { kind: T }
 >;
 
+export class AnyFishingActionCls {
+  constructor(public readonly action: AnyFishingAction) {}
+}
+
 export type AnyFishingAction =
   | {
       kind: "cast-out";

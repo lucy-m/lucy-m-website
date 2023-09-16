@@ -26,13 +26,18 @@ export type SceneObject = {
   typeName?: string;
   hidden?: boolean;
   layerKey: string;
-  events$?: Observable<any>;
+  events$?: Observable<unknown>;
   getPosition: () => Position;
   getLayers: () => ObjectLayerContent[];
   onInteract?: () => SceneAction[];
   onTick?: () => SceneAction[];
   _getDebugInfo?: () => any;
 };
+
+export type ObjectEventHandler = (event: {
+  sourceObjectId: string;
+  event: unknown;
+}) => void;
 
 export interface SceneType {
   typeName: string;
@@ -42,7 +47,7 @@ export interface SceneType {
   /** Order of layer drawing, from bottom to top */
   layerOrder: readonly string[];
   events: Observable<SceneEvent | SceneAction>;
-  onObjectEvent?: (source: string, event: any) => void;
+  onObjectEvent?: ObjectEventHandler;
   /** Removes all active subscriptions */
   destroy: () => void;
 }

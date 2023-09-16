@@ -35,7 +35,8 @@ export const makeSceneType = (
     if (!objects.find((so) => so.id === obj.id)) {
       if (obj.events$) {
         const subscription = obj.events$.subscribe(
-          (event) => scene.onObjectEvent && scene.onObjectEvent(obj.id, event)
+          (event) =>
+            scene.onObjectEvent && scene.onObjectEvent({ id: obj.id, event })
         );
         eventSubscriptions[obj.id] = subscription;
       }
