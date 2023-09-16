@@ -4,13 +4,13 @@ import type { AssetKey } from "../assets";
 import { PosFns } from "../position";
 import { applySceneEvent } from "../scene";
 import { makeSceneObject } from "../scene-object";
-import type { SceneObject, SceneObjectAction, SceneType } from "../scene-types";
+import type { SceneObject, SceneType } from "../scene-types";
 
 describe("scene", () => {
   const random = seedrandom();
 
   const makeTestSceneObject = (
-    onTick?: () => SceneObjectAction<string>[]
+    onTick?: () => SceneAction<string>[]
   ): SceneObject<string> =>
     makeSceneObject(random)({
       getLayers: () => [],
@@ -31,16 +31,6 @@ describe("scene", () => {
   const images = {} as Record<AssetKey, HTMLImageElement>;
 
   describe("applySceneEvent", () => {
-    describe("remove action without target", () => {
-      const objectA = makeTestSceneObject(() => [{ kind: "removeObject" }]);
-      const scene = makeTestScene([objectA]);
-      const tickResult = applySceneEvent(scene, images, { kind: "tick" });
-
-      it("objectA is removed", () => {
-        expect(tickResult.scene.objects).to.be.empty;
-      });
-    });
-
     describe("remove action with target", () => {
       const objectB = makeTestSceneObject();
       const objectA = makeTestSceneObject(() => [
@@ -60,10 +50,7 @@ describe("scene", () => {
     describe("add action", () => {
       const objectB = makeTestSceneObject();
       const objectA = makeTestSceneObject(() => [
-        {
-          kind: "sceneAction",
-          action: { kind: "addObject", makeObject: () => objectB },
-        },
+        { kind: "addObject", makeObject: () => objectB },
       ]);
 
       const scene = makeTestScene([objectA]);
