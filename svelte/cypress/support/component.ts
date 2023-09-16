@@ -16,12 +16,12 @@
 // Import commands.js using ES2015 syntax:
 import "@percy/cypress";
 import type { ComponentType, SvelteComponentTyped } from "svelte";
-import "./commands";
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 
 import { mount } from "cypress/svelte";
+import type { SceneObject } from "../../src/model";
 import Fixture from "./Fixture.svelte";
 import type { FixtureOptions } from "./fixture-options";
 
@@ -36,6 +36,7 @@ declare global {
       mountWithFixture: typeof mountWithFixture;
       getByTestId: typeof getByTestId;
       steppedTick: typeof steppedTick;
+      assertObjectsMatch: typeof assertObjectsMatch;
     }
   }
 }
@@ -52,7 +53,7 @@ const mountWithFixture = <T extends Record<string, any>>(
   cy.mount(Fixture, { props: { componentType, props, fixtureOptions } });
 };
 
-const steppedTick = (by: number) => {
+const steppedTick = (by: number): Cypress.Chainable => {
   cy.log(`Tick ${by}`);
 
   const dt = 30;
@@ -63,7 +64,23 @@ const steppedTick = (by: number) => {
   return cy.tick(dt, { log: false });
 };
 
+const assertObjectsMatch = (objectA: SceneObject, objectB: SceneObject) => {
+  expect(objectA.getLayers()).to.deep.equal(objectB.getLayers());
+
+  for (const key in objectA) {
+    const valueA = (objectA as Record<string, unknown>)[key];
+
+    if (typeof valueA === "function") {
+      continue;
+    } else {
+      const valueB = (objectB as Record<string, unknown>)[key];
+      expect(valueA).to.deep.equal(valueB);
+    }
+  }
+};
+
 Cypress.Commands.add("mount", mount);
 Cypress.Commands.add("mountWithFixture", mountWithFixture);
 Cypress.Commands.add("getByTestId", getByTestId);
 Cypress.Commands.add("steppedTick", steppedTick);
+Cypress.Commands.add("assertObjectsMatch", assertObjectsMatch);

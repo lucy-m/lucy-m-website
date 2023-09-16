@@ -2,18 +2,19 @@ import { Subject } from "rxjs";
 import type { PRNG } from "seedrandom";
 import {
   makeSceneObject,
+  makeSceneType,
   PosFns,
   type SceneObject,
-  type SceneType,
+  type SceneSpec,
 } from "../model";
+import { makeFishingScene } from "./fishing";
 
 const layerOrder = ["bg", "house"] as const;
-type LayerKey = (typeof layerOrder)[number];
 
-export const makeHouseScene = (random: PRNG): SceneType<LayerKey> => {
+export const makeHouseScene: SceneSpec = (random: PRNG) => {
   const makeSceneObjectBound = makeSceneObject(random);
 
-  const objects: SceneObject<LayerKey>[] = [
+  const objects: SceneObject[] = [
     makeSceneObjectBound({
       layerKey: "house",
       getPosition: () => PosFns.new(1200, 500),
@@ -30,13 +31,14 @@ export const makeHouseScene = (random: PRNG): SceneType<LayerKey> => {
           text: ["There is gonna be something good here I promise"],
         },
       ],
+      onInteract: () => [{ kind: "changeScene", newScene: makeFishingScene }],
     }),
   ];
 
-  return {
+  return makeSceneType({
     typeName: "house-scene",
     objects,
     layerOrder,
     events: new Subject(),
-  };
+  });
 };

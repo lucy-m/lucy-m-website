@@ -1,4 +1,5 @@
 import type { Observable } from "rxjs";
+import type { PRNG } from "seedrandom";
 import type { AssetKey } from "./assets";
 import type { Position } from "./position";
 import type { SubLayerKey } from "./sub-layer-key";
@@ -20,60 +21,61 @@ export type ObjectLayerContent =
       rotation?: number;
     };
 
-export type SceneObjectTypeNames = "small-house" | "cruising-bird" | "feather";
-
-export type SceneObject<TLayerKey extends string> = {
+export type SceneObject = {
   id: string;
   rotation?: number;
-  typeName?: SceneObjectTypeNames;
+  typeName?: string;
   hidden?: boolean;
-  layerKey: TLayerKey;
+  layerKey: string;
+  events$?: Observable<SceneAction>;
   getPosition: () => Position;
   getLayers: () => ObjectLayerContent[];
-  onInteract?: () => SceneObjectAction<TLayerKey>[];
-  onTick?: () => SceneObjectAction<TLayerKey>[];
+  onInteract?: () => SceneAction[] | void;
+  onTick?: () => SceneAction[] | void;
+  _getDebugInfo?: () => any;
 };
 
-export type SceneObjectStateless<TLayerKey extends string> =
-  SceneObject<TLayerKey>;
+export type ObjectEventHandler = (event: unknown) => void;
 
-export type SceneObjectAction<TLayerKey extends string> =
-  | ((
-      | {
-          kind: "hide";
-        }
-      | { kind: "show" }
-      | { kind: "removeObject" }
-    ) & { target?: string })
-  | { kind: "sceneAction"; action: SceneAction<TLayerKey> };
-
-export interface SceneType<TLayerKey extends string> {
+export interface SceneType {
   typeName: string;
-  objects: readonly SceneObject<TLayerKey>[];
+  getObjects: () => readonly SceneObject[];
+  addObject: (obj: SceneObject) => void;
+  removeObject: (id: string) => void;
   /** Order of layer drawing, from bottom to top */
-  layerOrder: readonly TLayerKey[];
-  events: Observable<SceneEvent | SceneAction<TLayerKey>>;
+  layerOrder: readonly string[];
+  onExternalEvent: (event: SceneEvent) => void;
+  onObjectEvent?: ObjectEventHandler;
+  /** Removes all active subscriptions */
+  destroy: () => void;
 }
 
-export type SceneObjectActionApplyResult<TLayerKey extends string> =
-  | { kind: "update"; object: SceneObject<TLayerKey> }
-  | { kind: "removeObject" }
-  | { kind: "sceneAction"; action: SceneAction<TLayerKey> };
+export type SceneSpec = (
+  random: PRNG
+) => (
+  images: Record<string, HTMLImageElement>,
+  onSceneChange: (newScene: SceneSpec) => void
+) => SceneType;
 
-export type SceneAction<TLayerKey extends string> =
+export type SceneAction =
   | {
       kind: "addObject";
-      makeObject: () => SceneObject<TLayerKey>;
+      makeObject: () => SceneObject;
     }
   | {
       kind: "changeScene";
-      makeScene: () => SceneType<string>;
-    };
+      newScene: SceneSpec;
+    }
+  | {
+      kind: "removeObject";
+      target: string;
+    }
+  | { kind: "emitEvent"; event: unknown };
+
+export type SceneActionWithSource = SceneAction & { sourceObjectId: string };
 
 export type SceneEvent =
   | { kind: "interact"; position: Position }
   | { kind: "tick" };
 
-export type SceneEventOrAction<TLayerKey extends string> =
-  | SceneEvent
-  | SceneAction<TLayerKey>;
+export type SceneEventOrAction = SceneEvent | SceneAction;

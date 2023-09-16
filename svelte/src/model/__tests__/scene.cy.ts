@@ -1,79 +1,131 @@
-import { of } from "rxjs";
+import Sinon from "cypress/types/sinon";
+import { Subject, of } from "rxjs";
 import seedrandom from "seedrandom";
 import type { AssetKey } from "../assets";
 import { PosFns } from "../position";
-import { applySceneEvent } from "../scene";
+import { makeSceneType } from "../scene";
 import { makeSceneObject } from "../scene-object";
-import type { SceneObject, SceneObjectAction, SceneType } from "../scene-types";
+import type { SceneAction, SceneObject, SceneType } from "../scene-types";
 
 describe("scene", () => {
   const random = seedrandom();
+  const images = {} as Record<AssetKey, HTMLImageElement>;
 
   const makeTestSceneObject = (
-    onTick?: () => SceneObjectAction<string>[]
-  ): SceneObject<string> =>
+    optional?: Pick<SceneObject, "onTick" | "events$">
+  ): SceneObject =>
     makeSceneObject(random)({
       getLayers: () => [],
       layerKey: "",
       getPosition: () => PosFns.new(0, 0),
-      onTick,
+      onTick: optional?.onTick,
+      events$: optional?.events$,
     });
 
   const makeTestScene = (
-    objects: SceneObject<string>[]
-  ): SceneType<string> => ({
-    typeName: "test-scene",
-    events: of(),
-    layerOrder: [],
-    objects,
+    objects: SceneObject[],
+    optional?: Pick<SceneType, "onObjectEvent">
+  ): SceneType =>
+    makeSceneType({
+      typeName: "test-scene",
+      events: of(),
+      layerOrder: [],
+      objects,
+      onObjectEvent: optional?.onObjectEvent,
+    })(images, () => {});
+
+  it("does not add duplicate objects", () => {
+    const object = makeTestSceneObject();
+    const scene = makeTestScene([object, object, object]);
+
+    expect(scene.getObjects()).to.have.length(1);
   });
 
-  const images = {} as Record<AssetKey, HTMLImageElement>;
+  describe("object events", () => {
+    let objectA: SceneObject;
+    let objectAEvents: Subject<SceneAction>;
+    let scene: SceneType;
 
-  describe("applySceneEvent", () => {
-    describe("remove action without target", () => {
-      const objectA = makeTestSceneObject(() => [{ kind: "removeObject" }]);
-      const scene = makeTestScene([objectA]);
-      const tickResult = applySceneEvent(scene, images, { kind: "tick" });
+    const getOnObjectEventSpy = () =>
+      cy.get<Sinon.SinonSpy>("@onObjectEventSpy");
 
-      it("objectA is removed", () => {
-        expect(tickResult.scene.objects).to.be.empty;
+    beforeEach(() => {
+      objectAEvents = new Subject();
+      objectA = makeTestSceneObject({
+        events$: objectAEvents,
+      });
+
+      scene = makeTestScene([objectA], {
+        onObjectEvent: cy.spy().as("onObjectEventSpy"),
       });
     });
 
-    describe("remove action with target", () => {
-      const objectB = makeTestSceneObject();
-      const objectA = makeTestSceneObject(() => [
-        { kind: "removeObject", target: objectB.id },
-      ]);
+    it("abitrary objectA event calls onObjectEvent", () => {
+      const event = { a: "hello", b: "world" };
+      objectAEvents.next({ kind: "emitEvent", event });
 
-      const scene = makeTestScene([objectA, objectB]);
-      const tickResult = applySceneEvent(scene, images, { kind: "tick" });
+      getOnObjectEventSpy()
+        .should("have.been.calledOnce")
+        .should("have.been.calledWith", event);
+    });
 
-      it("objectB is removed", () => {
-        expect(tickResult.scene.objects.map((o) => o.id)).to.be.deep.equal([
-          objectA.id,
-        ]);
+    it("sceneAction addObject event updates the scene", () => {
+      const newObject = makeTestSceneObject();
+      objectAEvents.next({ kind: "addObject", makeObject: () => newObject });
+      expect(scene.getObjects()).to.have.length(2);
+    });
+
+    it("sceneAction removeObject event updates the scene", () => {
+      objectAEvents.next({ kind: "removeObject", target: objectA.id });
+      expect(scene.getObjects()).to.have.length(0);
+    });
+
+    describe("adding objectB", () => {
+      let objectB: SceneObject;
+      let objectBEvents: Subject<SceneAction>;
+
+      beforeEach(() => {
+        objectBEvents = new Subject();
+        objectB = makeTestSceneObject({
+          events$: objectBEvents,
+        });
+
+        scene.addObject(objectB);
+      });
+
+      it("emitEvent objectB event calls onObjectEvent", () => {
+        const event = ["foo", 3];
+        objectBEvents.next({ kind: "emitEvent", event });
+
+        getOnObjectEventSpy()
+          .should("have.been.calledOnce")
+          .should("have.been.calledWith", event);
       });
     });
 
-    describe("add action", () => {
-      const objectB = makeTestSceneObject();
-      const objectA = makeTestSceneObject(() => [
-        {
-          kind: "sceneAction",
-          action: { kind: "addObject", makeObject: () => objectB },
-        },
-      ]);
+    describe("removing objectA", () => {
+      beforeEach(() => {
+        scene.removeObject(objectA.id);
+      });
 
-      const scene = makeTestScene([objectA]);
-      const tickResult = applySceneEvent(scene, images, { kind: "tick" });
+      it("emitEvent objectA event does not call onObjectEvent", () => {
+        const event = { a: "hello", b: "world" };
+        objectAEvents.next({ kind: "emitEvent", event });
 
-      it("adds objectB", () => {
-        expect(tickResult.scene.objects.map((o) => o.id)).to.deep.equal([
-          objectA.id,
-          objectB.id,
-        ]);
+        getOnObjectEventSpy().should("not.have.been.called");
+      });
+    });
+
+    describe("calling onDestroy", () => {
+      beforeEach(() => {
+        scene.destroy();
+      });
+
+      it("emitEvent objectA event does not call onObjectEvent", () => {
+        const event = { a: "hello", b: "world" };
+        objectAEvents.next({ kind: "emitEvent", event });
+
+        getOnObjectEventSpy().should("not.have.been.called");
       });
     });
   });

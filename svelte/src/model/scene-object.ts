@@ -2,58 +2,33 @@ import type { PRNG } from "seedrandom";
 import { seededUuid } from "../utils";
 import type { AssetKey } from "./assets";
 import { PosFns, type Position } from "./position";
-import type {
-  SceneObject,
-  SceneObjectAction,
-  SceneObjectActionApplyResult,
-} from "./scene-types";
+import type { SceneObject } from "./scene-types";
 
 export const makeSceneObject =
   (random: PRNG) =>
-  <TLayerKey extends string>(
-    obj: Omit<SceneObject<TLayerKey>, "id" | "state">
-  ): SceneObject<TLayerKey> => {
-    return {
-      id: seededUuid(random),
-      ...obj,
-    };
-  };
+  (
+    obj: Omit<SceneObject, "id"> | ((id: string) => Omit<SceneObject, "id">)
+  ): SceneObject => {
+    const id = seededUuid(random);
 
-export const applySceneObjectAction = <TLayerKey extends string>(
-  obj: SceneObject<TLayerKey>,
-  action: SceneObjectAction<TLayerKey>
-): SceneObjectActionApplyResult<TLayerKey> => {
-  switch (action.kind) {
-    case "hide":
+    if (typeof obj === "function") {
       return {
-        kind: "update",
-        object: {
-          ...obj,
-          hidden: true,
-        },
+        id,
+        ...obj(id),
       };
-    case "show":
+    } else {
       return {
-        kind: "update",
-        object: {
-          ...obj,
-          hidden: false,
-        },
+        id: seededUuid(random),
+        ...obj,
       };
-    case "removeObject": {
-      return { kind: "removeObject" };
     }
-    case "sceneAction": {
-      return action;
-    }
-  }
-};
+  };
 
 /**
  * Gets the bounding box of the object in world co-ords.
  */
 export const getObjectBoundingBox = (
-  obj: SceneObject<string>,
+  obj: SceneObject,
   images: Record<AssetKey, HTMLImageElement>
 ): { topLeft: Position; bottomRight: Position } => {
   const relativeBoundingBox = obj
@@ -90,14 +65,12 @@ export const getObjectBoundingBox = (
 };
 
 /** Gets objects in order, from top to bottom */
-export const getObjectsInOrder = <TLayerKey extends string>(
-  objects: readonly SceneObject<TLayerKey>[],
-  layerOrder: readonly TLayerKey[],
+export const getObjectsInOrder = (
+  objects: readonly SceneObject[],
+  layerOrder: readonly string[],
   order: "top-to-bottom" | "bottom-to-top"
-): SceneObject<TLayerKey>[] => {
-  const byLayer = objects.reduce<
-    Partial<Record<TLayerKey, SceneObject<TLayerKey>[]>>
-  >(
+): SceneObject[] => {
+  const byLayer = objects.reduce<Partial<Record<string, SceneObject[]>>>(
     (acc, next) => ({
       ...acc,
       [next.layerKey]: [...(acc[next.layerKey] ?? []), next],
@@ -105,7 +78,7 @@ export const getObjectsInOrder = <TLayerKey extends string>(
     {}
   );
 
-  const bottomToTop = layerOrder.reduce<SceneObject<TLayerKey>[]>(
+  const bottomToTop = layerOrder.reduce<SceneObject[]>(
     (acc, layer) => [...acc, ...(byLayer[layer] ?? [])],
     []
   );

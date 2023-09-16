@@ -11,6 +11,7 @@
     "check-svelte": "svelte-check --tsconfig ./tsconfig.json",
     "check-ts": "tsc --noEmit --project ./tsconfig.json",
     "test": "cypress open",
+    "test-run-all": "cypress run --component",
     "test-percy-snapshots": "percy exec -- cypress run --component --spec '**/canvas-draw.cy.ts,**/scenes/objects/__tests__/*.cy.ts'"
   },
   "devDependencies": {

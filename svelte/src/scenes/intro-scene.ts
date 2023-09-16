@@ -4,15 +4,14 @@ import {
   PosFns,
   generatePointsInShape,
   makeSceneObject,
+  makeSceneType,
   randomInterval,
   type SceneAction,
   type SceneObject,
-  type SceneObjectStateless,
-  type SceneType,
   type Shape,
 } from "../model";
 import type { AssetKey } from "../model/assets";
-import type { ObjectLayerContent } from "../model/scene-types";
+import type { ObjectLayerContent, SceneSpec } from "../model/scene-types";
 import { makeHouseScene } from "./house-scene";
 import { makeCruisingBird } from "./objects/cruising-bird";
 
@@ -25,9 +24,7 @@ const layerOrder = [
   "speechBubble",
 ] as const;
 
-type LayerKey = (typeof layerOrder)[number];
-
-export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
+export const makeIntroScene: SceneSpec = (random: PRNG) => {
   const makeSceneObjectBound = makeSceneObject(random);
 
   const randomTree = (): AssetKey => {
@@ -42,10 +39,7 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
     }
   };
 
-  const makeTrees = (
-    target: number,
-    shape: Shape
-  ): SceneObjectStateless<LayerKey> => {
+  const makeTrees = (target: number, shape: Shape): SceneObject => {
     const layers: ObjectLayerContent[] = generatePointsInShape(
       target,
       shape,
@@ -66,7 +60,8 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
     });
   };
 
-  const speechBubble = makeSceneObjectBound({
+  const speechBubble = makeSceneObjectBound((id) => ({
+    typeName: "speech-bubble",
     layerKey: "speechBubble",
     getPosition: () => PosFns.new(730, 260),
     getLayers: () => [
@@ -85,15 +80,15 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
         maxWidth: 430,
       },
     ],
-    onInteract: () => [{ kind: "hide" }],
-  });
+    onInteract: () => [{ kind: "removeObject", target: id }],
+  }));
 
-  const objects: SceneObject<LayerKey>[] = [
+  const objects: SceneObject[] = [
     makeSceneObjectBound({
       getPosition: () => PosFns.zero,
       layerKey: "bg",
       getLayers: () => [
-        { kind: "image", assetKey: "background", subLayer: "background" },
+        { kind: "image", assetKey: "introBackground", subLayer: "background" },
       ],
     }),
     makeTrees(20, [
@@ -118,27 +113,30 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
       ],
       onInteract: () => [
         {
-          kind: "sceneAction",
-          action: {
-            kind: "changeScene",
-            makeScene: () => makeHouseScene(random),
-          },
+          kind: "changeScene",
+          newScene: makeHouseScene,
         },
       ],
     }),
     makeSceneObjectBound({
+      typeName: "person",
       layerKey: "person",
       getPosition: () => PosFns.new(1260, 490),
       getLayers: () => [
         { kind: "image", assetKey: "personSitting", subLayer: "background" },
         { kind: "image", assetKey: "personHead", subLayer: "background" },
       ],
-      onInteract: () => [{ kind: "show", target: speechBubble.id }],
+      onInteract: () => [
+        {
+          kind: "addObject",
+          makeObject: () => speechBubble,
+        },
+      ],
     }),
     speechBubble,
   ];
 
-  const events: Observable<SceneAction<LayerKey>> = merge(
+  const events: Observable<SceneAction> = merge(
     timer(200),
     randomInterval([6000, 15000], random)
   ).pipe(
@@ -148,10 +146,10 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
     }))
   );
 
-  return {
+  return makeSceneType({
     typeName: "intro-scene",
     objects,
     layerOrder,
     events,
-  };
+  });
 };

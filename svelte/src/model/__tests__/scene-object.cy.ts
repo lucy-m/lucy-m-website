@@ -50,7 +50,9 @@ describe("scene object", () => {
     });
 
     it("object with one image", () => {
-      const obj = makeTestObject(PosFns.zero, [["background", PosFns.zero]]);
+      const obj = makeTestObject(PosFns.zero, [
+        ["introBackground", PosFns.zero],
+      ]);
       const boundingBox = getObjectBoundingBox(obj, assets);
 
       expect(boundingBox.topLeft).to.deep.equal(PosFns.zero);
@@ -59,7 +61,7 @@ describe("scene object", () => {
 
     it("object with position", () => {
       const obj = makeTestObject(PosFns.new(20, 30), [
-        ["background", PosFns.zero],
+        ["introBackground", PosFns.zero],
       ]);
       const boundingBox = getObjectBoundingBox(obj, assets);
 
@@ -69,7 +71,7 @@ describe("scene object", () => {
 
     it("object with positioned layer", () => {
       const obj = makeTestObject(PosFns.zero, [
-        ["background", PosFns.new(5, -10)],
+        ["introBackground", PosFns.new(5, -10)],
       ]);
       const boundingBox = getObjectBoundingBox(obj, assets);
 
@@ -79,7 +81,7 @@ describe("scene object", () => {
 
     it("object with multiple layers", () => {
       const obj = makeTestObject(PosFns.zero, [
-        ["background", PosFns.zero],
+        ["introBackground", PosFns.zero],
         ["tree1", PosFns.new(180, 140)], // object positioned at bottom right of prev layer
       ]);
       const boundingBox = getObjectBoundingBox(obj, assets);

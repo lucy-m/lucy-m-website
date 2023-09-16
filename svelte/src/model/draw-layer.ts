@@ -21,16 +21,16 @@ export type DrawLayer = {
   rotation?: number;
 };
 
-type LayerByLayerKey<TLayerKey extends string> = Partial<
-  Record<TLayerKey, Partial<Record<SubLayerKey, DrawLayer[]>>>
+type LayerByLayerKey = Partial<
+  Record<string, Partial<Record<SubLayerKey, DrawLayer[]>>>
 >;
 
-const addLayer = <TLayerKey extends string>(
-  layerKey: TLayerKey,
+const addLayer = (
+  layerKey: string,
   subLayerKey: SubLayerKey,
   content: DrawLayer,
-  imagesByLayer: LayerByLayerKey<TLayerKey>
-): LayerByLayerKey<TLayerKey> => {
+  imagesByLayer: LayerByLayerKey
+): LayerByLayerKey => {
   const newSubLayerEntry: DrawLayer[] = [
     ...(imagesByLayer[layerKey]?.[subLayerKey] ?? []),
     content,
@@ -41,15 +41,15 @@ const addLayer = <TLayerKey extends string>(
     [layerKey]: {
       ...imagesByLayer[layerKey],
       [subLayerKey]: newSubLayerEntry,
-    } as LayerByLayerKey<TLayerKey>,
+    } as LayerByLayerKey,
   };
 };
 
 const sublayerOrder: SubLayerKey[] = ["background", "text"];
 
-const getLayerContentInOrder = <TLayerKey extends string>(
-  layerOrder: readonly TLayerKey[],
-  imagesByLayer: LayerByLayerKey<TLayerKey>
+const getLayerContentInOrder = (
+  layerOrder: readonly string[],
+  imagesByLayer: LayerByLayerKey
 ): DrawLayer[] => {
   return layerOrder.reduce<DrawLayer[]>((acc, layerKey) => {
     const mergedSublayerItems: DrawLayer[] = sublayerOrder.reduce<DrawLayer[]>(
@@ -65,16 +65,17 @@ const getLayerContentInOrder = <TLayerKey extends string>(
   }, []);
 };
 
-export const resolveScene = <TLayerKey extends string>(
-  scene: SceneType<TLayerKey>,
+export const resolveScene = (
+  scene: SceneType,
   images: Record<AssetKey, HTMLImageElement>
 ): DrawLayer[] => {
-  const sceneLayers: [TLayerKey, SubLayerKey, DrawLayer][] = scene.objects
+  const sceneLayers: [string, SubLayerKey, DrawLayer][] = scene
+    .getObjects()
     .filter((obj) => !obj.hidden)
     .flatMap((obj) => {
       return obj
         .getLayers()
-        .map<[TLayerKey, SubLayerKey, DrawLayer]>((objectLayerContent) => {
+        .map<[string, SubLayerKey, DrawLayer]>((objectLayerContent) => {
           return [
             obj.layerKey,
             objectLayerContent.kind === "image"
@@ -105,7 +106,7 @@ export const resolveScene = <TLayerKey extends string>(
         });
     });
 
-  const byLayerKeys = sceneLayers.reduce<LayerByLayerKey<TLayerKey>>(
+  const byLayerKeys = sceneLayers.reduce<LayerByLayerKey>(
     (acc, [layerKey, subLayerKey, content]) =>
       addLayer(layerKey, subLayerKey, content, acc),
     {}

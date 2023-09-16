@@ -3,13 +3,7 @@
   import { loadImages, type SceneType } from "../../model";
   import SceneViewer from "./SceneViewer.svelte";
 
-  export let makeScene: (random: PRNG) => SceneType<string>;
-
-  const r = seedrandom().int32();
-  console.log("Congratulations! Your random seed is", r);
-  const prng = seedrandom(r.toString());
-
-  const scene = makeScene(prng);
+  export let sceneSpec: SceneSpec;
 
   let windowWidth = window.innerWidth;
   let windowHeight = window.innerHeight;
@@ -38,7 +32,7 @@
       <p>.</p>
     </div>
   {:then images}
-    <SceneViewer {scene} {images} />
+    <SceneViewer {sceneSpec} {images} />
   {/await}
 </div>
 
