@@ -19,8 +19,8 @@ import {
   type AssetKey,
   type Destroyable,
   type Position,
-  type SceneAction,
   type SceneEvent,
+  type SceneEventOrAction,
   type SceneType,
 } from "../../model";
 import { drawLayerContent } from "./canvas-draw";
@@ -53,7 +53,7 @@ export const viewScene = (
   const { initialScene, images, onSceneChange, worldClick$ } = args;
 
   const interactSub = new Subject<Position>();
-  const eventsSub = new Subject<Observable<SceneEvent | SceneAction>>();
+  const eventsSub = new Subject<Observable<SceneEventOrAction>>();
 
   canvas.width = sceneSize.x;
   canvas.height = sceneSize.y;

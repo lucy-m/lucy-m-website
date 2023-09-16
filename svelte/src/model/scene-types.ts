@@ -20,13 +20,23 @@ export type ObjectLayerContent =
       rotation?: number;
     };
 
+export type SceneObjectEvent =
+  | {
+      kind: "sceneAction";
+      action: SceneAction;
+    }
+  | {
+      kind: "arbitrary";
+      event: unknown;
+    };
+
 export type SceneObject = {
   id: string;
   rotation?: number;
   typeName?: string;
   hidden?: boolean;
   layerKey: string;
-  events$?: Observable<unknown>;
+  events$?: Observable<SceneObjectEvent>;
   getPosition: () => Position;
   getLayers: () => ObjectLayerContent[];
   onInteract?: () => SceneAction[];
@@ -46,8 +56,8 @@ export interface SceneType {
   removeObject: (id: string) => void;
   /** Order of layer drawing, from bottom to top */
   layerOrder: readonly string[];
-  events: Observable<SceneEvent | SceneAction>;
   onObjectEvent?: ObjectEventHandler;
+  onSceneChange: (newScene: SceneType) => void;
   /** Removes all active subscriptions */
   destroy: () => void;
 }

@@ -3,12 +3,13 @@ import { Subject, of } from "rxjs";
 import seedrandom from "seedrandom";
 import type { AssetKey } from "../assets";
 import { PosFns } from "../position";
-import { applySceneEvent, makeSceneType } from "../scene";
+import { makeSceneType } from "../scene";
 import { makeSceneObject } from "../scene-object";
-import type { SceneObject, SceneType } from "../scene-types";
+import type { SceneObject, SceneObjectEvent, SceneType } from "../scene-types";
 
 describe("scene", () => {
   const random = seedrandom();
+  const images = {} as Record<AssetKey, HTMLImageElement>;
 
   const makeTestSceneObject = (
     optional?: Pick<SceneObject, "onTick" | "events$">
@@ -31,9 +32,9 @@ describe("scene", () => {
       layerOrder: [],
       objects,
       onObjectEvent: optional?.onObjectEvent,
+      images,
+      onSceneChange: () => {},
     });
-
-  const images = {} as Record<AssetKey, HTMLImageElement>;
 
   it("does not add duplicate objects", () => {
     const object = makeTestSceneObject();
@@ -42,44 +43,9 @@ describe("scene", () => {
     expect(scene.getObjects()).to.have.length(1);
   });
 
-  describe("applySceneEvent", () => {
-    describe("remove action with target", () => {
-      const objectB = makeTestSceneObject();
-      const objectA = makeTestSceneObject({
-        onTick: () => [{ kind: "removeObject", target: objectB.id }],
-      });
-
-      const scene = makeTestScene([objectA, objectB]);
-      applySceneEvent(scene, images, { kind: "tick" });
-
-      it("objectB is removed", () => {
-        expect(scene.getObjects().map((o) => o.id)).to.be.deep.equal([
-          objectA.id,
-        ]);
-      });
-    });
-
-    describe("add new object action", () => {
-      const objectB = makeTestSceneObject();
-      const objectA = makeTestSceneObject({
-        onTick: () => [{ kind: "addObject", makeObject: () => objectB }],
-      });
-
-      const scene = makeTestScene([objectA]);
-      applySceneEvent(scene, images, { kind: "tick" });
-
-      it("adds objectB", () => {
-        expect(scene.getObjects().map((o) => o.id)).to.deep.equal([
-          objectA.id,
-          objectB.id,
-        ]);
-      });
-    });
-  });
-
   describe("object events", () => {
     let objectA: SceneObject;
-    let objectAEvents: Subject<any>;
+    let objectAEvents: Subject<SceneObjectEvent>;
     let scene: SceneType;
 
     const getOnObjectEventSpy = () =>
@@ -96,18 +62,35 @@ describe("scene", () => {
       });
     });
 
-    it("objectA event calls onObjectEvent", () => {
+    it("abitrary objectA event calls onObjectEvent", () => {
       const event = { a: "hello", b: "world" };
-      objectAEvents.next(event);
+      objectAEvents.next({ kind: "arbitrary", event });
 
       getOnObjectEventSpy()
         .should("have.been.calledOnce")
-        .should("have.been.calledWith", objectA.id, event);
+        .should("have.been.calledWith", { sourceObjectId: objectA.id, event });
+    });
+
+    it("sceneAction addObject event updates the scene", () => {
+      const newObject = makeTestSceneObject();
+      objectAEvents.next({
+        kind: "sceneAction",
+        action: { kind: "addObject", makeObject: () => newObject },
+      });
+      expect(scene.getObjects()).to.have.length(2);
+    });
+
+    it("sceneAction removeObject event updates the scene", () => {
+      objectAEvents.next({
+        kind: "sceneAction",
+        action: { kind: "removeObject", target: objectA.id },
+      });
+      expect(scene.getObjects()).to.have.length(0);
     });
 
     describe("adding objectB", () => {
       let objectB: SceneObject;
-      let objectBEvents: Subject<any>;
+      let objectBEvents: Subject<SceneObjectEvent>;
 
       beforeEach(() => {
         objectBEvents = new Subject();
@@ -118,13 +101,16 @@ describe("scene", () => {
         scene.addObject(objectB);
       });
 
-      it("objectB event calls onObjectEvent", () => {
+      it("arbitrary objectB event calls onObjectEvent", () => {
         const event = ["foo", 3];
-        objectBEvents.next(event);
+        objectBEvents.next({ kind: "arbitrary", event });
 
         getOnObjectEventSpy()
           .should("have.been.calledOnce")
-          .should("have.been.calledWith", objectB.id, event);
+          .should("have.been.calledWith", {
+            sourceObjectId: objectB.id,
+            event,
+          });
       });
     });
 
@@ -133,9 +119,9 @@ describe("scene", () => {
         scene.removeObject(objectA.id);
       });
 
-      it("objectA event does not call onObjectEvent", () => {
+      it("arbitrary objectA event does not call onObjectEvent", () => {
         const event = { a: "hello", b: "world" };
-        objectAEvents.next(event);
+        objectAEvents.next({ kind: "arbitrary", event });
 
         getOnObjectEventSpy().should("not.have.been.called");
       });
@@ -146,9 +132,9 @@ describe("scene", () => {
         scene.destroy();
       });
 
-      it("objectA event does not call onObjectEvent", () => {
+      it("arbitrary objectA event does not call onObjectEvent", () => {
         const event = { a: "hello", b: "world" };
-        objectAEvents.next(event);
+        objectAEvents.next({ kind: "arbitrary", event });
 
         getOnObjectEventSpy().should("not.have.been.called");
       });

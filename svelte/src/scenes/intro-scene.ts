@@ -8,7 +8,6 @@ import {
   randomInterval,
   type SceneAction,
   type SceneObject,
-  type SceneObjectStateless,
   type SceneType,
   type Shape,
 } from "../model";
@@ -26,8 +25,6 @@ const layerOrder = [
   "speechBubble",
 ] as const;
 
-type LayerKey = (typeof layerOrder)[number];
-
 export const makeIntroScene = (random: PRNG): SceneType => {
   const makeSceneObjectBound = makeSceneObject(random);
 
@@ -43,10 +40,7 @@ export const makeIntroScene = (random: PRNG): SceneType => {
     }
   };
 
-  const makeTrees = (
-    target: number,
-    shape: Shape
-  ): SceneObjectStateless<LayerKey> => {
+  const makeTrees = (target: number, shape: Shape): SceneObject => {
     const layers: ObjectLayerContent[] = generatePointsInShape(
       target,
       shape,
