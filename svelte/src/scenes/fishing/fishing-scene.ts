@@ -1,4 +1,4 @@
-import { Subject, map, timer } from "rxjs";
+import { Subject } from "rxjs";
 import type { PRNG } from "seedrandom";
 import {
   PosFns,
@@ -16,7 +16,7 @@ import {
   type AnyFishingState,
 } from "./fishing-state";
 
-const layerOrder = ["bg", "debug"] as const;
+const layerOrder = ["bg", "man", "bite-alert", "reeling", "debug"] as const;
 
 export const makeFishingScene: SceneSpec = (random: PRNG) => {
   const makeSceneObjectBound = makeSceneObject(random);
@@ -37,47 +37,105 @@ export const makeFishingScene: SceneSpec = (random: PRNG) => {
           text: [text],
         },
       ],
-      events$: timer(1000).pipe(
-        map(() => ({
-          kind: "arbitrary",
-          event: new AnyFishingActionCls(action),
-        }))
-      ),
     });
   };
 
-  const makeObjectsForState = (state: AnyFishingState): SceneObject => {
-    switch (state.kind) {
-      case "idle":
-        return makeDebugText("idle", PosFns.new(100, 100), {
-          kind: "cast-out",
-        });
+  const makeObjectsForState = ((): ((
+    state: AnyFishingState
+  ) => SceneObject[]) => {
+    const castOutMan = makeSceneObjectBound({
+      layerKey: "man",
+      getPosition: () => PosFns.new(32, 160),
+      getLayers: () => [
+        {
+          kind: "image",
+          assetKey: "castOffMan",
+          subLayer: "background",
+        },
+      ],
+    });
 
-      case "cast-out":
-        return makeDebugText("cast-out", PosFns.new(100, 200), {
-          kind: "fish-bite",
-          fishId: "wally",
-        });
+    return (state) => {
+      switch (state.kind) {
+        case "idle":
+          return [
+            makeSceneObjectBound({
+              layerKey: "man",
+              getPosition: () => PosFns.new(80, 160),
+              getLayers: () => [
+                {
+                  kind: "image",
+                  assetKey: "idleMan",
+                  subLayer: "background",
+                },
+              ],
+            }),
+          ];
 
-      case "got-a-bite":
-        return makeDebugText("got-a-bite", PosFns.new(100, 300), {
-          kind: "start-reel",
-        });
+        case "cast-out":
+          return [castOutMan];
 
-      case "reeling":
-        return makeDebugText("reeling", PosFns.new(100, 400), {
-          kind: "finish-reel",
-        });
-    }
-  };
+        case "got-a-bite":
+          return [
+            castOutMan,
+            makeSceneObjectBound({
+              layerKey: "bite-alert",
+              getPosition: () => PosFns.new(1380, 440),
+              getLayers: () => [
+                {
+                  kind: "image",
+                  assetKey: "biteMarker",
+                  subLayer: "background",
+                },
+              ],
+            }),
+          ];
+
+        case "reeling":
+          return [
+            castOutMan,
+            makeSceneObjectBound({
+              layerKey: "reeling",
+              getPosition: () => PosFns.new(-200, -100),
+              getLayers: () => [
+                {
+                  kind: "image",
+                  assetKey: "bigPole",
+                  subLayer: "background",
+                },
+                {
+                  kind: "image",
+                  assetKey: "reelSpinner",
+                  subLayer: "background",
+                  position: PosFns.new(760, 365),
+                },
+              ],
+            }),
+          ];
+      }
+    };
+  })();
 
   const eventsSub = new Subject<SceneAction>();
 
-  let state: AnyFishingState = { kind: "idle" };
+  let state: AnyFishingState = { kind: "cast-out" };
   const initial = makeObjectsForState(state);
-  let currentStateObjects: SceneObject[] = [initial];
+  let currentStateObjects: SceneObject[] = initial;
 
-  const objects = [initial];
+  const objects = [
+    ...initial,
+    makeSceneObjectBound({
+      layerKey: "bg",
+      getPosition: () => PosFns.zero,
+      getLayers: () => [
+        {
+          kind: "image",
+          assetKey: "fishingBackground",
+          subLayer: "background",
+        },
+      ],
+    }),
+  ];
 
   const onObjectEvent: ObjectEventHandler = ({ event }) => {
     if (event instanceof AnyFishingActionCls) {
@@ -88,7 +146,7 @@ export const makeFishingScene: SceneSpec = (random: PRNG) => {
           eventsSub.next({ kind: "removeObject", target: obj.id });
         });
 
-        currentStateObjects = [makeObjectsForState(newState)];
+        currentStateObjects = makeObjectsForState(newState);
         currentStateObjects.forEach((obj) => {
           eventsSub.next({ kind: "addObject", makeObject: () => obj });
         });

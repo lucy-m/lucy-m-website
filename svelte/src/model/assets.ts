@@ -1,8 +1,7 @@
 import { entriesToRecord, recordToEntries } from "../utils";
 
 const imagePaths = {
-  background: "/assets/scene-intro/background.PNG",
-
+  introBackground: "/assets/scene-intro/background.PNG",
   personSitting: "/assets/scene-intro/person-sitting.png",
   personHead: "/assets/scene-intro/person head.PNG",
   speechBubble: "/assets/scene-intro/speech-bubble.png",
@@ -13,6 +12,13 @@ const imagePaths = {
   birdFlapDown: "/assets/scene-intro/bird-flap-down.png",
   feather1: "/assets/scene-intro/feather-1.png",
   houseSmall: "/assets/scene-intro/house-small.png",
+
+  fishingBackground: "/assets/scene-fishing/fishing-bg.PNG",
+  idleMan: "/assets/scene-fishing/idle.PNG",
+  castOffMan: "/assets/scene-fishing/cast-off.PNG",
+  biteMarker: "/assets/scene-fishing/bite-marker.PNG",
+  bigPole: "/assets/scene-fishing/pole.PNG",
+  reelSpinner: "/assets/scene-fishing/reel-spinner.PNG",
 };
 
 export type AssetKey = keyof typeof imagePaths;
