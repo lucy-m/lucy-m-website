@@ -4,6 +4,7 @@ import {
   PosFns,
   generatePointsInShape,
   makeSceneObject,
+  makeSceneType,
   randomInterval,
   type SceneAction,
   type SceneObject,
@@ -152,10 +153,10 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
     }))
   );
 
-  return {
+  return makeSceneType({
     typeName: "intro-scene",
     objects,
     layerOrder,
     events,
-  };
+  });
 };

@@ -53,7 +53,7 @@ const mountWithFixture = <T extends Record<string, any>>(
   cy.mount(Fixture, { props: { componentType, props, fixtureOptions } });
 };
 
-const steppedTick = (by: number) => {
+const steppedTick = (by: number): Cypress.Chainable => {
   cy.log(`Tick ${by}`);
 
   const dt = 30;

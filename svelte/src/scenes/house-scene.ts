@@ -2,6 +2,7 @@ import { Subject } from "rxjs";
 import type { PRNG } from "seedrandom";
 import {
   makeSceneObject,
+  makeSceneType,
   PosFns,
   type SceneObject,
   type SceneType,
@@ -33,10 +34,10 @@ export const makeHouseScene = (random: PRNG): SceneType<LayerKey> => {
     }),
   ];
 
-  return {
+  return makeSceneType({
     typeName: "house-scene",
     objects,
     layerOrder,
     events: new Subject(),
-  };
+  });
 };

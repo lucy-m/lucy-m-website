@@ -13,6 +13,12 @@ type ApplySceneActionResult<TLayerKey extends string> =
       scene: SceneType<TLayerKey>;
     };
 
+export const makeSceneType = <TLayerKey extends string>(
+  scene: SceneType<TLayerKey>
+): SceneType<TLayerKey> => ({
+  ...scene,
+});
+
 export const applySceneEvent = <TLayerKey extends string>(
   scene: SceneType<TLayerKey>,
   images: Record<AssetKey, HTMLImageElement>,
