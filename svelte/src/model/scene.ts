@@ -1,3 +1,4 @@
+import type { Subscription } from "rxjs";
 import { partitionByAllKinds } from "../utils";
 import type { AssetKey } from "./assets";
 import { getObjectBoundingBox, getObjectsInOrder } from "./scene-object";
@@ -23,15 +24,30 @@ export const makeSceneType = (
     objects: readonly SceneObject[];
   }
 ): SceneType => {
-  let objects = [...scene.objects];
+  let objects: SceneObject[] = [];
+  let eventSubscriptions: Record<string, Subscription> = {};
 
   const getObjects = () => objects;
   const addObject = (obj: SceneObject) => {
-    objects.push(obj);
+    if (!objects.find((so) => so.id === obj.id)) {
+      if (obj.events$) {
+        const subscription = obj.events$.subscribe(
+          (event) => scene.onObjectEvent && scene.onObjectEvent(obj.id, event)
+        );
+        eventSubscriptions[obj.id] = subscription;
+      }
+      objects.push(obj);
+    }
   };
   const removeObject = (id: string) => {
     objects = objects.filter((obj) => obj.id !== id);
+
+    const sub = eventSubscriptions[id];
+    sub?.unsubscribe();
+    delete eventSubscriptions[id];
   };
+
+  scene.objects.forEach(addObject);
 
   return {
     ...scene,

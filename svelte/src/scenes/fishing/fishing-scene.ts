@@ -8,7 +8,6 @@ import {
 } from "../../model";
 
 const layerOrder = ["bg", "debug"] as const;
-type LayerKey = (typeof layerOrder)[number];
 
 export const makeFishingScene = (random: PRNG): SceneType => {
   const makeSceneObjectBound = makeSceneObject(random);

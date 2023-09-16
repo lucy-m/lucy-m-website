@@ -42,6 +42,7 @@ export interface SceneType {
   /** Order of layer drawing, from bottom to top */
   layerOrder: readonly string[];
   events: Observable<SceneEvent | SceneAction>;
+  onObjectEvent?: (source: string, event: any) => void;
 }
 
 export type SceneAction =
