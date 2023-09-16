@@ -66,7 +66,7 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
     });
   };
 
-  const speechBubble = makeSceneObjectBound({
+  const speechBubble = makeSceneObjectBound((id) => ({
     typeName: "speech-bubble",
     layerKey: "speechBubble",
     getPosition: () => PosFns.new(730, 260),
@@ -86,8 +86,8 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
         maxWidth: 430,
       },
     ],
-    onInteract: () => [],
-  });
+    onInteract: () => [{ kind: "removeObject", target: id }],
+  }));
 
   const objects: SceneObject<LayerKey>[] = [
     makeSceneObjectBound({
@@ -125,13 +125,19 @@ export const makeIntroScene = (random: PRNG): SceneType<LayerKey> => {
       ],
     }),
     makeSceneObjectBound({
+      typeName: "person",
       layerKey: "person",
       getPosition: () => PosFns.new(1260, 490),
       getLayers: () => [
         { kind: "image", assetKey: "personSitting", subLayer: "background" },
         { kind: "image", assetKey: "personHead", subLayer: "background" },
       ],
-      onInteract: () => [],
+      onInteract: () => [
+        {
+          kind: "addObject",
+          makeObject: () => speechBubble,
+        },
+      ],
     }),
     speechBubble,
   ];

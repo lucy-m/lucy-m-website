@@ -7,12 +7,23 @@ import type { SceneObject } from "./scene-types";
 export const makeSceneObject =
   (random: PRNG) =>
   <TLayerKey extends string>(
-    obj: Omit<SceneObject<TLayerKey>, "id" | "state">
+    obj:
+      | Omit<SceneObject<TLayerKey>, "id">
+      | ((id: string) => Omit<SceneObject<TLayerKey>, "id">)
   ): SceneObject<TLayerKey> => {
-    return {
-      id: seededUuid(random),
-      ...obj,
-    };
+    const id = seededUuid(random);
+
+    if (typeof obj === "function") {
+      return {
+        id,
+        ...obj(id),
+      };
+    } else {
+      return {
+        id: seededUuid(random),
+        ...obj,
+      };
+    }
   };
 
 /**

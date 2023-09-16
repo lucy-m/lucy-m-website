@@ -2,7 +2,7 @@ import fc from "fast-check";
 import { Subject } from "rxjs";
 import seedrandom from "seedrandom";
 import { validate } from "uuid";
-import type { SceneEventOrAction, SceneType } from "../../model";
+import type { SceneEventOrAction, SceneObject, SceneType } from "../../model";
 import { PosFns, type Position } from "../../model";
 import { makeIntroScene } from "../intro-scene";
 import ViewSceneFixture from "./ViewSceneFixture.svelte";
@@ -96,6 +96,26 @@ describe("intro scene", () => {
   });
 
   describe("rendering tests", () => {
+    const findByTypeName = (
+      scene: SceneType<string>,
+      typeName: string
+    ): SceneObject<string> | undefined => {
+      return scene.objects.find((obj) => obj.typeName === typeName);
+    };
+
+    const getByTypeName = (
+      scene: SceneType<string>,
+      typeName: string
+    ): SceneObject<string> => {
+      const obj = findByTypeName(scene, typeName);
+
+      if (!obj) {
+        throw new Error(`Cannot find object with typeName ${typeName}`);
+      }
+
+      return obj;
+    };
+
     beforeEach(() => {
       cy.viewport(1400, 900);
       cy.clock();
@@ -127,12 +147,7 @@ describe("intro scene", () => {
 
       describe("clicking house", () => {
         beforeEach(() => {
-          expect(currentScene).to.exist;
-          const house = currentScene.objects.find(
-            (obj) => obj.typeName === "small-house"
-          )!;
-          expect(house).to.exist;
-
+          const house = getByTypeName(currentScene, "small-house");
           worldClick$.next(PosFns.add(house.getPosition(), PosFns.new(5, 5)));
 
           cy.steppedTick(100);
@@ -153,11 +168,7 @@ describe("intro scene", () => {
 
       describe("clicking speech bubble", () => {
         beforeEach(() => {
-          expect(currentScene).to.exist;
-          const speechBubble = currentScene.objects.find(
-            (obj) => obj.typeName === "speech-bubble"
-          )!;
-          expect(speechBubble).to.exist;
+          const speechBubble = getByTypeName(currentScene, "speech-bubble");
 
           worldClick$.next(
             PosFns.add(speechBubble.getPosition(), PosFns.new(5, 5))
@@ -166,12 +177,26 @@ describe("intro scene", () => {
           cy.steppedTick(100);
         });
 
-        it.only("disappears", () => {
-          expect(currentScene).to.exist;
-          const speechBubble = currentScene.objects.find(
-            (obj) => obj.typeName === "speech-bubble"
-          )!;
+        it("disappears", () => {
+          const speechBubble = findByTypeName(currentScene, "speech-bubble");
           expect(speechBubble).not.to.exist;
+        });
+
+        describe("clicking person", () => {
+          beforeEach(() => {
+            const person = getByTypeName(currentScene, "person");
+
+            worldClick$.next(
+              PosFns.add(person.getPosition(), PosFns.new(5, 5))
+            );
+
+            cy.steppedTick(100);
+          });
+
+          it("shows speech bubble", () => {
+            const speechBubble = findByTypeName(currentScene, "speech-bubble");
+            expect(speechBubble).to.exist;
+          });
         });
       });
     });
