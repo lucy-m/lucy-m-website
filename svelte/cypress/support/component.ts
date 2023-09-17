@@ -62,14 +62,18 @@ const mountWithFixture = <T extends Record<string, any>>(
   cy.mount(Fixture, { props: { componentType, props, fixtureOptions } });
 };
 
-const mountViewScene = (props: ComponentProps<ViewSceneFixture>) => {
+const mountViewScene = (
+  props: ComponentProps<ViewSceneFixture>
+): Cypress.Chainable => {
   cy.mount(ViewSceneFixture, { props });
-  cy.get("canvas").should("have.attr", "data-initialised", "true");
+  return cy.get("canvas").should("have.attr", "data-initialised", "true");
 };
 
-const mountSceneObject = (props: ComponentProps<SceneObjectFixture>) => {
+const mountSceneObject = (
+  props: ComponentProps<SceneObjectFixture>
+): Cypress.Chainable => {
   cy.mount(SceneObjectFixture, { props });
-  cy.get("canvas").should("have.attr", "data-initialised", "true");
+  return cy.get("canvas").should("have.attr", "data-initialised", "true");
 };
 
 const steppedTick = (by: number): Cypress.Chainable => {

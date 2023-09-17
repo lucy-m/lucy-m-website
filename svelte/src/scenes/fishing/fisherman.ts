@@ -2,6 +2,11 @@ import { map, tap, timer } from "rxjs";
 import type { PRNG } from "seedrandom";
 import { PosFns, makeSceneObject, type SceneObject } from "../../model";
 
+export const bobberBounds = {
+  min: PosFns.new(800, 400),
+  max: PosFns.new(1800, 1000),
+};
+
 const bobber = (random: PRNG): SceneObject => {
   let x = -100;
   let y = 300;
@@ -10,7 +15,14 @@ const bobber = (random: PRNG): SceneObject => {
   let stationary = false;
 
   const gravity = 1.05;
-  const xVelocity = 28;
+
+  const xVelocityMax = 33;
+  const xVelocityMin = 15;
+  const xVelocity =
+    random.quick() * (xVelocityMax - xVelocityMin) + xVelocityMin;
+  const yTarget =
+    random.quick() * (bobberBounds.max.y - bobberBounds.min.y) +
+    bobberBounds.min.y;
 
   return makeSceneObject(random)({
     typeName: "bobber",
@@ -29,7 +41,11 @@ const bobber = (random: PRNG): SceneObject => {
         y += yVelocity;
         yVelocity += gravity;
 
-        if (y > 750) {
+        if (x + xVelocity > bobberBounds.max.x) {
+          stationary = true;
+        }
+
+        if (y + yVelocity > bobberBounds.max.y || y > yTarget) {
           stationary = true;
         }
       }
