@@ -7,6 +7,8 @@ type LayerContent =
   | {
       kind: "image";
       image: HTMLImageElement;
+      /** Rotation in degrees around center of object */
+      rotation?: number;
     }
   | {
       kind: "text";
@@ -21,8 +23,6 @@ type LayerContent =
 export type DrawLayer = {
   content: LayerContent;
   position: Position;
-  /** Rotation in degrees around center of object */
-  rotation?: number;
 };
 
 type LayerByLayerKey = Partial<
@@ -99,6 +99,7 @@ export const resolveScene = (
                   ? {
                       kind: "image",
                       image: images[objectLayerContent.assetKey],
+                      rotation: objectLayerContent.rotation,
                     }
                   : objectLayerContent.kind === "text"
                   ? {
@@ -116,10 +117,6 @@ export const resolveScene = (
                   : undefined) ?? PosFns.zero,
                 obj.getPosition()
               ),
-              rotation:
-                objectLayerContent.kind === "image"
-                  ? objectLayerContent.rotation
-                  : undefined,
             },
           ];
         });

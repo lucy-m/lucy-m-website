@@ -7,15 +7,16 @@ export const drawLayerContent =
   (layer: DrawLayer): void => {
     const content = layer.content;
 
+    ctx.save();
     ctx.setTransform();
 
     if (content.kind === "image") {
-      if (layer.rotation) {
+      if (content.rotation) {
         const size = PosFns.new(content.image.width, content.image.height);
         const center = PosFns.add(layer.position, PosFns.scale(size, 0.5));
 
         ctx.translate(center.x, center.y);
-        ctx.rotate((layer.rotation * Math.PI) / 180);
+        ctx.rotate((content.rotation * Math.PI) / 180);
         ctx.translate(-center.x, -center.y);
       }
 
@@ -36,4 +37,5 @@ export const drawLayerContent =
     } else {
       content.draw(ctx);
     }
+    ctx.restore();
   };
