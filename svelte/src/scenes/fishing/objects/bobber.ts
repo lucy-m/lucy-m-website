@@ -87,55 +87,56 @@ const tickBobberState = (state: BobberState): BobberState => {
   }
 };
 
-export const makeBobber =
-  (args: { onLand: () => void }) =>
-  (random: PRNG): SceneObject => {
-    const xVelocity =
-      random.quick() * (xVelocityMax - xVelocityMin) + xVelocityMin;
+export const makeBobber = (args: {
+  onLand: () => void;
+  random: PRNG;
+}): SceneObject => {
+  const xVelocity =
+    args.random.quick() * (xVelocityMax - xVelocityMin) + xVelocityMin;
 
-    const yTarget =
-      random.quick() * (bobberBounds.max.y - bobberBounds.min.y) +
-      bobberBounds.min.y;
+  const yTarget =
+    args.random.quick() * (bobberBounds.max.y - bobberBounds.min.y) +
+    bobberBounds.min.y;
 
-    let state: BobberState = {
-      kind: "throwing",
-      position: PosFns.new(-100, 300),
-      velocity: PosFns.new(xVelocity, -26),
-      yTarget,
-    };
-    return makeSceneObject(random)({
-      typeName: "bobber",
-      layerKey: "bobber",
-      getPosition: () => getPosition(state),
-      getLayers: () => [
-        {
-          kind: "image",
-          assetKey: "bobber",
-          subLayer: "background",
-        },
-        {
-          kind: "ctxDraw",
-          subLayer: "text",
-          draw: (ctx) => {
-            ctx.beginPath();
-            ctx.strokeStyle = "hsla(0, 0%, 100%, 0.7)";
-            ctx.moveTo(1060, 175);
-            ctx.lineTo(getPosition(state).x, getPosition(state).y);
-            ctx.stroke();
-          },
-        },
-      ],
-      onTick: () => {
-        const newState = tickBobberState(state);
-
-        if (newState.kind === "stationary" && state.kind !== "stationary") {
-          args.onLand();
-        }
-
-        state = newState;
-      },
-      _getDebugInfo: () => ({
-        stationary: state.kind === "stationary",
-      }),
-    });
+  let state: BobberState = {
+    kind: "throwing",
+    position: PosFns.new(-100, 300),
+    velocity: PosFns.new(xVelocity, -26),
+    yTarget,
   };
+  return makeSceneObject(args.random)({
+    typeName: "bobber",
+    layerKey: "bobber",
+    getPosition: () => getPosition(state),
+    getLayers: () => [
+      {
+        kind: "image",
+        assetKey: "bobber",
+        subLayer: "background",
+      },
+      {
+        kind: "ctxDraw",
+        subLayer: "text",
+        draw: (ctx) => {
+          ctx.beginPath();
+          ctx.strokeStyle = "hsla(0, 0%, 100%, 0.7)";
+          ctx.moveTo(1060, 175);
+          ctx.lineTo(getPosition(state).x, getPosition(state).y);
+          ctx.stroke();
+        },
+      },
+    ],
+    onTick: () => {
+      const newState = tickBobberState(state);
+
+      if (newState.kind === "stationary" && state.kind !== "stationary") {
+        args.onLand();
+      }
+
+      state = newState;
+    },
+    _getDebugInfo: () => ({
+      stationary: state.kind === "stationary",
+    }),
+  });
+};

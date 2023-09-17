@@ -43,7 +43,7 @@ describe("fisherman", () => {
           castOutMan(random),
         ],
         debugDraw$: debugDrawSub,
-        layerOrder: ["background", "man", "bobber"],
+        layerOrder: ["background", "man", "bobber", "biteMarker"],
         seed: "some-seed-12341",
         onSceneChange: (scene) => {
           bobberState = undefined;

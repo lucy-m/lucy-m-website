@@ -19,6 +19,7 @@ import {
   type AnyFishingAction,
   type AnyFishingState,
 } from "../fishing-state";
+import { biteMarker } from "./bite-marker";
 import { makeBobber } from "./bobber";
 
 export const castOutMan = (random: PRNG): SceneObject => {
@@ -32,6 +33,12 @@ export const castOutMan = (random: PRNG): SceneObject => {
         return timer(2000).pipe(
           map<unknown, AnyFishingAction>(() => ({
             kind: "finish-cast-out-swing",
+            bobber: makeBobber({
+              onLand: () => {
+                actionSub.next({ kind: "cast-out-land" });
+              },
+              random,
+            }),
           }))
         );
       } else if (state.kind === "cast-out-waiting") {
@@ -56,12 +63,19 @@ export const castOutMan = (random: PRNG): SceneObject => {
       if (state.kind === "cast-out-casting") {
         return {
           kind: "addObject",
+          makeObject: () => state.bobber,
+        };
+      } else if (state.kind === "got-a-bite") {
+        return {
+          kind: "addObject",
           makeObject: () =>
-            makeBobber({
-              onLand: () => {
-                actionSub.next({ kind: "cast-out-land" });
-              },
-            })(random),
+            biteMarker({
+              position: PosFns.add(
+                state.bobber.getPosition(),
+                PosFns.new(-20, -280)
+              ),
+              random,
+            }),
         };
       } else {
         return { kind: "noop" };
