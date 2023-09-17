@@ -15,7 +15,9 @@ const imagePaths = {
 
   fishingBackground: "/assets/scene-fishing/fishing-bg.PNG",
   idleMan: "/assets/scene-fishing/idle.PNG",
-  castOffMan: "/assets/scene-fishing/cast-off.PNG",
+  castOffCastingMan: "/assets/scene-fishing/cast-off-1.PNG",
+  castOffWaitingMan: "/assets/scene-fishing/cast-off-2.PNG",
+  bobber: "/assets/scene-fishing/bobber.PNG",
   biteMarker: "/assets/scene-fishing/bite-marker.PNG",
   bigPole: "/assets/scene-fishing/pole.PNG",
   reelSpinner: "/assets/scene-fishing/reel-spinner.PNG",

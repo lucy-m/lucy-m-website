@@ -6,7 +6,7 @@ describe("fishing scene", () => {
       cy.viewport(1400, 900);
 
       cy.mountViewScene({
-        initialSceneSpec: makeFishingScene,
+        initialSceneSpec: makeFishingScene({ kind: "cast-out" }),
         seed: "abcd",
       });
       cy.get("canvas").should("have.attr", "data-initialised", "true");

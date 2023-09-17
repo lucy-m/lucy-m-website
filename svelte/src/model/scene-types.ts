@@ -70,7 +70,8 @@ export type SceneAction =
       kind: "removeObject";
       target: string;
     }
-  | { kind: "emitEvent"; event: unknown };
+  | { kind: "emitEvent"; event: unknown }
+  | { kind: "noop" };
 
 export type SceneActionWithSource = SceneAction & { sourceObjectId: string };
 
