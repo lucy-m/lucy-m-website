@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Subject, Subscription, merge, type Observable } from "rxjs";
   import type { PRNG } from "seedrandom";
-  import seedrandom from "seedrandom";
   import {
     loadImages,
     makeSceneType,
@@ -33,7 +32,7 @@
       }
     | undefined = undefined;
 
-  $: makeScene = (random: PRNG): SceneType => {
+  $: makeScene = (random: PRNG) => {
     const objects = makeObjects(random);
     const layerOrder = Array.from(new Set(objects.map((o) => o.layerKey)));
 
@@ -99,8 +98,9 @@
     <canvas
       class="view-canvas"
       use:viewScene={{
-        initialScene: makeScene(seedrandom(seed)),
+        initialSceneSpec: makeScene,
         images,
+        seed,
         onSceneChange: _onSceneChange,
         worldClick$,
       }}
