@@ -9,6 +9,7 @@ import {
 
 export const biteMarker = (args: {
   position: Position;
+  onInteract: () => void;
   random: PRNG;
 }): SceneObject => {
   const initialPosition = args.position;
@@ -18,7 +19,7 @@ export const biteMarker = (args: {
     endPoint: 0,
     velocity: 0.4,
     properties: {
-      friction: 0,
+      friction: 0.4,
       precision: 0.1,
       stiffness: 0.5,
       weight: 0.6,
@@ -26,7 +27,7 @@ export const biteMarker = (args: {
   });
 
   return makeSceneObject(args.random)({
-    layerKey: "biteMarker",
+    layerKey: "bite-marker",
     getPosition: () =>
       PosFns.new(initialPosition.x, initialPosition.y + yOffset.position),
     getLayers: () => [
@@ -39,5 +40,6 @@ export const biteMarker = (args: {
     onTick: () => {
       yOffset = NumberSpringFns.tick(yOffset, 0.5);
     },
+    onInteract: args.onInteract,
   });
 };

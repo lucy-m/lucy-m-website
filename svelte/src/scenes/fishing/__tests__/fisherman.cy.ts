@@ -2,7 +2,7 @@ import fc from "fast-check";
 import { Subject } from "rxjs";
 import { PosFns, makeSceneObject, type Position } from "../../../model";
 import { bobberBounds } from "../objects/bobber";
-import { castOutMan } from "../objects/fisherman";
+import { fishingMan } from "../objects/fisherman";
 
 describe("fisherman", () => {
   describe("manual", () => {
@@ -40,10 +40,10 @@ describe("fisherman", () => {
               },
             ],
           }),
-          castOutMan(random),
+          fishingMan(random),
         ],
         debugDraw$: debugDrawSub,
-        layerOrder: ["background", "man", "bobber", "biteMarker"],
+        layerOrder: ["background", "man", "bobber", "bite-marker"],
         seed: "some-seed-12341",
         onSceneChange: (scene) => {
           bobberState = undefined;
@@ -130,7 +130,7 @@ describe("fisherman", () => {
                   },
                 ],
               }),
-              castOutMan(random),
+              fishingMan(random),
             ],
             layerOrder: ["background", "man", "bobber"],
             seed: "some-seed-12341",

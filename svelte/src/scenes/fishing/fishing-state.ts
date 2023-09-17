@@ -19,6 +19,7 @@ export type AnyFishingState =
       kind: "got-a-bite";
       fishId: string;
       bobber: SceneObject;
+      biteMarker: SceneObject;
     }
   | {
       kind: "reeling";
@@ -43,6 +44,7 @@ export type AnyFishingAction =
   | { kind: "cast-out-land" }
   | {
       kind: "fish-bite";
+      biteMarker: SceneObject;
       fishId: string;
     }
   | {
@@ -100,6 +102,7 @@ export const fishingStateReducer = (
           kind: "got-a-bite",
           fishId: action.fishId,
           bobber: state.bobber,
+          biteMarker: action.biteMarker,
         };
       } else {
         return state;

@@ -2,8 +2,11 @@ import {
   BehaviorSubject,
   Observable,
   Subject,
+  from,
   map,
   merge,
+  mergeMap,
+  pairwise,
   switchMap,
   timer,
 } from "rxjs";
@@ -14,6 +17,7 @@ import {
   type SceneAction,
   type SceneObject,
 } from "../../../model";
+import { choose } from "../../../utils";
 import {
   fishingStateReducer,
   type AnyFishingAction,
@@ -22,8 +26,8 @@ import {
 import { biteMarker } from "./bite-marker";
 import { makeBobber } from "./bobber";
 
-export const castOutMan = (random: PRNG): SceneObject => {
-  const initialState: AnyFishingState = { kind: "cast-out-swing" };
+export const fishingMan = (random: PRNG): SceneObject => {
+  const initialState: AnyFishingState = { kind: "idle" };
 
   const currentState = new BehaviorSubject<AnyFishingState>(initialState);
   const actionSub = new Subject<AnyFishingAction>();
@@ -46,6 +50,16 @@ export const castOutMan = (random: PRNG): SceneObject => {
           map<unknown, AnyFishingAction>(() => ({
             kind: "fish-bite",
             fishId: "" + Math.abs(random.int32()),
+            biteMarker: biteMarker({
+              position: PosFns.add(
+                state.bobber.getPosition(),
+                PosFns.new(-20, -280)
+              ),
+              onInteract: () => {
+                actionSub.next({ kind: "start-reel" });
+              },
+              random,
+            }),
           }))
         );
       } else {
@@ -54,33 +68,43 @@ export const castOutMan = (random: PRNG): SceneObject => {
     })
   );
 
-  const sub = merge(actionSub, timerActions).subscribe((action) =>
-    currentState.next(fishingStateReducer(action, currentState.value))
-  );
+  const sub = merge(actionSub, timerActions).subscribe((action) => {
+    const nextState = fishingStateReducer(action, currentState.value);
+    console.log("Next state", nextState);
+    currentState.next(nextState);
+  });
 
   const events$ = currentState.pipe(
-    map<AnyFishingState, SceneAction>((state) => {
-      if (state.kind === "cast-out-casting") {
-        return {
-          kind: "addObject",
-          makeObject: () => state.bobber,
-        };
-      } else if (state.kind === "got-a-bite") {
-        return {
-          kind: "addObject",
-          makeObject: () =>
-            biteMarker({
-              position: PosFns.add(
-                state.bobber.getPosition(),
-                PosFns.new(-20, -280)
-              ),
-              random,
-            }),
-        };
-      } else {
-        return { kind: "noop" };
+    pairwise(),
+    map<[AnyFishingState, AnyFishingState], SceneAction[]>(
+      ([prevState, nextState]) => {
+        const addAction: SceneAction | undefined = (() => {
+          if (nextState.kind === "cast-out-casting") {
+            return {
+              kind: "addObject",
+              makeObject: () => nextState.bobber,
+            };
+          } else if (nextState.kind === "got-a-bite") {
+            return {
+              kind: "addObject",
+              makeObject: () => nextState.biteMarker,
+            };
+          }
+        })();
+
+        const removeAction: SceneAction | undefined = (() => {
+          if (prevState.kind === "got-a-bite") {
+            return {
+              kind: "removeObject",
+              target: prevState.biteMarker.id,
+            };
+          }
+        })();
+
+        return choose([addAction, removeAction], (v) => v);
       }
-    })
+    ),
+    mergeMap((v) => from(v))
   );
 
   return makeSceneObject(random)({
@@ -90,7 +114,9 @@ export const castOutMan = (random: PRNG): SceneObject => {
       {
         kind: "image",
         assetKey:
-          currentState.value.kind === "cast-out-swing"
+          currentState.value.kind === "idle"
+            ? "idleMan"
+            : currentState.value.kind === "cast-out-swing"
             ? "castOffCastingMan"
             : "castOffWaitingMan",
         subLayer: "background",
@@ -98,6 +124,9 @@ export const castOutMan = (random: PRNG): SceneObject => {
     ],
     onDestroy: () => {
       sub.unsubscribe();
+    },
+    onInteract: () => {
+      actionSub.next({ kind: "cast-out" });
     },
     events$,
   });
