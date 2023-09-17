@@ -5,7 +5,6 @@ import {
   makeSceneObject,
   makeSceneType,
   randomInterval,
-  type Position,
   type SceneAction,
   type SceneObject,
 } from "../../model";
@@ -13,7 +12,6 @@ import type { ObjectEventHandler, SceneSpec } from "../../model/scene-types";
 import {
   AnyFishingActionCls,
   fishingSceneReducer,
-  type AnyFishingAction,
   type AnyFishingState,
 } from "./fishing-state";
 import { reelingOverlay } from "./reeling-overlay";
@@ -22,25 +20,6 @@ const layerOrder = ["bg", "man", "bite-alert", "reeling", "debug"] as const;
 
 export const makeFishingScene: SceneSpec = (random: PRNG) => {
   const makeSceneObjectBound = makeSceneObject(random);
-
-  const makeDebugText = (
-    text: string,
-    position: Position,
-    action: AnyFishingAction
-  ): SceneObject => {
-    return makeSceneObjectBound({
-      layerKey: "debug",
-      getPosition: () => position,
-      getLayers: () => [
-        {
-          kind: "text",
-          maxWidth: 500,
-          position: PosFns.zero,
-          text: [text],
-        },
-      ],
-    });
-  };
 
   const makeObjectsForState = ((): ((
     state: AnyFishingState

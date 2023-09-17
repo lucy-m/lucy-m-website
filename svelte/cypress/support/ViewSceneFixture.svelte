@@ -1,14 +1,12 @@
 <script lang="ts">
   import type { Observable } from "rxjs";
-  import type { PRNG } from "seedrandom";
-  import seedrandom from "seedrandom";
   import {
     loadImages,
     type Position,
-    type SceneType,
     type SceneSpec,
-  } from "../../model";
-  import { viewScene } from "../drawing/view-scene";
+    type SceneType,
+  } from "../../src/model";
+  import { viewScene } from "../../src/scenes/drawing/view-scene";
 
   export let initialSceneSpec: SceneSpec;
   export let seed: string;

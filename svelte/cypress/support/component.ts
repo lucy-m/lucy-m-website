@@ -15,7 +15,11 @@
 
 // Import commands.js using ES2015 syntax:
 import "@percy/cypress";
-import type { ComponentType, SvelteComponentTyped } from "svelte";
+import type {
+  ComponentProps,
+  ComponentType,
+  SvelteComponentTyped,
+} from "svelte";
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
@@ -23,6 +27,7 @@ import type { ComponentType, SvelteComponentTyped } from "svelte";
 import { mount } from "cypress/svelte";
 import type { SceneObject } from "../../src/model";
 import Fixture from "./Fixture.svelte";
+import ViewSceneFixture from "./ViewSceneFixture.svelte";
 import type { FixtureOptions } from "./fixture-options";
 
 // Augment the Cypress namespace to include type definitions for
@@ -34,6 +39,7 @@ declare global {
     interface Chainable {
       mount: typeof mount;
       mountWithFixture: typeof mountWithFixture;
+      mountViewScene: typeof mountViewScene;
       getByTestId: typeof getByTestId;
       steppedTick: typeof steppedTick;
       assertObjectsMatch: typeof assertObjectsMatch;
@@ -51,6 +57,10 @@ const mountWithFixture = <T extends Record<string, any>>(
   fixtureOptions?: FixtureOptions
 ) => {
   cy.mount(Fixture, { props: { componentType, props, fixtureOptions } });
+};
+
+const mountViewScene = (props: ComponentProps<ViewSceneFixture>) => {
+  cy.mount(ViewSceneFixture, { props });
 };
 
 const steppedTick = (by: number): Cypress.Chainable => {
@@ -81,6 +91,7 @@ const assertObjectsMatch = (objectA: SceneObject, objectB: SceneObject) => {
 
 Cypress.Commands.add("mount", mount);
 Cypress.Commands.add("mountWithFixture", mountWithFixture);
+Cypress.Commands.add("mountViewScene", mountViewScene);
 Cypress.Commands.add("getByTestId", getByTestId);
 Cypress.Commands.add("steppedTick", steppedTick);
 Cypress.Commands.add("assertObjectsMatch", assertObjectsMatch);
