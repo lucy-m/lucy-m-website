@@ -10,7 +10,7 @@ import {
 import type { ObjectEventHandler, SceneSpec } from "../../model/scene-types";
 import {
   AnyFishingActionCls,
-  fishingSceneReducer,
+  fishingStateReducer,
   type AnyFishingState,
 } from "./fishing-state";
 import { castOutMan } from "./objects/fisherman";
@@ -138,7 +138,7 @@ export const makeFishingScene =
 
     const onObjectEvent: ObjectEventHandler = (event) => {
       if (event instanceof AnyFishingActionCls) {
-        const newState = fishingSceneReducer(event.action, state);
+        const newState = fishingStateReducer(event.action, state);
 
         if (newState !== state) {
           currentStateObjects.forEach((obj) => {

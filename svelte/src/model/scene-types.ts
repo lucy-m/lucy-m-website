@@ -38,6 +38,7 @@ export type SceneObject = {
   getLayers: () => ObjectLayerContent[];
   onInteract?: () => SceneAction[] | void;
   onTick?: () => SceneAction[] | void;
+  onDestroy?: () => void;
   _getDebugInfo?: () => any;
 };
 
@@ -77,7 +78,10 @@ export type SceneAction =
       target: string;
     }
   | { kind: "emitEvent"; event: unknown }
-  | { kind: "noop" };
+  | {
+      /** No-op actions are ignored */
+      kind: "noop";
+    };
 
 export type SceneActionWithSource = SceneAction & { sourceObjectId: string };
 

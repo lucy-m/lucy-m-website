@@ -1,6 +1,6 @@
 import fc, { oneof } from "fast-check";
 import {
-  fishingSceneReducer,
+  fishingStateReducer,
   type AnyFishingAction,
   type AnyFishingState,
   type FishingAction,
@@ -72,7 +72,7 @@ const runActionStatePbt = <
       cy.log(JSON.stringify(action))
         .log(JSON.stringify(initialState))
         .then(() => {
-          const result = fishingSceneReducer(action, initialState);
+          const result = fishingStateReducer(action, initialState);
 
           assert({ action, initialState, result });
         });

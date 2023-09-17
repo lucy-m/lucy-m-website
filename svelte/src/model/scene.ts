@@ -120,6 +120,8 @@ export const makeSceneType =
     };
 
     const removeObject = (id: string) => {
+      const onDestroy = objects.find((obj) => obj.id === id)?.onDestroy;
+      onDestroy && onDestroy();
       objects = objects.filter((obj) => obj.id !== id);
 
       const sub = eventSubscriptions[id];

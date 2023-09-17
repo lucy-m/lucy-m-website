@@ -12,14 +12,13 @@ describe("scene", () => {
   const images = {} as Record<AssetKey, HTMLImageElement>;
 
   const makeTestSceneObject = (
-    optional?: Pick<SceneObject, "onTick" | "events$">
+    optional?: Pick<SceneObject, "onTick" | "events$" | "onDestroy">
   ): SceneObject =>
     makeSceneObject(random)({
       getLayers: () => [],
       layerKey: "",
       getPosition: () => PosFns.new(0, 0),
-      onTick: optional?.onTick,
-      events$: optional?.events$,
+      ...optional,
     });
 
   const makeTestScene = (
@@ -53,6 +52,7 @@ describe("scene", () => {
       objectAEvents = new Subject();
       objectA = makeTestSceneObject({
         events$: objectAEvents,
+        onDestroy: cy.spy().as("onADestroySpy"),
       });
 
       scene = makeTestScene([objectA], {
@@ -76,8 +76,13 @@ describe("scene", () => {
     });
 
     it("sceneAction removeObject event updates the scene", () => {
-      objectAEvents.next({ kind: "removeObject", target: objectA.id });
-      expect(scene.getObjects()).to.have.length(0);
+      cy.get("@onADestroySpy")
+        .should("not.have.been.called")
+        .then(() => {
+          objectAEvents.next({ kind: "removeObject", target: objectA.id });
+          expect(scene.getObjects()).to.have.length(0);
+          cy.get("@onADestroySpy").should("have.been.calledOnce");
+        });
     });
 
     describe("adding objectB", () => {

@@ -34,7 +34,7 @@ export const getObjectBoundingBox = (
   const relativeBoundingBox = obj
     .getLayers()
     .reduce<readonly [Position, Position] | undefined>((acc, next) => {
-      if (next.kind === "text") {
+      if (next.kind === "text" || next.kind === "ctxDraw") {
         return acc;
       } else {
         const left = next.position?.x ?? 0;
