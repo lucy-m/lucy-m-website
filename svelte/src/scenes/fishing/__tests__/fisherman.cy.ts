@@ -13,8 +13,8 @@ import { fishingMan } from "../objects/fisherman";
 
 describe("fisherman", () => {
   describe("manual", () => {
-    // const interactive = Cypress.config("isInteractive");
-    const interactive = false;
+    const interactive = Cypress.config("isInteractive");
+    // const interactive = false;
 
     let debugDrawSub: Subject<(ctx: CanvasRenderingContext2D) => void>;
     let worldClickSub: Subject<Position>;

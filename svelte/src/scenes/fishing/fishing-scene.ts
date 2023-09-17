@@ -31,7 +31,7 @@ export const makeFishingScene =
           },
         ],
       }),
-      fishingMan(random),
+      fishingMan({ random }),
     ];
 
     return makeSceneType({

@@ -85,35 +85,35 @@ export const fishingMan = (args: {
     pairwise(),
     map<[AnyFishingState, AnyFishingState], SceneAction[]>(
       ([prevState, nextState]) => {
-        // const addBobber: SceneAction | undefined =
-        //   "bobber" in nextState && !("bobber" in prevState)
-        //   ? { kind: "addObject", makeObject: () => nextState.bobber}
-        //   : undefined;
+        const addBobber: SceneAction | false = "bobber" in nextState &&
+          !("bobber" in prevState) && {
+            kind: "addObject",
+            makeObject: () => nextState.bobber,
+          };
 
-        const addAction: SceneAction | undefined = (() => {
-          if (nextState.kind === "cast-out-casting") {
-            return {
-              kind: "addObject",
-              makeObject: () => nextState.bobber,
-            };
-          } else if (nextState.kind === "got-a-bite") {
-            return {
-              kind: "addObject",
-              makeObject: () => nextState.biteMarker,
-            };
-          }
-        })();
+        const removeBobber: SceneAction | false = "bobber" in prevState &&
+          !("bobber" in nextState) && {
+            kind: "removeObject",
+            target: prevState.bobber.id,
+          };
 
-        const removeAction: SceneAction | undefined = (() => {
-          if (prevState.kind === "got-a-bite") {
-            return {
-              kind: "removeObject",
-              target: prevState.biteMarker.id,
-            };
-          }
-        })();
+        const addBiteMarker: SceneAction | false = "biteMarker" in nextState &&
+          !("biteMarker" in prevState) && {
+            kind: "addObject",
+            makeObject: () => nextState.biteMarker,
+          };
 
-        return choose([addAction, removeAction], (v) => v);
+        const removeBiteMarker: SceneAction | false = "biteMarker" in
+          prevState &&
+          !("biteMarker" in nextState) && {
+            kind: "removeObject",
+            target: prevState.biteMarker.id,
+          };
+
+        return choose(
+          [addBobber, addBiteMarker, removeBobber, removeBiteMarker],
+          (v) => v
+        );
       }
     ),
     mergeMap((v) => from(v))
