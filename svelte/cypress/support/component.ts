@@ -27,6 +27,7 @@ import type {
 import { mount } from "cypress/svelte";
 import type { SceneObject } from "../../src/model";
 import Fixture from "./Fixture.svelte";
+import SceneObjectFixture from "./SceneObjectFixture.svelte";
 import ViewSceneFixture from "./ViewSceneFixture.svelte";
 import type { FixtureOptions } from "./fixture-options";
 
@@ -40,9 +41,11 @@ declare global {
       mount: typeof mount;
       mountWithFixture: typeof mountWithFixture;
       mountViewScene: typeof mountViewScene;
+      mountSceneObject: typeof mountSceneObject;
       getByTestId: typeof getByTestId;
       steppedTick: typeof steppedTick;
       assertObjectsMatch: typeof assertObjectsMatch;
+      interactiveWait: typeof interactiveWait;
     }
   }
 }
@@ -61,6 +64,12 @@ const mountWithFixture = <T extends Record<string, any>>(
 
 const mountViewScene = (props: ComponentProps<ViewSceneFixture>) => {
   cy.mount(ViewSceneFixture, { props });
+  cy.get("canvas").should("have.attr", "data-initialised", "true");
+};
+
+const mountSceneObject = (props: ComponentProps<SceneObjectFixture>) => {
+  cy.mount(SceneObjectFixture, { props });
+  cy.get("canvas").should("have.attr", "data-initialised", "true");
 };
 
 const steppedTick = (by: number): Cypress.Chainable => {
@@ -89,9 +98,26 @@ const assertObjectsMatch = (objectA: SceneObject, objectB: SceneObject) => {
   }
 };
 
+/**
+ * In interactive mode, will wait for time. In non-interactive mode, will advance the clock.
+ * @param interactive - Value of `Cypress.config("isInteractive")`
+ */
+const interactiveWait = (
+  time: number,
+  interactive: boolean
+): Cypress.Chainable => {
+  if (interactive) {
+    return cy.wait(time);
+  } else {
+    return cy.steppedTick(time);
+  }
+};
+
 Cypress.Commands.add("mount", mount);
 Cypress.Commands.add("mountWithFixture", mountWithFixture);
 Cypress.Commands.add("mountViewScene", mountViewScene);
+Cypress.Commands.add("mountSceneObject", mountSceneObject);
 Cypress.Commands.add("getByTestId", getByTestId);
 Cypress.Commands.add("steppedTick", steppedTick);
 Cypress.Commands.add("assertObjectsMatch", assertObjectsMatch);
+Cypress.Commands.add("interactiveWait", interactiveWait);

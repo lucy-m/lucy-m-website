@@ -51,6 +51,14 @@ const getLayerContentInOrder = (
   layerOrder: readonly string[],
   imagesByLayer: LayerByLayerKey
 ): DrawLayer[] => {
+  const undrawnLayers = Object.keys(imagesByLayer).filter(
+    (layer) => !layerOrder.includes(layer)
+  );
+
+  if (undrawnLayers.length > 0) {
+    console.warn("There are undrawn layers", undrawnLayers.join(", "));
+  }
+
   return layerOrder.reduce<DrawLayer[]>((acc, layerKey) => {
     const mergedSublayerItems: DrawLayer[] = sublayerOrder.reduce<DrawLayer[]>(
       (acc, sublayer) => {

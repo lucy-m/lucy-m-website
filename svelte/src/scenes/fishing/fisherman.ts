@@ -2,15 +2,46 @@ import { map, tap, timer } from "rxjs";
 import type { PRNG } from "seedrandom";
 import { PosFns, makeSceneObject, type SceneObject } from "../../model";
 
-export const castOutMan = (random: PRNG): SceneObject => {
-  let isWaiting = false;
-  let bobberY = 220;
-  let bobberYVelocity = -26;
-  let bobberX = -100;
-  let bobberStationary = false;
+const bobber = (random: PRNG): SceneObject => {
+  let x = -100;
+  let y = 300;
+  let yVelocity = -26;
+
+  let stationary = false;
 
   const gravity = 1.05;
-  const bobberXVelocity = 28;
+  const xVelocity = 28;
+
+  return makeSceneObject(random)({
+    typeName: "bobber",
+    layerKey: "bobber",
+    getPosition: () => PosFns.new(x, y),
+    getLayers: () => [
+      {
+        kind: "image",
+        assetKey: "bobber",
+        subLayer: "background",
+      },
+    ],
+    onTick: () => {
+      if (!stationary) {
+        x += xVelocity;
+        y += yVelocity;
+        yVelocity += gravity;
+
+        if (y > 750) {
+          stationary = true;
+        }
+      }
+    },
+    _getDebugInfo: () => ({
+      stationary,
+    }),
+  });
+};
+
+export const castOutMan = (random: PRNG): SceneObject => {
+  let isWaiting = false;
 
   return makeSceneObject(random)({
     layerKey: "man",
@@ -21,29 +52,12 @@ export const castOutMan = (random: PRNG): SceneObject => {
         assetKey: isWaiting ? "castOffWaitingMan" : "castOffCastingMan",
         subLayer: "background",
       },
-      {
-        kind: "image",
-        assetKey: "bobber",
-        subLayer: "background",
-        position: PosFns.new(bobberX, bobberY),
-      },
     ],
     events$: timer(2000).pipe(
       tap(() => {
         isWaiting = true;
       }),
-      map(() => ({ kind: "noop" }))
+      map(() => ({ kind: "addObject", makeObject: () => bobber(random) }))
     ),
-    onTick: () => {
-      if (!bobberStationary && isWaiting) {
-        bobberX += bobberXVelocity;
-        bobberY += bobberYVelocity;
-        bobberYVelocity += gravity;
-
-        if (bobberY > 550) {
-          bobberStationary = true;
-        }
-      }
-    },
   });
 };

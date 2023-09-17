@@ -14,6 +14,7 @@ import {
 import seedrandom from "seedrandom";
 import { sceneSize } from "..";
 import {
+  rafThrottle,
   resolveScene,
   type AssetKey,
   type Destroyable,
@@ -100,8 +101,11 @@ export const viewScene = (
             finalize(() => currentScene.destroy()),
             tap((event) => currentScene.onExternalEvent(event)),
             tap(() => {
-              redrawCanvas(ctx, currentScene, images);
               onSceneChange && onSceneChange(currentScene);
+            }),
+            rafThrottle(),
+            tap(() => {
+              redrawCanvas(ctx, currentScene, images);
             })
           )
         )

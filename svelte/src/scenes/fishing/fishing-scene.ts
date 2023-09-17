@@ -16,7 +16,14 @@ import {
 } from "./fishing-state";
 import { reelingOverlay } from "./reeling-overlay";
 
-const layerOrder = ["bg", "man", "bite-alert", "reeling", "debug"] as const;
+const layerOrder = [
+  "bg",
+  "man",
+  "bobber",
+  "bite-alert",
+  "reeling",
+  "debug",
+] as const;
 
 export const makeFishingScene =
   (_initialState?: AnyFishingState): SceneSpec =>

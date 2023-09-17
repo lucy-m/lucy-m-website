@@ -9,7 +9,6 @@ describe("fishing scene", () => {
         initialSceneSpec: makeFishingScene({ kind: "cast-out" }),
         seed: "abcd",
       });
-      cy.get("canvas").should("have.attr", "data-initialised", "true");
     });
 
     it("works", () => {});

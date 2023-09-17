@@ -102,7 +102,6 @@ describe("intro scene", () => {
           },
           worldClick$,
         });
-        cy.get("canvas").should("have.attr", "data-initialised", "true");
       });
 
       it("loads intro scene", () => {
@@ -184,7 +183,6 @@ describe("intro scene", () => {
                     .forEach((bird) => allBirdIds.add(bird.id));
                 },
               });
-              cy.get("canvas").should("have.attr", "data-initialised", "true");
 
               cy.steppedTick(120_000).then(() => {
                 const expectedMax = 120_000 / 6_000;
