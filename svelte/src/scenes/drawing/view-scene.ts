@@ -2,7 +2,6 @@ import {
   Observable,
   Subject,
   Subscription,
-  filter,
   finalize,
   interval,
   map,
@@ -88,9 +87,7 @@ export const viewScene = (
         }),
         switchMap((currentScene) =>
           merge(
-            interval(30)
-              .pipe(map(() => ({ kind: "tick" } as SceneEvent)))
-              .pipe(filter(() => document.hasFocus())),
+            interval(30).pipe(map(() => ({ kind: "tick" } as SceneEvent))),
             (worldClick$ ? merge(interactSub, worldClick$) : interactSub).pipe(
               map(
                 (position: Position) =>

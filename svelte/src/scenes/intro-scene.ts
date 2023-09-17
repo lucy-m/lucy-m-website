@@ -19,8 +19,8 @@ const layerOrder = [
   "bg",
   "trees",
   "house",
-  "bird",
   "person",
+  "bird",
   "speechBubble",
 ] as const;
 

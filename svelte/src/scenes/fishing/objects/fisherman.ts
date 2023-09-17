@@ -2,6 +2,7 @@ import {
   BehaviorSubject,
   Observable,
   Subject,
+  distinctUntilKeyChanged,
   from,
   map,
   merge,
@@ -26,15 +27,19 @@ import {
 import { biteMarker } from "./bite-marker";
 import { makeBobber } from "./bobber";
 
-export const fishingMan = (random: PRNG): SceneObject => {
-  const initialState: AnyFishingState = { kind: "idle" };
+export const fishingMan = (args: {
+  random: PRNG;
+  initialState?: AnyFishingState;
+}): SceneObject => {
+  const { random } = args;
+  const initialState: AnyFishingState = args.initialState ?? { kind: "idle" };
 
   const currentState = new BehaviorSubject<AnyFishingState>(initialState);
   const actionSub = new Subject<AnyFishingAction>();
   const timerActions: Observable<AnyFishingAction> = currentState.pipe(
     switchMap((state) => {
       if (state.kind === "cast-out-swing") {
-        return timer(2000).pipe(
+        return timer(1000).pipe(
           map<unknown, AnyFishingAction>(() => ({
             kind: "finish-cast-out-swing",
             bobber: makeBobber({
@@ -46,7 +51,7 @@ export const fishingMan = (random: PRNG): SceneObject => {
           }))
         );
       } else if (state.kind === "cast-out-waiting") {
-        return timer(2000).pipe(
+        return timer(1000).pipe(
           map<unknown, AnyFishingAction>(() => ({
             kind: "fish-bite",
             fishId: "" + Math.abs(random.int32()),
@@ -70,14 +75,21 @@ export const fishingMan = (random: PRNG): SceneObject => {
 
   const sub = merge(actionSub, timerActions).subscribe((action) => {
     const nextState = fishingStateReducer(action, currentState.value);
-    console.log("Next state", nextState);
-    currentState.next(nextState);
+    if (nextState !== currentState.value) {
+      currentState.next(nextState);
+    }
   });
 
   const events$ = currentState.pipe(
+    distinctUntilKeyChanged("kind"),
     pairwise(),
     map<[AnyFishingState, AnyFishingState], SceneAction[]>(
       ([prevState, nextState]) => {
+        // const addBobber: SceneAction | undefined =
+        //   "bobber" in nextState && !("bobber" in prevState)
+        //   ? { kind: "addObject", makeObject: () => nextState.bobber}
+        //   : undefined;
+
         const addAction: SceneAction | undefined = (() => {
           if (nextState.kind === "cast-out-casting") {
             return {
@@ -108,6 +120,7 @@ export const fishingMan = (random: PRNG): SceneObject => {
   );
 
   return makeSceneObject(random)({
+    typeName: "fisherman",
     layerKey: "man",
     getPosition: () => PosFns.new(0, 120),
     getLayers: () => [
@@ -129,5 +142,8 @@ export const fishingMan = (random: PRNG): SceneObject => {
       actionSub.next({ kind: "cast-out" });
     },
     events$,
+    _getDebugInfo: () => ({
+      state: currentState.value,
+    }),
   });
 };

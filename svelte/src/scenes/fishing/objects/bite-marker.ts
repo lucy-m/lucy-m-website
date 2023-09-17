@@ -27,6 +27,7 @@ export const biteMarker = (args: {
   });
 
   return makeSceneObject(args.random)({
+    typeName: "bite-marker",
     layerKey: "bite-marker",
     getPosition: () =>
       PosFns.new(initialPosition.x, initialPosition.y + yOffset.position),

@@ -120,7 +120,7 @@ export const makeBobber = (args: {
         draw: (ctx) => {
           ctx.beginPath();
           ctx.strokeStyle = "hsla(0, 0%, 100%, 0.7)";
-          ctx.moveTo(1060, 175);
+          ctx.moveTo(rodEnd.x, rodEnd.y);
           ctx.lineTo(getPosition(state).x, getPosition(state).y);
           ctx.stroke();
         },
