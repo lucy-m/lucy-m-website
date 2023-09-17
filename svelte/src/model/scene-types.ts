@@ -19,6 +19,12 @@ export type ObjectLayerContent =
       subLayer: SubLayerKey;
       position?: Position;
       rotation?: number;
+    }
+  | {
+      /** Note, this kind of layer is not affected by object's position */
+      kind: "ctxDraw";
+      subLayer: SubLayerKey;
+      draw: (ctx: CanvasRenderingContext2D) => void;
     };
 
 export type SceneObject = {

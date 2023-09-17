@@ -20,7 +20,7 @@ export const drawLayerContent =
       }
 
       ctx.drawImage(content.image, layer.position.x, layer.position.y);
-    } else {
+    } else if (content.kind === "text") {
       const measureText = (s: string) => ctx.measureText(s)?.width ?? 0;
       const lines = content.text.flatMap((t) =>
         breakText(t, content.maxWidth, measureText)
@@ -33,5 +33,7 @@ export const drawLayerContent =
         );
         ctx.fillText(line, position.x, position.y);
       });
+    } else {
+      content.draw(ctx);
     }
   };

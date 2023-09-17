@@ -8,12 +8,12 @@ import {
   type SceneObject,
 } from "../../model";
 import type { ObjectEventHandler, SceneSpec } from "../../model/scene-types";
-import { castOutMan } from "./fisherman";
 import {
   AnyFishingActionCls,
   fishingSceneReducer,
   type AnyFishingState,
 } from "./fishing-state";
+import { castOutMan } from "./objects/fisherman";
 import { reelingOverlay } from "./reeling-overlay";
 
 const layerOrder = [

@@ -1,12 +1,13 @@
 import fc from "fast-check";
 import { Subject } from "rxjs";
 import { PosFns, makeSceneObject, type Position } from "../../../model";
-import { bobberBounds, castOutMan } from "../fisherman";
+import { bobberBounds } from "../objects/bobber";
+import { castOutMan } from "../objects/fisherman";
 
 describe("fisherman", () => {
   describe("manual", () => {
-    // const interactive = Cypress.config("isInteractive");
-    const interactive = false;
+    const interactive = Cypress.config("isInteractive");
+    // const interactive = false;
 
     let bobberState:
       | {
@@ -78,6 +79,8 @@ describe("fisherman", () => {
         });
       });
     });
+
+    it.only("works", () => {});
 
     it("bobber lands in bounds", () => {
       cy.interactiveWait(5_000, interactive).then(() => {

@@ -12,6 +12,10 @@ type LayerContent =
       kind: "text";
       text: string[];
       maxWidth: number;
+    }
+  | {
+      kind: "ctxDraw";
+      draw: (ctx: CanvasRenderingContext2D) => void;
     };
 
 export type DrawLayer = {
@@ -96,13 +100,20 @@ export const resolveScene = (
                       kind: "image",
                       image: images[objectLayerContent.assetKey],
                     }
-                  : {
+                  : objectLayerContent.kind === "text"
+                  ? {
                       kind: "text",
                       maxWidth: objectLayerContent.maxWidth,
                       text: objectLayerContent.text,
+                    }
+                  : {
+                      kind: "ctxDraw",
+                      draw: objectLayerContent.draw,
                     },
               position: PosFns.add(
-                objectLayerContent.position ?? PosFns.zero,
+                ("position" in objectLayerContent
+                  ? objectLayerContent.position
+                  : undefined) ?? PosFns.zero,
                 obj.getPosition()
               ),
               rotation:
