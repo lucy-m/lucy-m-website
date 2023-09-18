@@ -26,6 +26,10 @@ export type AnyFishingState =
       bobber: SceneObject;
       reelingOverlay: SceneObject;
       fishId: string;
+    }
+  | {
+      kind: "retrieving-fish";
+      flyingFish: SceneObject;
     };
 
 export type FlatFishingState = {
@@ -34,6 +38,7 @@ export type FlatFishingState = {
   bobber: SceneObject | undefined;
   biteMarker: SceneObject | undefined;
   reelingOverlay: SceneObject | undefined;
+  flyingFish: SceneObject | undefined;
 };
 
 export const toFlatState = (anyState: AnyFishingState): FlatFishingState => {
@@ -43,8 +48,9 @@ export const toFlatState = (anyState: AnyFishingState): FlatFishingState => {
   const biteMarker = "biteMarker" in anyState ? anyState.biteMarker : undefined;
   const reelingOverlay =
     "reelingOverlay" in anyState ? anyState.reelingOverlay : undefined;
+  const flyingFish = "flyingFish" in anyState ? anyState.flyingFish : undefined;
 
-  return { kind, bobber, fishId, biteMarker, reelingOverlay };
+  return { kind, bobber, fishId, biteMarker, reelingOverlay, flyingFish };
 };
 
 export type FishingState<T extends AnyFishingState["kind"]> = Extract<
@@ -74,7 +80,9 @@ export type AnyFishingAction =
     }
   | {
       kind: "finish-reel";
-    };
+      flyingFish: SceneObject;
+    }
+  | { kind: "fish-retrieved" };
 
 export type FishingAction<T extends AnyFishingAction["kind"]> = Extract<
   AnyFishingAction,
@@ -146,6 +154,14 @@ export const fishingStateReducer = (
 
     case "finish-reel": {
       if (state.kind === "reeling") {
+        return { kind: "retrieving-fish", flyingFish: action.flyingFish };
+      } else {
+        return state;
+      }
+    }
+
+    case "fish-retrieved": {
+      if (state.kind === "retrieving-fish") {
         return { kind: "idle" };
       } else {
         return state;

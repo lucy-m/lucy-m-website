@@ -10,6 +10,7 @@ const layerOrder = [
   "man",
   "bobber",
   "bite-marker",
+  "fish",
   "reeling",
   "debug",
 ] as const;

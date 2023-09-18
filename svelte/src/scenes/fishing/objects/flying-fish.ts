@@ -10,7 +10,8 @@ export const flyingFish = (args: {
   random: PRNG;
   initial: Position;
   target: Position;
-  onTargetReached: () => {};
+  fishId: string;
+  onTargetReached: () => void;
 }): SceneObject => {
   let stationary = false;
   let position = args.initial;

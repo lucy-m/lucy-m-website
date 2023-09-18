@@ -28,6 +28,7 @@ import {
 } from "../fishing-state";
 import { biteMarker } from "./bite-marker";
 import { makeBobber } from "./bobber";
+import { flyingFish } from "./flying-fish";
 import { reelingOverlay } from "./reeling-overlay";
 
 export const fishingMan = (args: {
@@ -54,15 +55,13 @@ export const fishingMan = (args: {
           }))
         );
       } else if (state.kind === "cast-out-waiting") {
+        const bobber = state.bobber;
         return timer(1000).pipe(
           map<unknown, AnyFishingAction>(() => ({
             kind: "fish-bite",
             fishId: "" + Math.abs(random.int32()),
             biteMarker: biteMarker({
-              position: PosFns.add(
-                state.bobber.getPosition(),
-                PosFns.new(-20, -280)
-              ),
+              position: PosFns.add(bobber.getPosition(), PosFns.new(-20, -280)),
               onInteract: () => {
                 actionSub.next({
                   kind: "start-reel",
@@ -71,6 +70,15 @@ export const fishingMan = (args: {
                     onComplete: () => {
                       actionSub.next({
                         kind: "finish-reel",
+                        flyingFish: flyingFish({
+                          random,
+                          fishId: "unknown",
+                          initial: bobber.getPosition(),
+                          target: PosFns.new(100, 400),
+                          onTargetReached: () => {
+                            actionSub.next({ kind: "fish-retrieved" });
+                          },
+                        }),
                       });
                     },
                   }),
@@ -127,9 +135,15 @@ export const fishingMan = (args: {
           (s) => s.reelingOverlay,
           { manuallyRemoved: true }
         );
+        const flyingFishAction = stateBasedObjectAction((s) => s.flyingFish);
 
         return choose(
-          [bobberAction, biteMarkerAction, reelingOverlayAction],
+          [
+            bobberAction,
+            biteMarkerAction,
+            reelingOverlayAction,
+            flyingFishAction,
+          ],
           (v) => v
         );
       }

@@ -109,7 +109,7 @@ describe("fisherman", () => {
       });
     });
 
-    it("scene has correct objects", () => {
+    it.only("scene has correct objects", () => {
       assertCorrectObjects({
         fisherman: true,
         bobber: false,

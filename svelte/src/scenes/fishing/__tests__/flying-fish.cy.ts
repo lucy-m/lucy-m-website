@@ -33,10 +33,10 @@ describe("flying-fish", () => {
   };
 
   const renderFish = (
-    args: Omit<Parameters<typeof flyingFish>[0], "random">
+    args: Omit<Parameters<typeof flyingFish>[0], "random" | "fishId">
   ) => {
     cy.mountSceneObject({
-      makeObjects: (random) => [flyingFish({ random, ...args })],
+      makeObjects: (random) => [flyingFish({ random, fishId: "bob", ...args })],
       seed: "sssss",
       onSceneChange: (scene) => {
         lastFish = scene
