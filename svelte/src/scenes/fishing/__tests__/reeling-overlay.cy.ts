@@ -10,7 +10,9 @@ describe("reeling-overlay", () => {
   let worldClickSub: Subject<Position>;
 
   const getSpinner = (): SceneObject => {
-    const value = lastScene.getObjects().find((obj) => obj.typeName === "reel");
+    const value = lastScene
+      .getObjects()
+      .find((obj) => obj.typeName === "reeling-overlay");
 
     expect(value).to.exist;
     return value!;

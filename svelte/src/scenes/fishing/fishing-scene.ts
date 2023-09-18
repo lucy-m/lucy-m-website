@@ -1,10 +1,10 @@
 import { Subject } from "rxjs";
 import type { PRNG } from "seedrandom";
 import {
-  ObjectLayerContent,
   PosFns,
   makeSceneObject,
   makeSceneType,
+  type ObjectLayerContent,
 } from "../../model";
 import type { SceneSpec } from "../../model/scene-types";
 import { choose } from "../../utils";

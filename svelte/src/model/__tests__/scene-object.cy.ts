@@ -32,14 +32,15 @@ describe("scene object", () => {
       });
     };
 
-    const assets: Record<AssetKey, HTMLImageElement> = {
-      background: makeTestImage(200, 150),
-      tree1: makeTestImage(40, 15),
-      tree2: makeTestImage(1, 1),
-    } as Partial<Record<AssetKey, HTMLImageElement>> as unknown as Record<
-      AssetKey,
-      HTMLImageElement
-    >;
+    const assets: Record<AssetKey, HTMLImageElement> = (() => {
+      const value: Partial<Record<AssetKey, HTMLImageElement>> = {
+        introBackground: makeTestImage(200, 150),
+        tree1: makeTestImage(40, 15),
+        tree2: makeTestImage(1, 1),
+      };
+
+      return value as unknown as Record<AssetKey, HTMLImageElement>;
+    })();
 
     it("empty object", () => {
       const obj = makeTestObject(PosFns.zero, []);

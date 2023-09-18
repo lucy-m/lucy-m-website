@@ -40,6 +40,8 @@ export const getObjectBoundingBox = (
         const left = next.position?.x ?? 0;
         const top = next.position?.y ?? 0;
 
+        console.log(images, next.assetKey);
+
         const right = images[next.assetKey].width + left;
         const bottom = images[next.assetKey].height + top;
 
