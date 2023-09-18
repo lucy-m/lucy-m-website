@@ -46,6 +46,7 @@ declare global {
       steppedTick: typeof steppedTick;
       assertObjectsMatch: typeof assertObjectsMatch;
       interactiveWait: typeof interactiveWait;
+      myWaitFor: typeof myWaitFor;
     }
   }
 }
@@ -65,6 +66,8 @@ const mountWithFixture = <T extends Record<string, any>>(
 const mountViewScene = (
   props: ComponentProps<ViewSceneFixture>
 ): Cypress.Chainable => {
+  cy.viewport(1400, 820);
+
   cy.mount(ViewSceneFixture, { props });
   return cy.get("canvas").should("have.attr", "data-initialised", "true");
 };
@@ -72,12 +75,18 @@ const mountViewScene = (
 const mountSceneObject = (
   props: ComponentProps<SceneObjectFixture>
 ): Cypress.Chainable => {
+  cy.viewport(1400, 820);
   cy.mount(SceneObjectFixture, { props });
   return cy.get("canvas").should("have.attr", "data-initialised", "true");
 };
 
-const steppedTick = (by: number): Cypress.Chainable => {
-  cy.log(`Tick ${by}`);
+const steppedTick = (
+  by: number,
+  options?: Partial<Cypress.Loggable>
+): Cypress.Chainable => {
+  if (options?.log !== false) {
+    cy.log(`Tick ${by}`);
+  }
 
   const dt = 30;
   Array.from({ length: by / dt - 1 }).forEach(() => {
@@ -108,13 +117,41 @@ const assertObjectsMatch = (objectA: SceneObject, objectB: SceneObject) => {
  */
 const interactiveWait = (
   time: number,
-  interactive: boolean
+  interactive: boolean,
+  options?: Partial<Cypress.Loggable>
 ): Cypress.Chainable => {
   if (interactive) {
-    return cy.wait(time);
+    return cy.wait(time, options);
   } else {
-    return cy.steppedTick(time);
+    return cy.steppedTick(time, options);
   }
+};
+
+const myWaitFor = (
+  predicate: () => boolean,
+  interactive: boolean,
+  options?: {
+    /** Maximum time in ms to wait. Default 4000ms. */
+    timeout?: number;
+  }
+): Cypress.Chainable => {
+  const step = 100;
+  const timeout = options?.timeout ?? 4000;
+
+  const inner = (progress: number): Cypress.Chainable => {
+    return interactiveWait(100, interactive, { log: false }).then(() => {
+      if (predicate()) {
+        return;
+      } else {
+        if (progress > timeout) {
+          throw new Error(`Maximum waitfor timeout of ${timeout}ms reached`);
+        }
+        return inner(progress + step);
+      }
+    });
+  };
+
+  return inner(0);
 };
 
 Cypress.Commands.add("mount", mount);
@@ -125,3 +162,4 @@ Cypress.Commands.add("getByTestId", getByTestId);
 Cypress.Commands.add("steppedTick", steppedTick);
 Cypress.Commands.add("assertObjectsMatch", assertObjectsMatch);
 Cypress.Commands.add("interactiveWait", interactiveWait);
+Cypress.Commands.add("myWaitFor", myWaitFor);
