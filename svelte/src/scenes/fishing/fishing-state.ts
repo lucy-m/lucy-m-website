@@ -24,8 +24,28 @@ export type AnyFishingState =
   | {
       kind: "reeling";
       bobber: SceneObject;
+      reelingOverlay: SceneObject;
       fishId: string;
     };
+
+export type FlatFishingState = {
+  kind: AnyFishingState["kind"];
+  fishId: string | undefined;
+  bobber: SceneObject | undefined;
+  biteMarker: SceneObject | undefined;
+  reelingOverlay: SceneObject | undefined;
+};
+
+export const toFlatState = (anyState: AnyFishingState): FlatFishingState => {
+  const kind = anyState.kind;
+  const bobber = "bobber" in anyState ? anyState.bobber : undefined;
+  const fishId = "fishId" in anyState ? anyState.fishId : undefined;
+  const biteMarker = "biteMarker" in anyState ? anyState.biteMarker : undefined;
+  const reelingOverlay =
+    "reelingOverlay" in anyState ? anyState.reelingOverlay : undefined;
+
+  return { kind, bobber, fishId, biteMarker, reelingOverlay };
+};
 
 export type FishingState<T extends AnyFishingState["kind"]> = Extract<
   AnyFishingState,
@@ -50,6 +70,7 @@ export type AnyFishingAction =
     }
   | {
       kind: "start-reel";
+      reelingOverlay: SceneObject;
     }
   | {
       kind: "finish-reel";
@@ -112,7 +133,12 @@ export const fishingStateReducer = (
 
     case "start-reel": {
       if (state.kind === "got-a-bite") {
-        return { kind: "reeling", fishId: state.fishId, bobber: state.bobber };
+        return {
+          kind: "reeling",
+          fishId: state.fishId,
+          bobber: state.bobber,
+          reelingOverlay: action.reelingOverlay,
+        };
       } else {
         return state;
       }

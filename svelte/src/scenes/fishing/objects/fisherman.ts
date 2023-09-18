@@ -21,11 +21,14 @@ import {
 import { choose } from "../../../utils";
 import {
   fishingStateReducer,
+  toFlatState,
   type AnyFishingAction,
   type AnyFishingState,
+  type FlatFishingState,
 } from "../fishing-state";
 import { biteMarker } from "./bite-marker";
 import { makeBobber } from "./bobber";
+import { reelingOverlay } from "./reeling-overlay";
 
 export const fishingMan = (args: {
   random: PRNG;
@@ -61,7 +64,17 @@ export const fishingMan = (args: {
                 PosFns.new(-20, -280)
               ),
               onInteract: () => {
-                actionSub.next({ kind: "start-reel" });
+                actionSub.next({
+                  kind: "start-reel",
+                  reelingOverlay: reelingOverlay({
+                    random,
+                    onComplete: () => {
+                      actionSub.next({
+                        kind: "finish-reel",
+                      });
+                    },
+                  }),
+                });
               },
               random,
             }),
@@ -85,33 +98,36 @@ export const fishingMan = (args: {
     pairwise(),
     map<[AnyFishingState, AnyFishingState], SceneAction[]>(
       ([prevState, nextState]) => {
-        const addBobber: SceneAction | false = "bobber" in nextState &&
-          !("bobber" in prevState) && {
-            kind: "addObject",
-            makeObject: () => nextState.bobber,
-          };
+        const nextFlat = toFlatState(nextState);
+        const prevFlat = toFlatState(prevState);
 
-        const removeBobber: SceneAction | false = "bobber" in prevState &&
-          !("bobber" in nextState) && {
-            kind: "removeObject",
-            target: prevState.bobber.id,
-          };
+        const stateBasedObjectAction = (
+          selector: (value: FlatFishingState) => SceneObject | undefined
+        ): SceneAction | undefined => {
+          const nextValue = selector(nextFlat);
+          const prevValue = selector(prevFlat);
 
-        const addBiteMarker: SceneAction | false = "biteMarker" in nextState &&
-          !("biteMarker" in prevState) && {
-            kind: "addObject",
-            makeObject: () => nextState.biteMarker,
-          };
+          if (nextValue && !prevValue) {
+            return {
+              kind: "addObject",
+              makeObject: () => nextValue,
+            };
+          } else if (prevValue && !nextValue) {
+            return {
+              kind: "removeObject",
+              target: prevValue.id,
+            };
+          }
+        };
 
-        const removeBiteMarker: SceneAction | false = "biteMarker" in
-          prevState &&
-          !("biteMarker" in nextState) && {
-            kind: "removeObject",
-            target: prevState.biteMarker.id,
-          };
+        const bobberAction = stateBasedObjectAction((s) => s.bobber);
+        const biteMarkerAction = stateBasedObjectAction((s) => s.biteMarker);
+        const reelingOverlayAction = stateBasedObjectAction(
+          (s) => s.reelingOverlay
+        );
 
         return choose(
-          [addBobber, addBiteMarker, removeBobber, removeBiteMarker],
+          [bobberAction, biteMarkerAction, reelingOverlayAction],
           (v) => v
         );
       }

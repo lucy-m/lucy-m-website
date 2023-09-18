@@ -20,7 +20,7 @@ export const reelingOverlay = (args: {
   let completeCalled = false;
 
   return makeSceneObject(args.random)((id) => ({
-    typeName: "reel",
+    typeName: "reeling-overlay",
     layerKey: "reeling",
     getPosition: () => position,
     getLayers: () => [
