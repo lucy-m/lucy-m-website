@@ -70,6 +70,7 @@ export const reelingOverlay = (args: {
     _getDebugInfo: () => ({
       rotation,
       rotationSpeed,
+      exiting,
     }),
   }));
 };

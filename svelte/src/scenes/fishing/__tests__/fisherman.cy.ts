@@ -132,7 +132,11 @@ describe("fisherman", () => {
 
       describe("after bobber lands", () => {
         beforeEach(() => {
-          cy.interactiveWait(3_000, interactive);
+          cy.myWaitFor(() => {
+            const bobber = getBobber();
+            const debugInfo = bobber?._getDebugInfo && bobber._getDebugInfo();
+            return debugInfo?.stationary === true;
+          }, interactive);
         });
 
         it("has correct objects", () => {
@@ -175,7 +179,7 @@ describe("fisherman", () => {
 
         describe("after bite", () => {
           beforeEach(() => {
-            cy.interactiveWait(2_000, interactive);
+            cy.myWaitFor(() => getBiteMarker() !== undefined, interactive);
           });
 
           it("has correct objects", () => {
@@ -191,7 +195,7 @@ describe("fisherman", () => {
             beforeEach(() => {
               expect(getBiteMarker()).to.exist;
               worldClickSub.next(getBiteMarker()!.getPosition());
-              cy.interactiveWait(1_000, interactive);
+              cy.interactiveWait(100, interactive);
             });
 
             it("has correct objects", () => {
@@ -205,7 +209,7 @@ describe("fisherman", () => {
 
             describe("completing reeling", () => {
               beforeEach(() => {
-                Array.from({ length: 40 }).forEach(() => {
+                Array.from({ length: 30 }).forEach(() => {
                   cy.interactiveWait(100, interactive).then(() => {
                     const reelingOverlay = getReelingOverlay();
                     if (reelingOverlay) {
@@ -213,6 +217,10 @@ describe("fisherman", () => {
                     }
                   });
                 });
+
+                cy.myWaitFor(() => {
+                  return getReelingOverlay() === undefined;
+                }, interactive);
               });
 
               it("has correct objects", () => {
@@ -290,7 +298,13 @@ describe("fisherman", () => {
               },
             });
 
-            cy.steppedTick(5_000).then(() => {
+            cy.myWaitFor(() => {
+              if (bobberState) {
+                return bobberState.stationary;
+              } else {
+                return false;
+              }
+            }, false).then(() => {
               expect(bobberState).to.exist;
 
               const { position, stationary } = bobberState!;
