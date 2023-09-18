@@ -3,6 +3,7 @@ import type { Position, SceneObject, SceneType } from "../../../model";
 import { reelingOverlay } from "../objects/reeling-overlay";
 
 const interactive = Cypress.config("isInteractive");
+// const interactive = false;
 
 describe("reeling-overlay", () => {
   let lastScene: SceneType;
@@ -53,6 +54,16 @@ describe("reeling-overlay", () => {
     });
   });
 
+  it("flies in from top", () => {
+    const initialPosition = getSpinner().getPosition();
+
+    cy.interactiveWait(1_000, interactive).then(() => {
+      const newPosition = getSpinner().getPosition();
+      expect(newPosition.x).to.eq(initialPosition.x);
+      expect(newPosition.x).to.be.greaterThan(initialPosition.y);
+    });
+  });
+
   it("spinner is spinning", () => {
     const initialRotation = getSpinnerRotation();
 
@@ -97,20 +108,30 @@ describe("reeling-overlay", () => {
     });
   });
 
-  it.only("reel calls onComplete", () => {
-    cy.get("@onCompleteSpy").should("not.have.been.called");
+  describe("completing the reel", () => {
+    beforeEach(() => {
+      cy.get("@onCompleteSpy").should("not.have.been.called");
 
-    Array.from({ length: 32 }).forEach(() => {
+      Array.from({ length: 32 }).forEach(() => {
+        cy.interactiveWait(100, interactive).then(() => {
+          clickSpinner();
+        });
+      });
+
       cy.interactiveWait(100, interactive).then(() => {
-        clickSpinner();
+        const rotation = getSpinnerRotation();
+        expect(rotation.rotation).to.be.greaterThan(360 * 4);
       });
     });
 
-    cy.interactiveWait(100, interactive).then(() => {
-      const rotation = getSpinnerRotation();
-      expect(rotation.rotation).to.be.greaterThan(360 * 4);
+    it("calls onComplete", () => {
+      cy.get("@onCompleteSpy").should("have.been.calledOnce");
     });
 
-    cy.get("@onCompleteSpy").should("have.been.calledOnce");
+    it("disappears", () => {
+      cy.interactiveWait(1_000, interactive).then(() => {
+        expect(lastScene.getObjects()).to.have.length(0);
+      });
+    });
   });
 });
