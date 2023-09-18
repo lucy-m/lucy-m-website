@@ -102,7 +102,8 @@ export const fishingMan = (args: {
         const prevFlat = toFlatState(prevState);
 
         const stateBasedObjectAction = (
-          selector: (value: FlatFishingState) => SceneObject | undefined
+          selector: (value: FlatFishingState) => SceneObject | undefined,
+          options?: { manuallyRemoved?: boolean }
         ): SceneAction | undefined => {
           const nextValue = selector(nextFlat);
           const prevValue = selector(prevFlat);
@@ -112,7 +113,7 @@ export const fishingMan = (args: {
               kind: "addObject",
               makeObject: () => nextValue,
             };
-          } else if (prevValue && !nextValue) {
+          } else if (prevValue && !nextValue && !options?.manuallyRemoved) {
             return {
               kind: "removeObject",
               target: prevValue.id,
@@ -123,7 +124,8 @@ export const fishingMan = (args: {
         const bobberAction = stateBasedObjectAction((s) => s.bobber);
         const biteMarkerAction = stateBasedObjectAction((s) => s.biteMarker);
         const reelingOverlayAction = stateBasedObjectAction(
-          (s) => s.reelingOverlay
+          (s) => s.reelingOverlay,
+          { manuallyRemoved: true }
         );
 
         return choose(

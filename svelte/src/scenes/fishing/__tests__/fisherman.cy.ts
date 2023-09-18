@@ -12,7 +12,7 @@ import { bobberBounds } from "../objects/bobber";
 import { fishingMan } from "../objects/fisherman";
 
 describe("fisherman", () => {
-  describe.only("manual", () => {
+  describe("manual", () => {
     const interactive = Cypress.config("isInteractive");
     // const interactive = false;
 
@@ -215,7 +215,7 @@ describe("fisherman", () => {
                 });
               });
 
-              it.only("has correct objects", () => {
+              it("has correct objects", () => {
                 assertCorrectObjects({
                   fisherman: true,
                   bobber: false,
