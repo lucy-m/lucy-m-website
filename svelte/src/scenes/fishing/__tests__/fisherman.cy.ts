@@ -28,10 +28,11 @@ describe("fisherman", () => {
     const getBobber = () => findByTypeName("bobber");
     const getBiteMarker = () => findByTypeName("bite-marker");
     const getReelingOverlay = () => findByTypeName("reeling-overlay");
+    const getFlyingFish = () => findByTypeName("flying-fish");
 
     const assertCorrectObjects = (
       objs: Record<
-        "fisherman" | "bobber" | "biteMarker" | "reelingOverlay",
+        "fisherman" | "bobber" | "biteMarker" | "reelingOverlay" | "flyingFish",
         boolean
       >
     ) => {
@@ -46,6 +47,7 @@ describe("fisherman", () => {
       assertExists(getBobber(), objs.bobber);
       assertExists(getBiteMarker(), objs.biteMarker);
       assertExists(getReelingOverlay(), objs.reelingOverlay);
+      assertExists(getFlyingFish(), objs.flyingFish);
     };
 
     const getFishermanState = () => {
@@ -81,19 +83,40 @@ describe("fisherman", () => {
               },
             ],
           }),
-          fishingMan({ random }),
+          fishingMan({
+            random,
+            onFishRetrieved: cy.spy().as("onFishRetrieved"),
+          }),
         ],
         debugDraw$: debugDrawSub,
         worldClick$: worldClickSub,
-        layerOrder: ["background", "man", "bobber", "bite-marker", "reeling"],
+        layerOrder: [
+          "background",
+          "man",
+          "bobber",
+          "bite-marker",
+          "fish",
+          "reeling",
+        ],
         seed: "some-seed-12341",
         onSceneChange: (scene) => {
           lastScene = scene;
         },
         debugTrace: {
           sources: (scene) =>
-            scene.getObjects().filter((obj) => obj.typeName === "bobber"),
-          colour: () => "mediumaquamarine",
+            scene
+              .getObjects()
+              .filter(
+                (obj) =>
+                  obj.typeName === "bobber" || obj.typeName === "flying-fish"
+              ),
+          colour: ({ obj }) => {
+            if (obj.typeName === "bobber") {
+              return "mediumaquamarine";
+            } else if (obj.typeName === "flying-fish") {
+              return "orange";
+            }
+          },
         },
       }).then(() => {
         debugDrawSub.next((ctx) => {
@@ -109,12 +132,13 @@ describe("fisherman", () => {
       });
     });
 
-    it.only("scene has correct objects", () => {
+    it("scene has correct objects", () => {
       assertCorrectObjects({
         fisherman: true,
         bobber: false,
         biteMarker: false,
         reelingOverlay: false,
+        flyingFish: false,
       });
     });
 
@@ -145,6 +169,7 @@ describe("fisherman", () => {
             bobber: true,
             biteMarker: false,
             reelingOverlay: false,
+            flyingFish: false,
           });
         });
 
@@ -188,6 +213,7 @@ describe("fisherman", () => {
               bobber: true,
               biteMarker: true,
               reelingOverlay: false,
+              flyingFish: false,
             });
           });
 
@@ -204,18 +230,21 @@ describe("fisherman", () => {
                 bobber: true,
                 biteMarker: false,
                 reelingOverlay: true,
+                flyingFish: false,
               });
             });
 
             describe("completing reeling", () => {
               beforeEach(() => {
                 Array.from({ length: 30 }).forEach(() => {
-                  cy.interactiveWait(100, interactive).then(() => {
-                    const reelingOverlay = getReelingOverlay();
-                    if (reelingOverlay) {
-                      worldClickSub.next(getReelingOverlay()!.getPosition());
+                  cy.interactiveWait(100, interactive, { log: false }).then(
+                    () => {
+                      const reelingOverlay = getReelingOverlay();
+                      if (reelingOverlay) {
+                        worldClickSub.next(getReelingOverlay()!.getPosition());
+                      }
                     }
-                  });
+                  );
                 });
 
                 cy.myWaitFor(() => {
@@ -229,6 +258,21 @@ describe("fisherman", () => {
                   bobber: false,
                   biteMarker: false,
                   reelingOverlay: false,
+                  flyingFish: true,
+                });
+              });
+
+              describe("fish is retrieved", () => {
+                beforeEach(() => {
+                  cy.get("@onFishRetrieved").should("not.have.been.called");
+                  cy.myWaitFor(
+                    () => getFlyingFish() === undefined,
+                    interactive
+                  );
+                });
+
+                it("calls callback", () => {
+                  cy.get("@onFishRetrieved").should("have.been.calledOnce");
                 });
               });
             });
@@ -271,6 +315,7 @@ describe("fisherman", () => {
                 fishingMan({
                   random,
                   initialState: { kind: "cast-out-swing" },
+                  onFishRetrieved: () => {},
                 }),
               ],
               layerOrder: ["background", "man", "bobber"],

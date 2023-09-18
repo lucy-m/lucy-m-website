@@ -1,8 +1,13 @@
 import { Subject } from "rxjs";
 import type { PRNG } from "seedrandom";
-import { PosFns, makeSceneObject, makeSceneType } from "../../model";
+import {
+  ObjectLayerContent,
+  PosFns,
+  makeSceneObject,
+  makeSceneType,
+} from "../../model";
 import type { SceneSpec } from "../../model/scene-types";
-import { type AnyFishingState } from "./fishing-state";
+import { choose } from "../../utils";
 import { fishingMan } from "./objects/fisherman";
 
 const layerOrder = [
@@ -15,30 +20,47 @@ const layerOrder = [
   "debug",
 ] as const;
 
-export const makeFishingScene =
-  (_initialState?: AnyFishingState): SceneSpec =>
-  (random: PRNG) => {
-    const makeSceneObjectBound = makeSceneObject(random);
+export const makeFishingScene = (): SceneSpec => (random: PRNG) => {
+  let gotFishId: string | undefined;
 
-    const objects = [
-      makeSceneObjectBound({
-        layerKey: "bg",
-        getPosition: () => PosFns.zero,
-        getLayers: () => [
-          {
-            kind: "image",
-            assetKey: "fishingBackground",
-            subLayer: "background",
-          },
-        ],
-      }),
-      fishingMan({ random }),
-    ];
+  const makeSceneObjectBound = makeSceneObject(random);
 
-    return makeSceneType({
-      typeName: "fishing",
-      events: new Subject(),
-      layerOrder,
-      objects,
-    });
-  };
+  const objects = [
+    makeSceneObjectBound({
+      layerKey: "bg",
+      getPosition: () => PosFns.zero,
+      getLayers: () =>
+        choose<ObjectLayerContent | undefined, ObjectLayerContent>(
+          [
+            {
+              kind: "image",
+              assetKey: "fishingBackground",
+              subLayer: "background",
+            },
+            gotFishId
+              ? {
+                  kind: "text",
+                  maxWidth: 800,
+                  position: PosFns.new(1000, 1020),
+                  text: ["You caught fish " + gotFishId],
+                }
+              : undefined,
+          ],
+          (v) => v
+        ),
+    }),
+    fishingMan({
+      random,
+      onFishRetrieved: (fishId: string) => {
+        gotFishId = fishId;
+      },
+    }),
+  ];
+
+  return makeSceneType({
+    typeName: "fishing",
+    events: new Subject(),
+    layerOrder,
+    objects,
+  });
+};

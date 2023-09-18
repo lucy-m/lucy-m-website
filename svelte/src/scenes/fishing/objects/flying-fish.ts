@@ -10,13 +10,12 @@ export const flyingFish = (args: {
   random: PRNG;
   initial: Position;
   target: Position;
-  fishId: string;
   onTargetReached: () => void;
 }): SceneObject => {
   let stationary = false;
   let position = args.initial;
 
-  const gravity = 0.4;
+  const gravity = 0.2;
   const offset = PosFns.sub(args.target, args.initial);
   const leftToRight = offset.x > 0;
   const velocityX = leftToRight ? 12 : -12;

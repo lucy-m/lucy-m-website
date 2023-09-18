@@ -33,6 +33,7 @@ import { reelingOverlay } from "./reeling-overlay";
 
 export const fishingMan = (args: {
   random: PRNG;
+  onFishRetrieved: (fishId: string) => void;
   initialState?: AnyFishingState;
 }): SceneObject => {
   const { random } = args;
@@ -65,23 +66,6 @@ export const fishingMan = (args: {
               onInteract: () => {
                 actionSub.next({
                   kind: "start-reel",
-                  reelingOverlay: reelingOverlay({
-                    random,
-                    onComplete: () => {
-                      actionSub.next({
-                        kind: "finish-reel",
-                        flyingFish: flyingFish({
-                          random,
-                          fishId: "unknown",
-                          initial: bobber.getPosition(),
-                          target: PosFns.new(100, 400),
-                          onTargetReached: () => {
-                            actionSub.next({ kind: "fish-retrieved" });
-                          },
-                        }),
-                      });
-                    },
-                  }),
                 });
               },
               random,
@@ -131,10 +115,31 @@ export const fishingMan = (args: {
 
         const bobberAction = stateBasedObjectAction((s) => s.bobber);
         const biteMarkerAction = stateBasedObjectAction((s) => s.biteMarker);
-        const reelingOverlayAction = stateBasedObjectAction(
-          (s) => s.reelingOverlay,
-          { manuallyRemoved: true }
-        );
+
+        const reelingOverlayAction: SceneAction | undefined =
+          nextState.kind === "reeling"
+            ? {
+                kind: "addObject",
+                makeObject: () =>
+                  reelingOverlay({
+                    random,
+                    onComplete: () => {
+                      actionSub.next({
+                        kind: "finish-reel",
+                        flyingFish: flyingFish({
+                          random,
+                          initial: nextState.bobber.getPosition(),
+                          target: PosFns.new(100, 400),
+                          onTargetReached: () => {
+                            actionSub.next({ kind: "fish-retrieved" });
+                            args.onFishRetrieved(nextState.fishId);
+                          },
+                        }),
+                      });
+                    },
+                  }),
+              }
+            : undefined;
         const flyingFishAction = stateBasedObjectAction((s) => s.flyingFish);
 
         return choose(
@@ -165,6 +170,10 @@ export const fishingMan = (args: {
             ? "castOffCastingMan"
             : "castOffWaitingMan",
         subLayer: "background",
+        position:
+          currentState.value.kind === "cast-out-swing"
+            ? PosFns.new(-50, -50)
+            : PosFns.zero,
       },
     ],
     onDestroy: () => {

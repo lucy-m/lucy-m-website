@@ -17,7 +17,7 @@
   export let seed: string;
   export let onSceneChange: ((scene: SceneType) => void) | undefined =
     undefined;
-  export let layerOrder: string[] | undefined = undefined;
+  export let layerOrder: readonly string[] | undefined = undefined;
   export let worldClick$: Observable<Position> | undefined = undefined;
   export let debugDraw$:
     | Observable<(ctx: CanvasRenderingContext2D) => void>

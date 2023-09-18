@@ -24,12 +24,12 @@ export type AnyFishingState =
   | {
       kind: "reeling";
       bobber: SceneObject;
-      reelingOverlay: SceneObject;
       fishId: string;
     }
   | {
       kind: "retrieving-fish";
       flyingFish: SceneObject;
+      fishId: string;
     };
 
 export type FlatFishingState = {
@@ -37,7 +37,6 @@ export type FlatFishingState = {
   fishId: string | undefined;
   bobber: SceneObject | undefined;
   biteMarker: SceneObject | undefined;
-  reelingOverlay: SceneObject | undefined;
   flyingFish: SceneObject | undefined;
 };
 
@@ -46,11 +45,9 @@ export const toFlatState = (anyState: AnyFishingState): FlatFishingState => {
   const bobber = "bobber" in anyState ? anyState.bobber : undefined;
   const fishId = "fishId" in anyState ? anyState.fishId : undefined;
   const biteMarker = "biteMarker" in anyState ? anyState.biteMarker : undefined;
-  const reelingOverlay =
-    "reelingOverlay" in anyState ? anyState.reelingOverlay : undefined;
   const flyingFish = "flyingFish" in anyState ? anyState.flyingFish : undefined;
 
-  return { kind, bobber, fishId, biteMarker, reelingOverlay, flyingFish };
+  return { kind, bobber, fishId, biteMarker, flyingFish };
 };
 
 export type FishingState<T extends AnyFishingState["kind"]> = Extract<
@@ -76,7 +73,6 @@ export type AnyFishingAction =
     }
   | {
       kind: "start-reel";
-      reelingOverlay: SceneObject;
     }
   | {
       kind: "finish-reel";
@@ -145,7 +141,6 @@ export const fishingStateReducer = (
           kind: "reeling",
           fishId: state.fishId,
           bobber: state.bobber,
-          reelingOverlay: action.reelingOverlay,
         };
       } else {
         return state;
@@ -154,7 +149,11 @@ export const fishingStateReducer = (
 
     case "finish-reel": {
       if (state.kind === "reeling") {
-        return { kind: "retrieving-fish", flyingFish: action.flyingFish };
+        return {
+          kind: "retrieving-fish",
+          flyingFish: action.flyingFish,
+          fishId: state.fishId,
+        };
       } else {
         return state;
       }
