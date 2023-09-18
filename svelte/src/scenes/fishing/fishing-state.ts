@@ -23,6 +23,7 @@ export type AnyFishingState =
     }
   | {
       kind: "reeling";
+      bobber: SceneObject;
       fishId: string;
     };
 
@@ -110,14 +111,11 @@ export const fishingStateReducer = (
     }
 
     case "start-reel": {
-      // temp
-      return { kind: "idle" };
-
-      // if (state.kind === "got-a-bite") {
-      //   return { kind: "reeling", fishId: state.fishId };
-      // } else {
-      //   return state;
-      // }
+      if (state.kind === "got-a-bite") {
+        return { kind: "reeling", fishId: state.fishId, bobber: state.bobber };
+      } else {
+        return state;
+      }
     }
 
     case "finish-reel": {
