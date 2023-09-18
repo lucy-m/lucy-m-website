@@ -21,6 +21,7 @@ const imagePaths = {
   biteMarker: "/assets/scene-fishing/bite-marker.PNG",
   bigPole: "/assets/scene-fishing/pole.PNG",
   reelSpinner: "/assets/scene-fishing/reel-spinner.PNG",
+  fish1: "/assets/scene-fishing/fish-1.PNG",
 };
 
 export type AssetKey = keyof typeof imagePaths;

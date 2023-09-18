@@ -29,7 +29,6 @@ export type ObjectLayerContent =
 
 export type SceneObject = {
   id: string;
-  rotation?: number;
   typeName?: string;
   hidden?: boolean;
   layerKey: string;
