@@ -5,7 +5,6 @@ import { validate } from "uuid";
 import type { SceneObject, SceneType } from "../../model";
 import { PosFns, type Position } from "../../model";
 import { makeIntroScene } from "../intro-scene";
-import ViewSceneFixture from "./ViewSceneFixture.svelte";
 
 describe("intro scene", () => {
   describe("scenes with same seed", () => {
@@ -95,17 +94,14 @@ describe("intro scene", () => {
       beforeEach(() => {
         worldClick$ = new Subject<Position>();
 
-        cy.mount(ViewSceneFixture, {
-          props: {
-            initialSceneSpec: makeIntroScene,
-            seed: "abcd",
-            onSceneChange: (s: SceneType) => {
-              currentScene = s;
-            },
-            worldClick$,
+        cy.mountViewScene({
+          initialSceneSpec: makeIntroScene,
+          seed: "abcd",
+          onSceneChange: (s: SceneType) => {
+            currentScene = s;
           },
+          worldClick$,
         });
-        cy.get("canvas").should("have.attr", "data-initialised", "true");
       });
 
       it("loads intro scene", () => {
@@ -177,19 +173,16 @@ describe("intro scene", () => {
             it("seed " + seed, () => {
               const allBirdIds = new Set<string>();
 
-              cy.mount(ViewSceneFixture, {
-                props: {
-                  initialSceneSpec: makeIntroScene,
-                  seed,
-                  onSceneChange: (scene) => {
-                    scene
-                      .getObjects()
-                      .filter((obj) => obj.typeName === "cruising-bird")
-                      .forEach((bird) => allBirdIds.add(bird.id));
-                  },
+              cy.mountViewScene({
+                initialSceneSpec: makeIntroScene,
+                seed,
+                onSceneChange: (scene) => {
+                  scene
+                    .getObjects()
+                    .filter((obj) => obj.typeName === "cruising-bird")
+                    .forEach((bird) => allBirdIds.add(bird.id));
                 },
               });
-              cy.get("canvas").should("have.attr", "data-initialised", "true");
 
               cy.steppedTick(120_000).then(() => {
                 const expectedMax = 120_000 / 6_000;

@@ -7,18 +7,22 @@ type LayerContent =
   | {
       kind: "image";
       image: HTMLImageElement;
+      /** Rotation in degrees around center of object */
+      rotation?: number;
     }
   | {
       kind: "text";
       text: string[];
       maxWidth: number;
+    }
+  | {
+      kind: "ctxDraw";
+      draw: (ctx: CanvasRenderingContext2D) => void;
     };
 
 export type DrawLayer = {
   content: LayerContent;
   position: Position;
-  /** Rotation in degrees around center of object */
-  rotation?: number;
 };
 
 type LayerByLayerKey = Partial<
@@ -51,6 +55,14 @@ const getLayerContentInOrder = (
   layerOrder: readonly string[],
   imagesByLayer: LayerByLayerKey
 ): DrawLayer[] => {
+  const undrawnLayers = Object.keys(imagesByLayer).filter(
+    (layer) => !layerOrder.includes(layer)
+  );
+
+  if (undrawnLayers.length > 0) {
+    console.warn("There are undrawn layers", undrawnLayers.join(", "));
+  }
+
   return layerOrder.reduce<DrawLayer[]>((acc, layerKey) => {
     const mergedSublayerItems: DrawLayer[] = sublayerOrder.reduce<DrawLayer[]>(
       (acc, sublayer) => {
@@ -87,20 +99,24 @@ export const resolveScene = (
                   ? {
                       kind: "image",
                       image: images[objectLayerContent.assetKey],
+                      rotation: objectLayerContent.rotation,
                     }
-                  : {
+                  : objectLayerContent.kind === "text"
+                  ? {
                       kind: "text",
                       maxWidth: objectLayerContent.maxWidth,
                       text: objectLayerContent.text,
+                    }
+                  : {
+                      kind: "ctxDraw",
+                      draw: objectLayerContent.draw,
                     },
               position: PosFns.add(
-                objectLayerContent.position ?? PosFns.zero,
+                ("position" in objectLayerContent
+                  ? objectLayerContent.position
+                  : undefined) ?? PosFns.zero,
                 obj.getPosition()
               ),
-              rotation:
-                objectLayerContent.kind === "image"
-                  ? objectLayerContent.rotation
-                  : undefined,
             },
           ];
         });

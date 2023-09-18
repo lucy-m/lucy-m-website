@@ -19,11 +19,16 @@ export type ObjectLayerContent =
       subLayer: SubLayerKey;
       position?: Position;
       rotation?: number;
+    }
+  | {
+      /** Note, this kind of layer is not affected by object's position */
+      kind: "ctxDraw";
+      subLayer: SubLayerKey;
+      draw: (ctx: CanvasRenderingContext2D) => void;
     };
 
 export type SceneObject = {
   id: string;
-  rotation?: number;
   typeName?: string;
   hidden?: boolean;
   layerKey: string;
@@ -32,6 +37,7 @@ export type SceneObject = {
   getLayers: () => ObjectLayerContent[];
   onInteract?: () => SceneAction[] | void;
   onTick?: () => SceneAction[] | void;
+  onDestroy?: () => void;
   _getDebugInfo?: () => any;
 };
 
@@ -70,7 +76,11 @@ export type SceneAction =
       kind: "removeObject";
       target: string;
     }
-  | { kind: "emitEvent"; event: unknown };
+  | { kind: "emitEvent"; event: unknown }
+  | {
+      /** No-op actions are ignored */
+      kind: "noop";
+    };
 
 export type SceneActionWithSource = SceneAction & { sourceObjectId: string };
 

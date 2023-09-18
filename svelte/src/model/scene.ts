@@ -47,9 +47,9 @@ export const makeSceneType =
         const interactObject = objectsInOrder.find((sceneObj) => {
           const boundingBox = getObjectBoundingBox(sceneObj, images);
           return (
-            event.position.x > boundingBox.topLeft.x &&
+            event.position.x >= boundingBox.topLeft.x &&
             event.position.x < boundingBox.bottomRight.x &&
-            event.position.y > boundingBox.topLeft.y &&
+            event.position.y >= boundingBox.topLeft.y &&
             event.position.y < boundingBox.bottomRight.y
           );
         });
@@ -120,6 +120,8 @@ export const makeSceneType =
     };
 
     const removeObject = (id: string) => {
+      const onDestroy = objects.find((obj) => obj.id === id)?.onDestroy;
+      onDestroy && onDestroy();
       objects = objects.filter((obj) => obj.id !== id);
 
       const sub = eventSubscriptions[id];

@@ -8,15 +8,16 @@
     type Position,
     type SceneObject,
     type SceneType,
-  } from "../../../model";
-  import { viewScene } from "../../../scenes/drawing/view-scene";
-  import { choose } from "../../../utils";
-  import { sceneSize } from "../../scene-size";
+  } from "../../src/model";
+  import { sceneSize } from "../../src/scenes";
+  import { viewScene } from "../../src/scenes/drawing/view-scene";
+  import { choose } from "../../src/utils";
 
   export let makeObjects: (random: PRNG) => SceneObject[];
   export let seed: string;
   export let onSceneChange: ((scene: SceneType) => void) | undefined =
     undefined;
+  export let layerOrder: readonly string[] | undefined = undefined;
   export let worldClick$: Observable<Position> | undefined = undefined;
   export let debugDraw$:
     | Observable<(ctx: CanvasRenderingContext2D) => void>
@@ -34,12 +35,12 @@
 
   $: makeScene = (random: PRNG) => {
     const objects = makeObjects(random);
-    const layerOrder = Array.from(new Set(objects.map((o) => o.layerKey)));
 
     return makeSceneType({
       objects: objects,
       events: new Subject(),
-      layerOrder,
+      layerOrder:
+        layerOrder ?? Array.from(new Set(objects.map((o) => o.layerKey))),
       typeName: "object-test-scene",
     });
   };

@@ -31,7 +31,7 @@ export const makeHouseScene: SceneSpec = (random: PRNG) => {
           text: ["There is gonna be something good here I promise"],
         },
       ],
-      onInteract: () => [{ kind: "changeScene", newScene: makeFishingScene }],
+      onInteract: () => [{ kind: "changeScene", newScene: makeFishingScene() }],
     }),
   ];
 

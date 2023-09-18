@@ -2,7 +2,6 @@ import {
   Observable,
   Subject,
   Subscription,
-  filter,
   finalize,
   interval,
   map,
@@ -14,6 +13,7 @@ import {
 import seedrandom from "seedrandom";
 import { sceneSize } from "..";
 import {
+  rafThrottle,
   resolveScene,
   type AssetKey,
   type Destroyable,
@@ -87,9 +87,7 @@ export const viewScene = (
         }),
         switchMap((currentScene) =>
           merge(
-            interval(30)
-              .pipe(map(() => ({ kind: "tick" } as SceneEvent)))
-              .pipe(filter(() => document.hasFocus())),
+            interval(30).pipe(map(() => ({ kind: "tick" } as SceneEvent))),
             (worldClick$ ? merge(interactSub, worldClick$) : interactSub).pipe(
               map(
                 (position: Position) =>
@@ -100,8 +98,11 @@ export const viewScene = (
             finalize(() => currentScene.destroy()),
             tap((event) => currentScene.onExternalEvent(event)),
             tap(() => {
-              redrawCanvas(ctx, currentScene, images);
               onSceneChange && onSceneChange(currentScene);
+            }),
+            rafThrottle(),
+            tap(() => {
+              redrawCanvas(ctx, currentScene, images);
             })
           )
         )

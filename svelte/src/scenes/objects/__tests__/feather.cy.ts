@@ -7,7 +7,6 @@ import {
 } from "../../../model";
 import { maxBy, minBy } from "../../../utils";
 import { makeFeather } from "../feather";
-import ObjectFixture from "./ObjectFixture.svelte";
 
 const interactive = Cypress.config("isInteractive");
 
@@ -29,20 +28,18 @@ describe("feather", () => {
   });
 
   it("works", () => {
-    cy.mount(ObjectFixture, {
-      props: {
-        makeObjects: (seed) => [
-          makeFeather("feather", PosFns.new(500, 50), PosFns.new(1, 0), seed),
-        ],
-        seed: "abcd",
-        debugTrace: {
-          sources: (scene) => scene.getObjects(),
-          colour: ({ obj }) => {
-            const rotation = getFeatherRotation(obj);
-            return rotation !== undefined
-              ? `hsl(${rotation}, 50%, 60%)`
-              : "black";
-          },
+    cy.mountSceneObject({
+      makeObjects: (seed) => [
+        makeFeather("feather", PosFns.new(500, 50), PosFns.new(1, 0), seed),
+      ],
+      seed: "abcd",
+      debugTrace: {
+        sources: (scene) => scene.getObjects(),
+        colour: ({ obj }) => {
+          const rotation = getFeatherRotation(obj);
+          return rotation !== undefined
+            ? `hsl(${rotation}, 50%, 60%)`
+            : "black";
         },
       },
     });
@@ -59,37 +56,33 @@ describe("feather", () => {
     let featherPositionData: FeatherPositionData[];
 
     const render = () => {
-      cy.mount(ObjectFixture, {
-        props: {
-          makeObjects: (seed) => [
-            makeFeather("feather", PosFns.new(500, 50), PosFns.new(1, 0), seed),
-          ],
-          seed: "abcd",
-          onSceneChange: (scene) => {
-            const feather = scene.getObjects()[0];
-            if (feather) {
-              const position = feather.getPosition();
-              const rotation = getFeatherRotation(feather);
+      cy.mountSceneObject({
+        makeObjects: (seed) => [
+          makeFeather("feather", PosFns.new(500, 50), PosFns.new(1, 0), seed),
+        ],
+        seed: "abcd",
+        onSceneChange: (scene) => {
+          const feather = scene.getObjects()[0];
+          if (feather) {
+            const position = feather.getPosition();
+            const rotation = getFeatherRotation(feather);
 
-              if (rotation !== undefined) {
-                featherPositionData.push({ position, rotation });
-              }
+            if (rotation !== undefined) {
+              featherPositionData.push({ position, rotation });
             }
-          },
-          debugTrace: {
-            sources: (scene) => scene.getObjects(),
-            colour: ({ obj }) => {
-              const rotation = getFeatherRotation(obj);
-              return rotation !== undefined
-                ? `hsl(${rotation}, 50%, 60%)`
-                : "black";
-            },
-          },
-          debugDraw$: debugDrawSub,
+          }
         },
+        debugTrace: {
+          sources: (scene) => scene.getObjects(),
+          colour: ({ obj }) => {
+            const rotation = getFeatherRotation(obj);
+            return rotation !== undefined
+              ? `hsl(${rotation}, 50%, 60%)`
+              : "black";
+          },
+        },
+        debugDraw$: debugDrawSub,
       });
-
-      cy.get("canvas").should("have.attr", "data-initialised", "true");
     };
 
     beforeEach(() => {
