@@ -1,12 +1,15 @@
 <script lang="ts">
-  import seedrandom, { type PRNG } from "seedrandom";
-  import { loadImages, type SceneType } from "../../model";
-  import SceneViewer from "./SceneViewer.svelte";
+  import seedrandom from "seedrandom";
+  import { loadImages, type SceneSpec } from "../../model";
+  import { viewScene } from "../../scenes/drawing";
 
   export let sceneSpec: SceneSpec;
 
   let windowWidth = window.innerWidth;
   let windowHeight = window.innerHeight;
+
+  const r = seedrandom().int32();
+  console.log("Congratulations! Your random seed is", r);
 
   window.addEventListener("resize", () => {
     windowWidth = window.innerWidth;
@@ -32,7 +35,13 @@
       <p>.</p>
     </div>
   {:then images}
-    <SceneViewer {sceneSpec} {images} />
+    <canvas
+      use:viewScene={{
+        initialSceneSpec: sceneSpec,
+        images,
+        seed: r.toString(),
+      }}
+    />
   {/await}
 </div>
 
@@ -45,6 +54,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+  canvas {
+    width: 100%;
+    max-height: 95vh;
   }
 
   .loading {

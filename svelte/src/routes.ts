@@ -1,7 +1,7 @@
 import type { ComponentProps, ComponentType } from "svelte";
 import { Scene, Talks } from "./components";
 import FromStatic from "./components/FromStatic.svelte";
-import { makeIntroScene } from "./scenes";
+import { makeHouseScene } from "./scenes";
 
 export const routes = {
   theFunBit: "/the-fun-bit",
@@ -51,6 +51,6 @@ export const navItems: NavItem[] = [
     label: "Something fun",
     route: routes.theFunBit,
     component: Scene,
-    props: { sceneSpec: makeIntroScene } as ComponentProps<Scene>,
+    props: { sceneSpec: makeHouseScene } as ComponentProps<Scene>,
   },
 ];
