@@ -20,7 +20,7 @@ import {
 } from "../../../model";
 import { choose } from "../../../utils";
 import {
-  fishingStateReducer,
+  makeFishingStateReducer,
   toFlatState,
   type AnyFishingAction,
   type AnyFishingState,
@@ -37,39 +37,57 @@ export const fishingMan = (args: {
   initialState?: AnyFishingState;
 }): SceneObject => {
   const { random } = args;
-  const initialState: AnyFishingState = args.initialState ?? { kind: "idle" };
-
-  const currentState = new BehaviorSubject<AnyFishingState>(initialState);
+  const currentState = new BehaviorSubject<AnyFishingState>(
+    args.initialState ?? { kind: "idle" }
+  );
   const actionSub = new Subject<AnyFishingAction>();
+
+  const stateReducer = makeFishingStateReducer({
+    makeBobber: () =>
+      makeBobber({
+        onLand: () => {
+          actionSub.next({ kind: "cast-out-land" });
+        },
+        random,
+      }),
+    makeFishBiteMarker: (prevState) =>
+      biteMarker({
+        position: PosFns.add(
+          prevState.bobber.getPosition(),
+          PosFns.new(-20, -280)
+        ),
+        onInteract: () => {
+          actionSub.next({
+            kind: "start-reel",
+          });
+        },
+        random,
+      }),
+    makeFlyingFish: (prevState) =>
+      flyingFish({
+        random,
+        initial: prevState.bobber.getPosition(),
+        target: PosFns.new(100, 400),
+        onTargetReached: () => {
+          actionSub.next({ kind: "fish-retrieved" });
+          args.onFishRetrieved(prevState.fishId);
+        },
+      }),
+  });
+
   const timerActions: Observable<AnyFishingAction> = currentState.pipe(
     switchMap((state) => {
       if (state.kind === "cast-out-swing") {
         return timer(1000).pipe(
           map<unknown, AnyFishingAction>(() => ({
             kind: "finish-cast-out-swing",
-            bobber: makeBobber({
-              onLand: () => {
-                actionSub.next({ kind: "cast-out-land" });
-              },
-              random,
-            }),
           }))
         );
       } else if (state.kind === "cast-out-waiting") {
-        const bobber = state.bobber;
         return timer(1000).pipe(
           map<unknown, AnyFishingAction>(() => ({
             kind: "fish-bite",
             fishId: "" + Math.abs(random.int32()),
-            biteMarker: biteMarker({
-              position: PosFns.add(bobber.getPosition(), PosFns.new(-20, -280)),
-              onInteract: () => {
-                actionSub.next({
-                  kind: "start-reel",
-                });
-              },
-              random,
-            }),
           }))
         );
       } else {
@@ -79,7 +97,7 @@ export const fishingMan = (args: {
   );
 
   const sub = merge(actionSub, timerActions).subscribe((action) => {
-    const nextState = fishingStateReducer(action, currentState.value);
+    const nextState = stateReducer(action, currentState.value);
     if (nextState !== currentState.value) {
       currentState.next(nextState);
     }
@@ -126,15 +144,6 @@ export const fishingMan = (args: {
                     onComplete: () => {
                       actionSub.next({
                         kind: "finish-reel",
-                        flyingFish: flyingFish({
-                          random,
-                          initial: nextState.bobber.getPosition(),
-                          target: PosFns.new(100, 400),
-                          onTargetReached: () => {
-                            actionSub.next({ kind: "fish-retrieved" });
-                            args.onFishRetrieved(nextState.fishId);
-                          },
-                        }),
                       });
                     },
                   }),
