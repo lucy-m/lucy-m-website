@@ -1,12 +1,15 @@
 <script lang="ts">
+  import { map, Subject } from "rxjs";
   import seedrandom from "seedrandom";
-  import { loadImages, type SceneSpec } from "../../model";
+  import type { ComponentType } from "svelte";
+  import { loadImages, makeNumberSpring, type SceneSpec } from "../../model";
   import { viewScene } from "../../scenes/drawing";
 
   export let sceneSpec: SceneSpec;
 
   let windowWidth = window.innerWidth;
   let windowHeight = window.innerHeight;
+  let svelteComponent: ComponentType | undefined;
 
   const r = seedrandom().int32();
   console.log("Congratulations! Your random seed is", r);
@@ -15,6 +18,47 @@
     windowWidth = window.innerWidth;
     windowHeight = window.innerHeight;
   });
+
+  const showHideSub = new Subject<"show" | "hide">();
+
+  const inOutSpring$ = makeNumberSpring(
+    {
+      endPoint: 0,
+      position: 0,
+      velocity: 0,
+      properties: {
+        friction: 8,
+        precision: 0.01,
+        stiffness: 1,
+        weight: 10,
+      },
+    },
+    showHideSub.pipe(
+      map((showHide) => {
+        return {
+          kind: "set",
+          set: {
+            endPoint: showHide === "show" ? 1 : 0,
+          },
+        };
+      })
+    )
+  );
+
+  const worldDisabled$ = inOutSpring$.pipe(
+    map((spring) => {
+      return !spring.stationary || spring.endPoint === 1;
+    })
+  );
+
+  const mountSvelteComponent = (cpmt: ComponentType) => {
+    svelteComponent = cpmt;
+    showHideSub.next("show");
+  };
+
+  const unmountSelf = () => {
+    showHideSub.next("hide");
+  };
 </script>
 
 {#if windowWidth <= 800}
@@ -36,13 +80,25 @@
     </div>
   {:then images}
     <canvas
+      class:disabled={$worldDisabled$}
+      style:filter={`blur(${2.5 * $inOutSpring$.position}px)`}
       use:viewScene={{
         initialSceneSpec: sceneSpec,
         images,
         seed: r.toString(),
+        mountSvelteComponent,
       }}
     />
   {/await}
+  <div
+    class="overlay"
+    class:disabled={!$worldDisabled$}
+    style:opacity={$inOutSpring$.position}
+  >
+    <div class="overlay-content-wrapper">
+      <svelte:component this={svelteComponent} {unmountSelf} />
+    </div>
+  </div>
 </div>
 
 <style>
@@ -55,9 +111,34 @@
     align-items: center;
     justify-content: center;
   }
+
   canvas {
     width: 100%;
     max-height: 95vh;
+    will-change: filter;
+  }
+
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    will-change: opacity;
+  }
+
+  .disabled {
+    pointer-events: none;
+  }
+
+  .overlay-content-wrapper {
+    box-shadow: 3px 3px 14px 4px hsla(0, 0%, 0%, 0.05),
+      2px 2px 8px 3px hsla(0, 0%, 0%, 0.1), 1px 1px 3px 1px hsla(0, 0%, 0%, 0.1);
+    cursor: pointer;
+    user-select: none;
   }
 
   .loading {

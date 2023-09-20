@@ -11,6 +11,7 @@ import {
   tap,
 } from "rxjs";
 import seedrandom from "seedrandom";
+import type { ComponentType } from "svelte";
 import { sceneSize } from "..";
 import {
   rafThrottle,
@@ -47,6 +48,7 @@ export const viewScene = (
     onSceneChange?: (scene: SceneType) => void;
     worldClick$?: Observable<Position>;
     seed: string;
+    mountSvelteComponent: (cpmt: ComponentType) => void;
   }
 ): Destroyable => {
   const { initialSceneSpec, images, onSceneChange, worldClick$, seed } = args;
@@ -79,7 +81,12 @@ export const viewScene = (
     subscription = changeSceneSub
       .pipe(
         startWith(initialSceneSpec),
-        map((sceneSpec) => sceneSpec(prng)(images, onNewScene)),
+        map((sceneSpec) =>
+          sceneSpec({
+            random: prng,
+            mountSvelteComponent: args.mountSvelteComponent,
+          })(images, onNewScene)
+        ),
         tap((currentScene) => {
           redrawCanvas(ctx, currentScene, images);
           onSceneChange && onSceneChange(currentScene);

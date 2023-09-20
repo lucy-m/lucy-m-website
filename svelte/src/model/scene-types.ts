@@ -1,5 +1,6 @@
 import type { Observable } from "rxjs";
 import type { PRNG } from "seedrandom";
+import type { ComponentType } from "svelte";
 import type { AssetKey } from "./assets";
 import type { Position } from "./position";
 import type { SubLayerKey } from "./sub-layer-key";
@@ -56,9 +57,10 @@ export interface SceneType {
   destroy: () => void;
 }
 
-export type SceneSpec = (
-  random: PRNG
-) => (
+export type SceneSpec = (args: {
+  random: PRNG;
+  mountSvelteComponent: (cmpt: ComponentType) => void;
+}) => (
   images: Record<string, HTMLImageElement>,
   onSceneChange: (newScene: SceneSpec) => void
 ) => SceneType;

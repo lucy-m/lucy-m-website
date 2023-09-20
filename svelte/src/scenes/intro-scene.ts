@@ -1,5 +1,4 @@
 import { Observable, map, merge, timer } from "rxjs";
-import { type PRNG } from "seedrandom";
 import {
   PosFns,
   generatePointsInShape,
@@ -24,7 +23,7 @@ const layerOrder = [
   "speechBubble",
 ] as const;
 
-export const makeIntroScene: SceneSpec = (random: PRNG) => {
+export const makeIntroScene: SceneSpec = ({ random }) => {
   const makeSceneObjectBound = makeSceneObject(random);
 
   const randomTree = (): AssetKey => {
