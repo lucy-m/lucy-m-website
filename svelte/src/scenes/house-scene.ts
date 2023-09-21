@@ -32,7 +32,7 @@ export const makeHouseScene: SceneSpec = ({ random, mountSvelteComponent }) => {
         },
       ],
       onInteract: () => {
-        mountSvelteComponent(HouseSceneTest);
+        mountSvelteComponent(HouseSceneTest, { value: "" + random.int32() });
       },
     }),
     makeSceneObjectBound({

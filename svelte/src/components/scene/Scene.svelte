@@ -2,14 +2,19 @@
   import { map, share, Subject, tap } from "rxjs";
   import seedrandom from "seedrandom";
   import type { ComponentType } from "svelte";
-  import { loadImages, makeNumberSpring, type SceneSpec } from "../../model";
+  import {
+    loadImages,
+    makeNumberSpring,
+    type SceneSpec,
+    type SvelteComponentMounter,
+  } from "../../model";
   import { viewScene } from "../../scenes/drawing";
 
   export let sceneSpec: SceneSpec;
 
   let windowWidth = window.innerWidth;
   let windowHeight = window.innerHeight;
-  let svelteComponent: ComponentType | undefined;
+  let svelteComponent: { cmpt: ComponentType; props: object } | undefined;
 
   const r = seedrandom().int32();
   console.log("Congratulations! Your random seed is", r);
@@ -27,10 +32,10 @@
       position: 0,
       velocity: 0,
       properties: {
-        friction: 8,
+        friction: 6,
         precision: 0.01,
         stiffness: 1,
-        weight: 10,
+        weight: 8,
       },
     },
     showHideSub.pipe(
@@ -58,8 +63,11 @@
     })
   );
 
-  const mountSvelteComponent = (cpmt: ComponentType) => {
-    svelteComponent = cpmt;
+  const mountSvelteComponent: SvelteComponentMounter = (
+    cmpt: ComponentType,
+    props: object
+  ) => {
+    svelteComponent = { cmpt, props };
     showHideSub.next("show");
   };
 
@@ -103,7 +111,13 @@
     style:opacity={$inOutSpring$.position}
   >
     <div class="overlay-content-wrapper">
-      <svelte:component this={svelteComponent} {unmountSelf} />
+      {#if svelteComponent}
+        <svelte:component
+          this={svelteComponent.cmpt}
+          {...svelteComponent.props}
+          {unmountSelf}
+        />
+      {/if}
     </div>
   </div>
 </div>

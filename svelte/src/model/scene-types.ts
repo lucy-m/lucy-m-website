@@ -1,6 +1,6 @@
 import type { Observable } from "rxjs";
 import type { PRNG } from "seedrandom";
-import type { ComponentType } from "svelte";
+import type { ComponentProps, ComponentType, SvelteComponent } from "svelte";
 import type { AssetKey } from "./assets";
 import type { Position } from "./position";
 import type { SubLayerKey } from "./sub-layer-key";
@@ -57,9 +57,14 @@ export interface SceneType {
   destroy: () => void;
 }
 
+export type SvelteComponentMounter = <T extends SvelteComponent>(
+  cmpt: ComponentType<T>,
+  props: Omit<ComponentProps<T>, "unmountSelf">
+) => void;
+
 export type SceneSpec = (args: {
   random: PRNG;
-  mountSvelteComponent: (cmpt: ComponentType) => void;
+  mountSvelteComponent: SvelteComponentMounter;
 }) => (
   images: Record<string, HTMLImageElement>,
   onSceneChange: (newScene: SceneSpec) => void
