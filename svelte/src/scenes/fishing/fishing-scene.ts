@@ -7,6 +7,7 @@ import {
 } from "../../model";
 import type { SceneSpec } from "../../model/scene-types";
 import { choose } from "../../utils";
+import FishCaughtNotification from "./FishCaughtNotification.svelte";
 import { fishingMan } from "./objects/fisherman";
 
 const layerOrder = [
@@ -21,9 +22,7 @@ const layerOrder = [
 
 export const makeFishingScene =
   (): SceneSpec =>
-  ({ random }) => {
-    let gotFishId: string | undefined;
-
+  ({ random, mountSvelteComponent }) => {
     const makeSceneObjectBound = makeSceneObject(random);
 
     const objects = [
@@ -38,14 +37,6 @@ export const makeFishingScene =
                 assetKey: "fishingBackground",
                 subLayer: "background",
               },
-              gotFishId
-                ? {
-                    kind: "text",
-                    maxWidth: 800,
-                    position: PosFns.new(1000, 1020),
-                    text: ["You caught fish " + gotFishId],
-                  }
-                : undefined,
             ],
             (v) => v
           ),
@@ -53,7 +44,7 @@ export const makeFishingScene =
       fishingMan({
         random,
         onFishRetrieved: (fishId: string) => {
-          gotFishId = fishId;
+          mountSvelteComponent(FishCaughtNotification, { fishId });
         },
       }),
     ];
