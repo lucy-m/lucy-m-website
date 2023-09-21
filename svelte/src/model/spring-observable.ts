@@ -5,6 +5,7 @@ import {
   merge,
   Observable,
   scan,
+  share,
   startWith,
 } from "rxjs";
 import { rafThrottle } from "./raf-throttle";
@@ -52,7 +53,7 @@ const makeSpringObservable =
       rafThrottle()
     );
 
-    return springUpdates$.pipe(startWith(initialSpring));
+    return springUpdates$.pipe(startWith(initialSpring), share());
   };
 
 export const makePositionSpring = makeSpringObservable(PositionSpringFns);

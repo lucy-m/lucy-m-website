@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { map, Subject } from "rxjs";
+  import { map, share, Subject, tap } from "rxjs";
   import seedrandom from "seedrandom";
   import type { ComponentType } from "svelte";
   import { loadImages, makeNumberSpring, type SceneSpec } from "../../model";
@@ -43,6 +43,13 @@
         };
       })
     )
+  ).pipe(
+    tap((value) => {
+      if (value.stationary && value.endPoint === 0) {
+        svelteComponent = undefined;
+      }
+    }),
+    share()
   );
 
   const worldDisabled$ = inOutSpring$.pipe(
@@ -137,7 +144,6 @@
   .overlay-content-wrapper {
     box-shadow: 3px 3px 14px 4px hsla(0, 0%, 0%, 0.05),
       2px 2px 8px 3px hsla(0, 0%, 0%, 0.1), 1px 1px 3px 1px hsla(0, 0%, 0%, 0.1);
-    cursor: pointer;
     user-select: none;
   }
 
