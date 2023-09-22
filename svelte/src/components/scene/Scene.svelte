@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { map, Observable, share, Subject, tap } from "rxjs";
+  import { Observable } from "rxjs";
   import seedrandom from "seedrandom";
   import type { ComponentType } from "svelte";
   import {
     loadImages,
-    makeNumberSpring,
     type Position,
     type SceneSpec,
     type SceneType,
     type SvelteComponentMounter,
   } from "../../model";
   import { viewScene } from "../../scenes/drawing";
+  import { makeOverlayDisplay } from "./overlay-display";
 
   export let sceneSpec: SceneSpec;
 
@@ -24,7 +24,6 @@
 
   let windowWidth = window.innerWidth;
   let windowHeight = window.innerHeight;
-  let svelteComponent: { cmpt: ComponentType; props: object } | undefined;
 
   const seed = _testProps?.seed ?? seedrandom().int32().toString();
   console.log("Congratulations! Your random seed is", seed);
@@ -34,55 +33,18 @@
     windowHeight = window.innerHeight;
   });
 
-  const showHideSub = new Subject<"show" | "hide">();
-
-  const inOutSpring$ = makeNumberSpring(
-    {
-      endPoint: 0,
-      position: 0,
-      velocity: 0,
-      properties: {
-        friction: 6,
-        precision: 0.01,
-        stiffness: 1,
-        weight: 8,
-      },
-    },
-    showHideSub.pipe(
-      map((showHide) => {
-        return {
-          kind: "set",
-          set: {
-            endPoint: showHide === "show" ? 1 : 0,
-          },
-        };
-      })
-    )
-  ).pipe(
-    tap((value) => {
-      if (value.stationary && value.endPoint === 0) {
-        svelteComponent = undefined;
-      }
-    }),
-    share()
-  );
-
-  const worldDisabled$ = inOutSpring$.pipe(
-    map((spring) => {
-      return !spring.stationary || spring.endPoint === 1;
-    })
-  );
+  const overlayDisplay = makeOverlayDisplay();
+  const overlayDisplayState$ = overlayDisplay.state$;
 
   const mountSvelteComponent: SvelteComponentMounter = (
-    cmpt: ComponentType,
+    component: ComponentType,
     props: object
   ) => {
-    svelteComponent = { cmpt, props };
-    showHideSub.next("show");
+    overlayDisplay.show({ component, props });
   };
 
   const unmountSelf = () => {
-    showHideSub.next("hide");
+    overlayDisplay.hide();
   };
 </script>
 
@@ -105,8 +67,8 @@
     </div>
   {:then images}
     <canvas
-      class:disabled={$worldDisabled$}
-      style:filter={`blur(${2.5 * $inOutSpring$.position}px)`}
+      class:disabled={$overlayDisplayState$.worldDisabled}
+      style:filter={`blur(${2.5 * $overlayDisplayState$.inOutValue}px)`}
       use:viewScene={{
         initialSceneSpec: sceneSpec,
         images,
@@ -119,14 +81,14 @@
   {/await}
   <div
     class="overlay"
-    class:disabled={!$worldDisabled$}
-    style:opacity={$inOutSpring$.position}
+    class:disabled={!$overlayDisplayState$.worldDisabled}
+    style:opacity={$overlayDisplayState$.inOutValue}
   >
     <div class="overlay-content-wrapper">
-      {#if svelteComponent}
+      {#if $overlayDisplayState$.overlayComponent}
         <svelte:component
-          this={svelteComponent.cmpt}
-          {...svelteComponent.props}
+          this={$overlayDisplayState$.overlayComponent.component}
+          {...$overlayDisplayState$.overlayComponent.props}
           {unmountSelf}
         />
       {/if}
