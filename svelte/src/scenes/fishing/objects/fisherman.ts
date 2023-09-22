@@ -194,6 +194,7 @@ export const fishingMan = (args: {
     events$,
     _getDebugInfo: () => ({
       state: currentState.value,
+      onFishRetrieved: args.onFishRetrieved,
     }),
   });
 };

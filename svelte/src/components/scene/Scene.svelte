@@ -1,23 +1,33 @@
 <script lang="ts">
-  import { map, share, Subject, tap } from "rxjs";
+  import { map, Observable, share, Subject, tap } from "rxjs";
   import seedrandom from "seedrandom";
   import type { ComponentType } from "svelte";
   import {
     loadImages,
     makeNumberSpring,
+    type Position,
     type SceneSpec,
+    type SceneType,
     type SvelteComponentMounter,
   } from "../../model";
   import { viewScene } from "../../scenes/drawing";
 
   export let sceneSpec: SceneSpec;
 
+  export let _testProps:
+    | {
+        seed?: string;
+        onSceneChange?: (scene: SceneType) => void;
+        worldClick$?: Observable<Position>;
+      }
+    | undefined = undefined;
+
   let windowWidth = window.innerWidth;
   let windowHeight = window.innerHeight;
   let svelteComponent: { cmpt: ComponentType; props: object } | undefined;
 
-  const r = seedrandom().int32();
-  console.log("Congratulations! Your random seed is", r);
+  const seed = _testProps?.seed ?? seedrandom().int32().toString();
+  console.log("Congratulations! Your random seed is", seed);
 
   window.addEventListener("resize", () => {
     windowWidth = window.innerWidth;
@@ -100,8 +110,10 @@
       use:viewScene={{
         initialSceneSpec: sceneSpec,
         images,
-        seed: r.toString(),
+        seed,
         mountSvelteComponent,
+        onSceneChange: _testProps?.onSceneChange,
+        worldClick$: _testProps?.worldClick$,
       }}
     />
   {/await}

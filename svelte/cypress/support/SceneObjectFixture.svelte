@@ -7,6 +7,7 @@
     type Destroyable,
     type Position,
     type SceneObject,
+    type SceneSpec,
     type SceneType,
   } from "../../src/model";
   import { sceneSize } from "../../src/scenes";
@@ -33,7 +34,8 @@
       }
     | undefined = undefined;
 
-  $: makeScene = (random: PRNG) => {
+  let makeScene: SceneSpec;
+  $: makeScene = ({ random }) => {
     const objects = makeObjects(random);
 
     return makeSceneType({
@@ -104,6 +106,9 @@
         seed,
         onSceneChange: _onSceneChange,
         worldClick$,
+        mountSvelteComponent: () => {
+          throw new Error("Not implememented");
+        },
       }}
     />
     <canvas class="debug-canvas" use:debugOverlay />

@@ -4,7 +4,7 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="wrapper">
+<div class="wrapper" data-testid="fish-caught-notification">
   <div>
     <p>Congratulations!</p>
     <p>You caught fish {fishId}!</p>
