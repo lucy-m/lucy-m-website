@@ -1,7 +1,14 @@
-import { Subject, map, scan, share, startWith } from "rxjs";
+import { BehaviorSubject, Observable, map, pairwise } from "rxjs";
 import { PosFns, makeSceneObject, makeSceneType } from "../../model";
-import type { SceneSpec } from "../../model/scene-types";
+import type { SceneEventOrAction, SceneSpec } from "../../model/scene-types";
+import { choose } from "../../utils";
+import { chooseOp } from "../../utils/choose-op";
 import FishCaughtNotification from "./FishCaughtNotification.svelte";
+import {
+  addXp,
+  initialFishingSceneState,
+  type FishingSceneState,
+} from "./fishing-scene-state";
 import { fishingMan } from "./objects/fisherman";
 import { makeXpBar } from "./objects/xp-bar";
 
@@ -21,46 +28,62 @@ export const makeFishingScene =
   ({ random, mountSvelteComponent }) => {
     const makeSceneObjectBound = makeSceneObject(random);
 
-    let firstFish = true;
-
-    const addXp = new Subject<number>();
-
-    const xp$ = addXp.pipe(
-      scan((acc, add) => acc + add, 0),
-      startWith(0),
-      share()
+    const stateSub = new BehaviorSubject<FishingSceneState | undefined>(
+      undefined
+    );
+    const xpBarProgress$ = stateSub.pipe(
+      map((state) =>
+        state === undefined ? 0 : state.levelXp / state.nextLevelXp
+      )
     );
 
-    const xpBarProgress$ = xp$.pipe(map((xp) => (xp % 100) / 100));
+    const events$: Observable<SceneEventOrAction> = stateSub.pipe(
+      pairwise(),
+      chooseOp(([previous, next]) => {
+        if (!previous && next) {
+          return {
+            kind: "addObject",
+            makeObject: () => makeXpBar({ random, fillFrac$: xpBarProgress$ }),
+          } as SceneEventOrAction;
+        } else {
+          return undefined;
+        }
+      })
+    );
 
-    const objects = [
-      makeSceneObjectBound({
-        layerKey: "bg",
-        getPosition: () => PosFns.zero,
-        getLayers: () => [
-          {
-            kind: "image",
-            assetKey: "fishingBackground",
-            subLayer: "background",
+    const objects = choose(
+      [
+        makeSceneObjectBound({
+          layerKey: "bg",
+          getPosition: () => PosFns.zero,
+          getLayers: () => [
+            {
+              kind: "image",
+              assetKey: "fishingBackground",
+              subLayer: "background",
+            },
+          ],
+        }),
+        fishingMan({
+          random,
+          onFishRetrieved: (fishId: string) => {
+            if (stateSub.value === undefined) {
+              mountSvelteComponent(FishCaughtNotification, {});
+              stateSub.next(initialFishingSceneState);
+            } else {
+              const [nextState, notification] = addXp(10, stateSub.value);
+              stateSub.next(nextState);
+            }
           },
-        ],
-      }),
-      fishingMan({
-        random,
-        onFishRetrieved: (fishId: string) => {
-          if (firstFish) {
-            mountSvelteComponent(FishCaughtNotification, {});
-            firstFish = false;
-          }
-          addXp.next(34);
-        },
-      }),
-      makeXpBar({ random, fillFrac$: xpBarProgress$ }),
-    ];
+        }),
+        stateSub.value && makeXpBar({ random, fillFrac$: xpBarProgress$ }),
+      ],
+      (v) => v
+    );
 
     return makeSceneType({
       typeName: "fishing",
-      events: new Subject(),
+      events: events$,
       layerOrder,
       objects,
     });

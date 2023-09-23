@@ -6,7 +6,7 @@ import { makeFishingScene } from "../fishing-scene";
 const interactive = true;
 
 describe("fishing scene", () => {
-  describe("rendering tests", () => {
+  describe("level 0", () => {
     let fisherman: SceneObject | undefined;
     let xpBar: SceneObject | undefined;
 
@@ -47,7 +47,9 @@ describe("fishing scene", () => {
       });
     });
 
-    it("works", () => {});
+    it("does not have xp bar", () => {
+      expect(xpBar).to.be.undefined;
+    });
 
     describe("retrieving a fish", () => {
       const fishId = "john";
@@ -63,18 +65,14 @@ describe("fishing scene", () => {
           .should("contain.text", "You caught your first fish");
       });
 
-      it("xp bar does not fill up immediately", () => {
-        cy.interactiveWait(100, interactive);
-        expect(getXpBarPosition()).to.eq(0);
-      });
-
       describe("overlay dismissed", () => {
         beforeEach(() => {
           cy.contains("button", "OK").click();
+          cy.myWaitFor(() => !!xpBar, interactive);
         });
 
-        it("xp bar fills", () => {
-          cy.myWaitFor(() => getXpBarPosition() > 0, interactive);
+        it("xp bar displayed", () => {
+          expect(getXpBarPosition()).to.eq(0);
         });
 
         describe("second fish retrieved", () => {
@@ -85,6 +83,10 @@ describe("fishing scene", () => {
           it("does not show overlay", () => {
             cy.interactiveWait(100, interactive);
             cy.getByTestId("fish-caught-notification").should("not.exist");
+          });
+
+          it("xp bar fills", () => {
+            cy.myWaitFor(() => getXpBarPosition() > 0, interactive);
           });
         });
       });

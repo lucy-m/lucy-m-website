@@ -14,15 +14,15 @@ import {
   type SceneObject,
 } from "../../../model";
 import { choose } from "../../../utils";
+import { biteMarker } from "./bite-marker";
+import { makeBobber } from "./bobber";
 import {
   makeFishingStateReducer,
   toFlatState,
   type AnyFishingAction,
   type AnyFishingState,
   type FlatFishingState,
-} from "../fishing-state";
-import { biteMarker } from "./bite-marker";
-import { makeBobber } from "./bobber";
+} from "./fisherman-state";
 import { flyingFish } from "./flying-fish";
 import { reelingOverlay } from "./reeling-overlay";
 

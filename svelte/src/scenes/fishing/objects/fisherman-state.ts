@@ -1,4 +1,4 @@
-import type { SceneObject } from "../../model";
+import type { SceneObject } from "../../../model";
 
 export type AnyFishingState = Readonly<
   | {
