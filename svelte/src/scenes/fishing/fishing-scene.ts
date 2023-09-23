@@ -53,6 +53,7 @@ export const makeFishingScene =
         mountSvelteComponent(LevelUpNotification, {
           newLevel: showLevelUpNotification,
         });
+        stateSub.next(stateSub.value);
         showLevelUpNotification = undefined;
       }
     };

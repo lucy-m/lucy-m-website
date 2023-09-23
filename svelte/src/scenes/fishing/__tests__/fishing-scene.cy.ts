@@ -120,6 +120,19 @@ describe("fishing scene", () => {
                   "level 2"
                 );
               });
+
+              describe("dismissing overlay", () => {
+                beforeEach(() => {
+                  cy.interactiveWait(500, interactive);
+                  cy.contains("button", "OK").click();
+                });
+
+                it("resets xp bar", () => {
+                  // Seems to be extra blurring here
+                  cy.interactiveWait(3000, interactive);
+                  cy.myWaitFor(() => getXpBarPosition() < 1, interactive);
+                });
+              });
             });
           });
         });
