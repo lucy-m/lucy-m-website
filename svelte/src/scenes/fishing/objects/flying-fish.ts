@@ -5,6 +5,7 @@ import {
   type Position,
   type SceneObject,
 } from "../../../model";
+import { sceneSize } from "../../scene-size";
 
 export const flyingFish = (args: {
   random: PRNG;
@@ -65,7 +66,12 @@ export const flyingFish = (args: {
 
         const myDistance = PosFns.distance(args.target, position);
 
-        if (myDistance < Math.abs(velocityX) + Math.abs(velocityY)) {
+        const offScreen = position.x > sceneSize.x || position.x < 0;
+
+        if (
+          myDistance < Math.abs(velocityX) + Math.abs(velocityY) ||
+          offScreen
+        ) {
           stationary = true;
           args.onTargetReached();
         }
