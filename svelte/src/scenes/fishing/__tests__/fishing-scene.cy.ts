@@ -75,7 +75,7 @@ describe("fishing scene", () => {
 
       describe("overlay dismissed", () => {
         beforeEach(() => {
-          cy.interactiveWait(1000, interactive);
+          cy.interactiveWait(100, interactive);
           cy.contains("button", "OK").click();
           cy.myWaitFor(() => !!xpBar && getXpBarOpacity() === 1, interactive);
         });
@@ -96,6 +96,31 @@ describe("fishing scene", () => {
 
           it("xp bar fills", () => {
             cy.myWaitFor(() => getXpBarPosition() > 0, interactive);
+          });
+
+          describe("fishing enough to level up", () => {
+            beforeEach(() => {
+              retrieveFish("fish3");
+              retrieveFish("fish4");
+            });
+
+            it("does not show overlay immediately", () => {
+              cy.interactiveWait(100, interactive);
+              cy.getByTestId("level-up-notification").should("not.exist");
+            });
+
+            describe("after xp bar fills", () => {
+              beforeEach(() => {
+                cy.myWaitFor(() => getXpBarPosition() === 1, interactive);
+              });
+
+              it("shows level up notification", () => {
+                cy.getByTestId("level-up-notification").should(
+                  "contain.text",
+                  "level 2"
+                );
+              });
+            });
           });
         });
       });

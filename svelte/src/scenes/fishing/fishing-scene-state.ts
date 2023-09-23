@@ -21,7 +21,7 @@ export const addXp = (
   const newLevelXp = state.levelXp + xp;
   const newTotalXp = state.totalXp + xp;
 
-  if (newLevelXp > state.nextLevelXp) {
+  if (newLevelXp >= state.nextLevelXp) {
     const newState: FishingSceneState = {
       level: state.level + 1,
       levelXp: newLevelXp - state.nextLevelXp,
