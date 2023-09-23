@@ -49,7 +49,7 @@ export const makeFishingScene =
         random,
         onFishRetrieved: (fishId: string) => {
           if (firstFish) {
-            mountSvelteComponent(FishCaughtNotification, { fishId });
+            mountSvelteComponent(FishCaughtNotification, {});
             firstFish = false;
           }
           addXp.next(34);

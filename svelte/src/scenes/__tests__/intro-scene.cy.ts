@@ -123,7 +123,7 @@ describe("intro scene", () => {
           const house = getByTypeName(currentScene, "small-house");
           worldClick$.next(PosFns.add(house.getPosition(), PosFns.new(5, 5)));
 
-          cy.steppedTick(100);
+          cy.steppedTick(1000);
         });
 
         it("changes scene", () => {

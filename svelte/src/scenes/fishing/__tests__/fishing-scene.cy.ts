@@ -1,8 +1,9 @@
 import type { SceneObject } from "../../../model";
 import { makeFishingScene } from "../fishing-scene";
 
-const interactive = Cypress.config("isInteractive");
-// const interactive = false;
+// const interactive = Cypress.config("isInteractive");
+// These tests don't work in non-interactive mode
+const interactive = true;
 
 describe("fishing scene", () => {
   describe("rendering tests", () => {
@@ -52,7 +53,8 @@ describe("fishing scene", () => {
       const fishId = "john";
 
       beforeEach(() => {
-        retrieveFish();
+        retrieveFish(fishId);
+        cy.interactiveWait(100, interactive);
       });
 
       it("shows overlay", () => {

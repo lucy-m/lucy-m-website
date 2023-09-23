@@ -1,5 +1,11 @@
 <script lang="ts">
-  import { Subject, Subscription, merge, type Observable } from "rxjs";
+  import {
+    BehaviorSubject,
+    Subject,
+    Subscription,
+    merge,
+    type Observable,
+  } from "rxjs";
   import type { PRNG } from "seedrandom";
   import {
     loadImages,
@@ -109,6 +115,7 @@
         mountSvelteComponent: () => {
           throw new Error("Not implememented");
         },
+        worldDisabled$: new BehaviorSubject(false),
       }}
     />
     <canvas class="debug-canvas" use:debugOverlay />
