@@ -1,13 +1,12 @@
 <script lang="ts">
   export let unmountSelf: () => void;
-  export let fishId: string;
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="wrapper" data-testid="fish-caught-notification">
   <div>
     <p>Congratulations!</p>
-    <p>You caught fish {fishId}!</p>
+    <p>You caught your first fish! Keep going and soon you will level up!</p>
   </div>
   <button on:click={unmountSelf}>OK</button>
 </div>

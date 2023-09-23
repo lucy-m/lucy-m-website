@@ -1,4 +1,4 @@
-import { BehaviorSubject, Subject } from "rxjs";
+import { Subject, map, scan, share, startWith } from "rxjs";
 import { PosFns, makeSceneObject, makeSceneType } from "../../model";
 import type { SceneSpec } from "../../model/scene-types";
 import FishCaughtNotification from "./FishCaughtNotification.svelte";
@@ -21,7 +21,17 @@ export const makeFishingScene =
   ({ random, mountSvelteComponent }) => {
     const makeSceneObjectBound = makeSceneObject(random);
 
-    const xpBarProgress$ = new BehaviorSubject(0);
+    let firstFish = true;
+
+    const addXp = new Subject<number>();
+
+    const xp$ = addXp.pipe(
+      scan((acc, add) => acc + add, 0),
+      startWith(0),
+      share()
+    );
+
+    const xpBarProgress$ = xp$.pipe(map((xp) => (xp % 100) / 100));
 
     const objects = [
       makeSceneObjectBound({
@@ -38,8 +48,11 @@ export const makeFishingScene =
       fishingMan({
         random,
         onFishRetrieved: (fishId: string) => {
-          mountSvelteComponent(FishCaughtNotification, { fishId });
-          xpBarProgress$.next(0.2);
+          if (firstFish) {
+            mountSvelteComponent(FishCaughtNotification, { fishId });
+            firstFish = false;
+          }
+          addXp.next(34);
         },
       }),
       makeXpBar({ random, fillFrac$: xpBarProgress$ }),

@@ -9,6 +9,21 @@ describe("fishing scene", () => {
     let fisherman: SceneObject | undefined;
     let xpBar: SceneObject | undefined;
 
+    const getXpBarPosition = () => {
+      expect(xpBar?._getDebugInfo).to.exist;
+      const debugInfo = xpBar!._getDebugInfo!();
+      const fillFracSpring = debugInfo?.fillFracSpring;
+      expect(typeof fillFracSpring?.position).to.eq("number");
+      return fillFracSpring!.position as number;
+    };
+
+    const retrieveFish = (fishId: string) => {
+      expect(fisherman?._getDebugInfo).to.exist;
+      const debugInfo = fisherman!._getDebugInfo!();
+      expect(typeof debugInfo.onFishRetrieved).to.eq("function");
+      debugInfo.onFishRetrieved(fishId);
+    };
+
     beforeEach(() => {
       if (!interactive) {
         cy.clock();
@@ -37,39 +52,39 @@ describe("fishing scene", () => {
       const fishId = "john";
 
       beforeEach(() => {
-        expect(fisherman?._getDebugInfo).to.exist;
-
-        const debugInfo = fisherman!._getDebugInfo!();
-
-        expect(typeof debugInfo.onFishRetrieved).to.eq("function");
-
-        debugInfo.onFishRetrieved(fishId);
+        retrieveFish();
       });
 
       it("shows overlay", () => {
         cy.getByTestId("fish-caught-notification")
           .should("be.visible")
-          .should("contain.text", "You caught fish john!");
+          .should("contain.text", "You caught your first fish");
       });
 
-      it.only("xp bar fills after overlay dismissed", () => {
-        const getXpBarPosition = () => {
-          expect(xpBar?._getDebugInfo).to.exist;
-
-          const debugInfo = xpBar!._getDebugInfo!();
-          const fillFracSpring = debugInfo?.fillFracSpring;
-
-          expect(typeof fillFracSpring?.position).to.eq("number");
-
-          return fillFracSpring!.position as number;
-        };
-
+      it("xp bar does not fill up immediately", () => {
         cy.interactiveWait(100, interactive);
         expect(getXpBarPosition()).to.eq(0);
+      });
 
-        cy.contains("button", "OK").click();
+      describe("overlay dismissed", () => {
+        beforeEach(() => {
+          cy.contains("button", "OK").click();
+        });
 
-        cy.myWaitFor(() => getXpBarPosition() > 0, interactive);
+        it("xp bar fills", () => {
+          cy.myWaitFor(() => getXpBarPosition() > 0, interactive);
+        });
+
+        describe("second fish retrieved", () => {
+          beforeEach(() => {
+            retrieveFish("fish2");
+          });
+
+          it("does not show overlay", () => {
+            cy.interactiveWait(100, interactive);
+            cy.getByTestId("fish-caught-notification").should("not.exist");
+          });
+        });
       });
     });
   });
