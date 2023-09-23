@@ -1,14 +1,9 @@
 import { Subject } from "rxjs";
-import {
-  PosFns,
-  makeSceneObject,
-  makeSceneType,
-  type ObjectLayerContent,
-} from "../../model";
+import { PosFns, makeSceneObject, makeSceneType } from "../../model";
 import type { SceneSpec } from "../../model/scene-types";
-import { choose } from "../../utils";
 import FishCaughtNotification from "./FishCaughtNotification.svelte";
 import { fishingMan } from "./objects/fisherman";
+import { makeXpBar } from "./objects/xp-bar";
 
 const layerOrder = [
   "bg",
@@ -16,6 +11,7 @@ const layerOrder = [
   "bobber",
   "bite-marker",
   "fish",
+  "xp-bar",
   "reeling",
   "debug",
 ] as const;
@@ -29,17 +25,13 @@ export const makeFishingScene =
       makeSceneObjectBound({
         layerKey: "bg",
         getPosition: () => PosFns.zero,
-        getLayers: () =>
-          choose<ObjectLayerContent | undefined, ObjectLayerContent>(
-            [
-              {
-                kind: "image",
-                assetKey: "fishingBackground",
-                subLayer: "background",
-              },
-            ],
-            (v) => v
-          ),
+        getLayers: () => [
+          {
+            kind: "image",
+            assetKey: "fishingBackground",
+            subLayer: "background",
+          },
+        ],
       }),
       fishingMan({
         random,
@@ -47,6 +39,7 @@ export const makeFishingScene =
           mountSvelteComponent(FishCaughtNotification, { fishId });
         },
       }),
+      makeXpBar(random),
     ];
 
     return makeSceneType({

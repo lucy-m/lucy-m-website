@@ -19,6 +19,8 @@ describe("fishing scene", () => {
       });
     });
 
+    it.only("works", () => {});
+
     describe("retrieving a fish", () => {
       const fishId = "john";
 
