@@ -1,4 +1,4 @@
-import { Subject } from "rxjs";
+import { BehaviorSubject, Subject } from "rxjs";
 import { PosFns, makeSceneObject, makeSceneType } from "../../model";
 import type { SceneSpec } from "../../model/scene-types";
 import FishCaughtNotification from "./FishCaughtNotification.svelte";
@@ -21,6 +21,8 @@ export const makeFishingScene =
   ({ random, mountSvelteComponent }) => {
     const makeSceneObjectBound = makeSceneObject(random);
 
+    const xpBarProgress$ = new BehaviorSubject(0);
+
     const objects = [
       makeSceneObjectBound({
         layerKey: "bg",
@@ -37,9 +39,10 @@ export const makeFishingScene =
         random,
         onFishRetrieved: (fishId: string) => {
           mountSvelteComponent(FishCaughtNotification, { fishId });
+          xpBarProgress$.next(0.2);
         },
       }),
-      makeXpBar(random),
+      makeXpBar({ random, fillFrac$: xpBarProgress$ }),
     ];
 
     return makeSceneType({

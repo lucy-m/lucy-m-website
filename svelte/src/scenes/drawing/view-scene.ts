@@ -2,6 +2,7 @@ import {
   Observable,
   Subject,
   Subscription,
+  filter,
   finalize,
   interval,
   map,
@@ -9,6 +10,7 @@ import {
   startWith,
   switchMap,
   tap,
+  withLatestFrom,
 } from "rxjs";
 import seedrandom from "seedrandom";
 import { sceneSize } from "..";
@@ -52,6 +54,7 @@ export const viewScene = (
     worldClick$?: Observable<Position>;
     seed: string;
     mountSvelteComponent: SvelteComponentMounter;
+    worldDisabled$: Observable<boolean>;
   }
 ): Destroyable => {
   const { initialSceneSpec, images, onSceneChange, worldClick$, seed } = args;
@@ -106,7 +109,9 @@ export const viewScene = (
             )
           ).pipe(
             finalize(() => currentScene.destroy()),
-            tap((event) => currentScene.onExternalEvent(event)),
+            withLatestFrom(args.worldDisabled$),
+            filter(([_event, disabled]) => !disabled),
+            tap(([event]) => currentScene.onExternalEvent(event)),
             tap(() => {
               onSceneChange && onSceneChange(currentScene);
             }),

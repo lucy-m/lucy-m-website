@@ -1,3 +1,4 @@
+import type { Observable } from "rxjs";
 import type { PRNG } from "seedrandom";
 import {
   makeSceneObject,
@@ -7,7 +8,10 @@ import {
 } from "../../../model";
 import { sceneSize } from "../../scene-size";
 
-export const makeXpBar = (random: PRNG): SceneObject => {
+export const makeXpBar = (args: {
+  random: PRNG;
+  fillFrac$: Observable<number>;
+}): SceneObject => {
   const height = 50;
   const width = 750;
   const margin = 40;
@@ -15,7 +19,7 @@ export const makeXpBar = (random: PRNG): SceneObject => {
   const label = "XP";
 
   let fillFracSpring = NumberSpringFns.make({
-    endPoint: 1,
+    endPoint: 0,
     position: 0,
     velocity: 0,
     properties: {
@@ -26,8 +30,15 @@ export const makeXpBar = (random: PRNG): SceneObject => {
     },
   });
 
-  return makeSceneObject(random)({
+  const sub = args.fillFrac$.subscribe((fillFrac) => {
+    fillFracSpring = NumberSpringFns.set(fillFracSpring, {
+      endPoint: fillFrac,
+    });
+  });
+
+  return makeSceneObject(args.random)({
     layerKey: "xp-bar",
+    typeName: "xp-bar",
     getPosition: () => PosFns.zero,
     getLayers: () => [
       {
@@ -90,5 +101,11 @@ export const makeXpBar = (random: PRNG): SceneObject => {
     onTick: () => {
       fillFracSpring = NumberSpringFns.tick(fillFracSpring, 0.1);
     },
+    onDestroy: () => {
+      sub.unsubscribe();
+    },
+    _getDebugInfo: () => ({
+      fillFracSpring,
+    }),
   });
 };
