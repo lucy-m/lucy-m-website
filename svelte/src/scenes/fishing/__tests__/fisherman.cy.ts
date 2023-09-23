@@ -314,7 +314,7 @@ describe("fisherman", () => {
                 }),
                 fishingMan({
                   random,
-                  initialState: { kind: "cast-out-swing" },
+                  initialState: { kind: "cast-out-swing", timer: 20 },
                   onFishRetrieved: () => {},
                 }),
               ],
