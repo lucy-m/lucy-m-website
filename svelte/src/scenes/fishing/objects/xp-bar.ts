@@ -18,6 +18,8 @@ export const makeXpBar = (args: {
   const outlineWidth = 4;
   const label = "XP";
 
+  let fadeInOpacity = 0;
+
   let fillFracSpring = NumberSpringFns.make({
     endPoint: 0,
     position: 0,
@@ -44,6 +46,8 @@ export const makeXpBar = (args: {
       {
         kind: "ctxDraw",
         draw: (ctx) => {
+          ctx.globalAlpha = fadeInOpacity;
+
           const labelSize = ctx.measureText(label);
 
           const leftMargin = margin + labelSize.width + 16;
@@ -100,12 +104,14 @@ export const makeXpBar = (args: {
     ],
     onTick: () => {
       fillFracSpring = NumberSpringFns.tick(fillFracSpring, 0.1);
+      fadeInOpacity = Math.min(1, fadeInOpacity + 0.05);
     },
     onDestroy: () => {
       sub.unsubscribe();
     },
     _getDebugInfo: () => ({
       fillFracSpring,
+      fadeInOpacity,
     }),
   });
 };

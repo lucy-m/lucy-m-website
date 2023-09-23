@@ -18,6 +18,14 @@ describe("fishing scene", () => {
       return fillFracSpring!.position as number;
     };
 
+    const getXpBarOpacity = () => {
+      expect(xpBar?._getDebugInfo).to.exist;
+      const debugInfo = xpBar!._getDebugInfo!();
+      const fadeInOpacity = debugInfo?.fadeInOpacity;
+      expect(typeof fadeInOpacity).to.eq("number");
+      return fadeInOpacity as number;
+    };
+
     const retrieveFish = (fishId: string) => {
       expect(fisherman?._getDebugInfo).to.exist;
       const debugInfo = fisherman!._getDebugInfo!();
@@ -67,8 +75,9 @@ describe("fishing scene", () => {
 
       describe("overlay dismissed", () => {
         beforeEach(() => {
+          cy.interactiveWait(1000, interactive);
           cy.contains("button", "OK").click();
-          cy.myWaitFor(() => !!xpBar, interactive);
+          cy.myWaitFor(() => !!xpBar && getXpBarOpacity() === 1, interactive);
         });
 
         it("xp bar displayed", () => {
