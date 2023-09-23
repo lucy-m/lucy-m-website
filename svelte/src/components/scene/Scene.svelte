@@ -1,17 +1,55 @@
 <script lang="ts">
-  import seedrandom, { type PRNG } from "seedrandom";
-  import { loadImages, type SceneType } from "../../model";
-  import SceneViewer from "./SceneViewer.svelte";
+  import { map, Observable, startWith } from "rxjs";
+  import seedrandom from "seedrandom";
+  import type { ComponentType } from "svelte";
+  import {
+    loadImages,
+    type Position,
+    type SceneSpec,
+    type SceneType,
+    type SvelteComponentMounter,
+  } from "../../model";
+  import { viewScene } from "../../scenes/drawing";
+  import { makeOverlayDisplay } from "./overlay-display";
 
   export let sceneSpec: SceneSpec;
 
+  export let _testProps:
+    | {
+        seed?: string;
+        onSceneChange?: (scene: SceneType) => void;
+        worldClick$?: Observable<Position>;
+      }
+    | undefined = undefined;
+
   let windowWidth = window.innerWidth;
   let windowHeight = window.innerHeight;
+
+  const seed = _testProps?.seed ?? seedrandom().int32().toString();
+  console.log("Congratulations! Your random seed is", seed);
 
   window.addEventListener("resize", () => {
     windowWidth = window.innerWidth;
     windowHeight = window.innerHeight;
   });
+
+  const overlayDisplay = makeOverlayDisplay();
+  const overlayDisplayState$ = overlayDisplay.state$;
+  const worldDisabled$ = overlayDisplayState$.pipe(
+    map((v) => v.worldDisabled),
+    startWith(false)
+  );
+
+  const mountSvelteComponent: SvelteComponentMounter = (
+    component: ComponentType,
+    props: object
+  ) => {
+    overlayDisplay.show({ component, props });
+  };
+
+  const unmountSelf = () => {
+    overlayDisplay.hide();
+  };
 </script>
 
 {#if windowWidth <= 800}
@@ -32,8 +70,35 @@
       <p>.</p>
     </div>
   {:then images}
-    <SceneViewer {sceneSpec} {images} />
+    <canvas
+      class:disabled={$overlayDisplayState$.worldDisabled}
+      style:filter={`blur(${2.5 * $overlayDisplayState$.inOutValue}px)`}
+      use:viewScene={{
+        initialSceneSpec: sceneSpec,
+        images,
+        seed,
+        mountSvelteComponent,
+        onSceneChange: _testProps?.onSceneChange,
+        worldClick$: _testProps?.worldClick$,
+        worldDisabled$,
+      }}
+    />
   {/await}
+  <div
+    class="overlay"
+    class:disabled={!$overlayDisplayState$.worldDisabled}
+    style:opacity={$overlayDisplayState$.inOutValue}
+  >
+    <div class="overlay-content-wrapper">
+      {#if $overlayDisplayState$.overlayComponent}
+        <svelte:component
+          this={$overlayDisplayState$.overlayComponent.component}
+          {...$overlayDisplayState$.overlayComponent.props}
+          {unmountSelf}
+        />
+      {/if}
+    </div>
+  </div>
 </div>
 
 <style>
@@ -45,6 +110,34 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  canvas {
+    width: 100%;
+    max-height: 95vh;
+    will-change: filter;
+  }
+
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    will-change: opacity;
+  }
+
+  .disabled {
+    pointer-events: none;
+  }
+
+  .overlay-content-wrapper {
+    box-shadow: 3px 3px 14px 4px hsla(0, 0%, 0%, 0.05),
+      2px 2px 8px 3px hsla(0, 0%, 0%, 0.1), 1px 1px 3px 1px hsla(0, 0%, 0%, 0.1);
+    user-select: none;
   }
 
   .loading {

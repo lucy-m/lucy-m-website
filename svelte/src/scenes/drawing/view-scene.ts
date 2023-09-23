@@ -2,6 +2,7 @@ import {
   Observable,
   Subject,
   Subscription,
+  filter,
   finalize,
   interval,
   map,
@@ -9,6 +10,7 @@ import {
   startWith,
   switchMap,
   tap,
+  withLatestFrom,
 } from "rxjs";
 import seedrandom from "seedrandom";
 import { sceneSize } from "..";
@@ -20,7 +22,11 @@ import {
   type Position,
   type SceneType,
 } from "../../model";
-import type { SceneEvent, SceneSpec } from "../../model/scene-types";
+import type {
+  SceneEvent,
+  SceneSpec,
+  SvelteComponentMounter,
+} from "../../model/scene-types";
 import { drawLayerContent } from "./canvas-draw";
 
 const redrawCanvas = (
@@ -47,6 +53,8 @@ export const viewScene = (
     onSceneChange?: (scene: SceneType) => void;
     worldClick$?: Observable<Position>;
     seed: string;
+    mountSvelteComponent: SvelteComponentMounter;
+    worldDisabled$: Observable<boolean>;
   }
 ): Destroyable => {
   const { initialSceneSpec, images, onSceneChange, worldClick$, seed } = args;
@@ -79,7 +87,12 @@ export const viewScene = (
     subscription = changeSceneSub
       .pipe(
         startWith(initialSceneSpec),
-        map((sceneSpec) => sceneSpec(prng)(images, onNewScene)),
+        map((sceneSpec) =>
+          sceneSpec({
+            random: prng,
+            mountSvelteComponent: args.mountSvelteComponent,
+          })(images, onNewScene)
+        ),
         tap((currentScene) => {
           redrawCanvas(ctx, currentScene, images);
           onSceneChange && onSceneChange(currentScene);
@@ -96,7 +109,9 @@ export const viewScene = (
             )
           ).pipe(
             finalize(() => currentScene.destroy()),
-            tap((event) => currentScene.onExternalEvent(event)),
+            withLatestFrom(args.worldDisabled$),
+            filter(([_event, disabled]) => !disabled),
+            tap(([event]) => currentScene.onExternalEvent(event)),
             tap(() => {
               onSceneChange && onSceneChange(currentScene);
             }),

@@ -1,15 +1,10 @@
 import {
   BehaviorSubject,
-  Observable,
-  Subject,
   distinctUntilKeyChanged,
   from,
   map,
-  merge,
   mergeMap,
   pairwise,
-  switchMap,
-  timer,
 } from "rxjs";
 import type { PRNG } from "seedrandom";
 import {
@@ -40,13 +35,12 @@ export const fishingMan = (args: {
   const currentState = new BehaviorSubject<AnyFishingState>(
     args.initialState ?? { kind: "idle" }
   );
-  const actionSub = new Subject<AnyFishingAction>();
 
   const stateReducer = makeFishingStateReducer({
     makeBobber: () =>
       makeBobber({
         onLand: () => {
-          actionSub.next({ kind: "cast-out-land" });
+          applyFishingAction({ kind: "cast-out-land" });
         },
         random,
       }),
@@ -57,7 +51,7 @@ export const fishingMan = (args: {
           PosFns.new(-20, -280)
         ),
         onInteract: () => {
-          actionSub.next({
+          applyFishingAction({
             kind: "start-reel",
           });
         },
@@ -69,39 +63,19 @@ export const fishingMan = (args: {
         initial: prevState.bobber.getPosition(),
         target: PosFns.new(100, 400),
         onTargetReached: () => {
-          actionSub.next({ kind: "fish-retrieved" });
+          applyFishingAction({ kind: "fish-retrieved" });
           args.onFishRetrieved(prevState.fishId);
         },
       }),
+    makeFishId: () => "" + Math.abs(random.int32()),
   });
 
-  const timerActions: Observable<AnyFishingAction> = currentState.pipe(
-    switchMap((state) => {
-      if (state.kind === "cast-out-swing") {
-        return timer(1000).pipe(
-          map<unknown, AnyFishingAction>(() => ({
-            kind: "finish-cast-out-swing",
-          }))
-        );
-      } else if (state.kind === "cast-out-waiting") {
-        return timer(1000).pipe(
-          map<unknown, AnyFishingAction>(() => ({
-            kind: "fish-bite",
-            fishId: "" + Math.abs(random.int32()),
-          }))
-        );
-      } else {
-        return new Subject<AnyFishingAction>();
-      }
-    })
-  );
-
-  const sub = merge(actionSub, timerActions).subscribe((action) => {
+  const applyFishingAction = (action: AnyFishingAction): void => {
     const nextState = stateReducer(action, currentState.value);
     if (nextState !== currentState.value) {
       currentState.next(nextState);
     }
-  });
+  };
 
   const events$ = currentState.pipe(
     distinctUntilKeyChanged("kind"),
@@ -142,7 +116,7 @@ export const fishingMan = (args: {
                   reelingOverlay({
                     random,
                     onComplete: () => {
-                      actionSub.next({
+                      applyFishingAction({
                         kind: "finish-reel",
                       });
                     },
@@ -185,15 +159,16 @@ export const fishingMan = (args: {
             : PosFns.zero,
       },
     ],
-    onDestroy: () => {
-      sub.unsubscribe();
-    },
     onInteract: () => {
-      actionSub.next({ kind: "cast-out" });
+      applyFishingAction({ kind: "start-cast-out-swing" });
+    },
+    onTick: () => {
+      applyFishingAction({ kind: "tick" });
     },
     events$,
     _getDebugInfo: () => ({
       state: currentState.value,
+      onFishRetrieved: args.onFishRetrieved,
     }),
   });
 };

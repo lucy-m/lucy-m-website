@@ -15,8 +15,18 @@ describe("intro scene", () => {
           let sceneB: SceneType;
 
           beforeEach(() => {
-            sceneA = makeIntroScene(seedrandom(seed))({}, () => {});
-            sceneB = makeIntroScene(seedrandom(seed))({}, () => {});
+            sceneA = makeIntroScene({
+              random: seedrandom(seed),
+              mountSvelteComponent: () => {
+                throw new Error("Not implemented");
+              },
+            })({}, () => {});
+            sceneB = makeIntroScene({
+              random: seedrandom(seed),
+              mountSvelteComponent: () => {
+                throw new Error("Not implemented");
+              },
+            })({}, () => {});
           });
 
           afterEach(() => {
@@ -95,7 +105,7 @@ describe("intro scene", () => {
         worldClick$ = new Subject<Position>();
 
         cy.mountViewScene({
-          initialSceneSpec: makeIntroScene,
+          sceneSpec: makeIntroScene,
           seed: "abcd",
           onSceneChange: (s: SceneType) => {
             currentScene = s;
@@ -113,7 +123,7 @@ describe("intro scene", () => {
           const house = getByTypeName(currentScene, "small-house");
           worldClick$.next(PosFns.add(house.getPosition(), PosFns.new(5, 5)));
 
-          cy.steppedTick(100);
+          cy.steppedTick(1000);
         });
 
         it("changes scene", () => {
@@ -174,7 +184,7 @@ describe("intro scene", () => {
               const allBirdIds = new Set<string>();
 
               cy.mountViewScene({
-                initialSceneSpec: makeIntroScene,
+                sceneSpec: makeIntroScene,
                 seed,
                 onSceneChange: (scene) => {
                   scene

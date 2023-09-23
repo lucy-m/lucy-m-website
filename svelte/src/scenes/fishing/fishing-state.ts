@@ -1,11 +1,12 @@
 import type { SceneObject } from "../../model";
 
-export type AnyFishingState =
+export type AnyFishingState = Readonly<
   | {
       kind: "idle";
     }
   | {
       kind: "cast-out-swing";
+      timer: number;
     }
   | {
       kind: "cast-out-casting";
@@ -14,6 +15,7 @@ export type AnyFishingState =
   | {
       kind: "cast-out-waiting";
       bobber: SceneObject;
+      timer: number;
     }
   | {
       kind: "got-a-bite";
@@ -30,7 +32,8 @@ export type AnyFishingState =
       kind: "retrieving-fish";
       flyingFish: SceneObject;
       fishId: string;
-    };
+    }
+>;
 
 export type FlatFishingState = {
   kind: AnyFishingState["kind"];
@@ -60,23 +63,16 @@ export class AnyFishingActionCls {
 }
 
 export type AnyFishingAction =
-  | {
-      kind: "cast-out";
-    }
   | { kind: "start-cast-out-swing" }
-  | { kind: "finish-cast-out-swing" }
   | { kind: "cast-out-land" }
-  | {
-      kind: "fish-bite";
-      fishId: string;
-    }
   | {
       kind: "start-reel";
     }
   | {
       kind: "finish-reel";
     }
-  | { kind: "fish-retrieved" };
+  | { kind: "fish-retrieved" }
+  | { kind: "tick" };
 
 export type FishingAction<T extends AnyFishingAction["kind"]> = Extract<
   AnyFishingAction,
@@ -90,31 +86,39 @@ export const makeFishingStateReducer =
       prevState: FishingState<"cast-out-waiting">
     ) => SceneObject;
     makeFlyingFish: (prevState: FishingState<"reeling">) => SceneObject;
+    makeFishId: () => string;
   }) =>
   (action: AnyFishingAction, state: AnyFishingState): AnyFishingState => {
     switch (action.kind) {
-      case "cast-out": {
-        if (state.kind === "idle") {
-          return { kind: "cast-out-swing" };
+      case "tick": {
+        if ("timer" in state) {
+          if (state.timer < 0) {
+            if (state.kind === "cast-out-swing") {
+              return {
+                kind: "cast-out-casting",
+                bobber: args.makeBobber(state),
+              };
+            } else if (state.kind === "cast-out-waiting") {
+              return {
+                kind: "got-a-bite",
+                fishId: args.makeFishId(),
+                bobber: state.bobber,
+                biteMarker: args.makeFishBiteMarker(state),
+              };
+            } else {
+              return state;
+            }
+          } else {
+            return { ...state, timer: state.timer - 1 };
+          }
         } else {
           return state;
         }
       }
 
       case "start-cast-out-swing": {
-        if (state.kind === "cast-out-swing") {
-          return { kind: "cast-out-swing" };
-        } else {
-          return state;
-        }
-      }
-
-      case "finish-cast-out-swing": {
-        if (state.kind === "cast-out-swing") {
-          return {
-            kind: "cast-out-casting",
-            bobber: args.makeBobber(state),
-          };
+        if (state.kind === "idle") {
+          return { kind: "cast-out-swing", timer: 35 };
         } else {
           return state;
         }
@@ -122,20 +126,7 @@ export const makeFishingStateReducer =
 
       case "cast-out-land": {
         if (state.kind === "cast-out-casting") {
-          return { kind: "cast-out-waiting", bobber: state.bobber };
-        } else {
-          return state;
-        }
-      }
-
-      case "fish-bite": {
-        if (state.kind === "cast-out-waiting") {
-          return {
-            kind: "got-a-bite",
-            fishId: action.fishId,
-            bobber: state.bobber,
-            biteMarker: args.makeFishBiteMarker(state),
-          };
+          return { kind: "cast-out-waiting", bobber: state.bobber, timer: 35 };
         } else {
           return state;
         }

@@ -1,14 +1,9 @@
-import { Subject } from "rxjs";
-import type { PRNG } from "seedrandom";
-import {
-  PosFns,
-  makeSceneObject,
-  makeSceneType,
-  type ObjectLayerContent,
-} from "../../model";
+import { Subject, map, scan, share, startWith } from "rxjs";
+import { PosFns, makeSceneObject, makeSceneType } from "../../model";
 import type { SceneSpec } from "../../model/scene-types";
-import { choose } from "../../utils";
+import FishCaughtNotification from "./FishCaughtNotification.svelte";
 import { fishingMan } from "./objects/fisherman";
+import { makeXpBar } from "./objects/xp-bar";
 
 const layerOrder = [
   "bg",
@@ -16,51 +11,57 @@ const layerOrder = [
   "bobber",
   "bite-marker",
   "fish",
+  "xp-bar",
   "reeling",
   "debug",
 ] as const;
 
-export const makeFishingScene = (): SceneSpec => (random: PRNG) => {
-  let gotFishId: string | undefined;
+export const makeFishingScene =
+  (): SceneSpec =>
+  ({ random, mountSvelteComponent }) => {
+    const makeSceneObjectBound = makeSceneObject(random);
 
-  const makeSceneObjectBound = makeSceneObject(random);
+    let firstFish = true;
 
-  const objects = [
-    makeSceneObjectBound({
-      layerKey: "bg",
-      getPosition: () => PosFns.zero,
-      getLayers: () =>
-        choose<ObjectLayerContent | undefined, ObjectLayerContent>(
-          [
-            {
-              kind: "image",
-              assetKey: "fishingBackground",
-              subLayer: "background",
-            },
-            gotFishId
-              ? {
-                  kind: "text",
-                  maxWidth: 800,
-                  position: PosFns.new(1000, 1020),
-                  text: ["You caught fish " + gotFishId],
-                }
-              : undefined,
-          ],
-          (v) => v
-        ),
-    }),
-    fishingMan({
-      random,
-      onFishRetrieved: (fishId: string) => {
-        gotFishId = fishId;
-      },
-    }),
-  ];
+    const addXp = new Subject<number>();
 
-  return makeSceneType({
-    typeName: "fishing",
-    events: new Subject(),
-    layerOrder,
-    objects,
-  });
-};
+    const xp$ = addXp.pipe(
+      scan((acc, add) => acc + add, 0),
+      startWith(0),
+      share()
+    );
+
+    const xpBarProgress$ = xp$.pipe(map((xp) => (xp % 100) / 100));
+
+    const objects = [
+      makeSceneObjectBound({
+        layerKey: "bg",
+        getPosition: () => PosFns.zero,
+        getLayers: () => [
+          {
+            kind: "image",
+            assetKey: "fishingBackground",
+            subLayer: "background",
+          },
+        ],
+      }),
+      fishingMan({
+        random,
+        onFishRetrieved: (fishId: string) => {
+          if (firstFish) {
+            mountSvelteComponent(FishCaughtNotification, {});
+            firstFish = false;
+          }
+          addXp.next(34);
+        },
+      }),
+      makeXpBar({ random, fillFrac$: xpBarProgress$ }),
+    ];
+
+    return makeSceneType({
+      typeName: "fishing",
+      events: new Subject(),
+      layerOrder,
+      objects,
+    });
+  };
