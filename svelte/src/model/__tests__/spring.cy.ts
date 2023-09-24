@@ -1,4 +1,13 @@
-import { NumberSpringFns, type NumberSpring } from "../spring";
+import { Subject, map, type Observable } from "rxjs";
+import type { PRNG } from "seedrandom";
+import { PosFns, type Position } from "../position";
+import { makeSceneObject } from "../scene-object";
+import type { SceneObject } from "../scene-types";
+import {
+  NumberSpringFns,
+  PositionSpringFns,
+  type NumberSpring,
+} from "../spring";
 
 describe("spring", () => {
   it("ticking moves item", () => {
@@ -36,5 +45,108 @@ describe("spring", () => {
     const tickedB = NumberSpringFns.tick(springA, 2);
 
     expect(tickedB.position).to.be.greaterThan(tickedA.position);
+  });
+
+  describe("rendering tests", () => {
+    const interactive = Cypress.config("isInteractive");
+    // const interactive = false;
+
+    const makeSpringSceneObject = (args: {
+      initial: Position;
+      endPoint: Observable<Position>;
+      random: PRNG;
+    }): SceneObject => {
+      let position = PositionSpringFns.make({
+        position: args.initial,
+        endPoint: args.initial,
+        velocity: PosFns.zero,
+        properties: {
+          friction: 4,
+          precision: 0.1,
+          stiffness: 0.4,
+          weight: 0.2,
+        },
+      });
+
+      const sub = args.endPoint.subscribe((endPoint) => {
+        position = PositionSpringFns.set(position, { endPoint });
+      });
+
+      return makeSceneObject(args.random)({
+        getPosition: () => position.position,
+        getLayers: () => [
+          {
+            kind: "image",
+            subLayer: "background",
+            assetKey: "feather1",
+          },
+        ],
+        layerKey: "test",
+        onTick: () => {
+          position = PositionSpringFns.tick(position, 0.2);
+        },
+        onDestroy: () => {
+          sub.unsubscribe();
+        },
+      });
+    };
+
+    beforeEach(() => {
+      if (!interactive) {
+        cy.clock();
+      }
+    });
+
+    it("works", () => {
+      let endPointCount = 0;
+      const endPointSub = new Subject<Position>();
+
+      const setEndPoint = (pos: Position) => {
+        endPointCount++;
+        endPointSub.next(pos);
+      };
+
+      const debugDraw$ = endPointSub.pipe(
+        map((endPoint) => (ctx: CanvasRenderingContext2D) => {
+          ctx.beginPath();
+          ctx.ellipse(endPoint.x, endPoint.y, 10, 10, 0, 0, 2 * Math.PI);
+          ctx.stroke();
+        })
+      );
+
+      cy.mountSceneObject({
+        makeObjects: (random) => [
+          makeSpringSceneObject({
+            random,
+            initial: PosFns.new(50, 100),
+            endPoint: endPointSub,
+          }),
+        ],
+        seed: "zzz",
+        debugTrace: {
+          sources: (scene) => scene.getObjects(),
+          colour: () => {
+            return `hsl(${endPointCount * 80}, 80%, 50%)`;
+          },
+        },
+        debugDraw$,
+      });
+
+      cy.interactiveWait(500, interactive).then(() => {
+        setEndPoint(PosFns.new(800, 120));
+      });
+
+      cy.interactiveWait(3000, interactive).then(() => {
+        setEndPoint(PosFns.new(400, 800));
+      });
+
+      cy.interactiveWait(1500, interactive).then(() => {
+        setEndPoint(PosFns.new(1200, 600));
+      });
+
+      cy.interactiveWait(8000, interactive);
+
+      cy.percySnapshot();
+    });
   });
 });
