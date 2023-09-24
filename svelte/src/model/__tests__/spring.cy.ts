@@ -62,6 +62,7 @@ describe("spring", () => {
         initial: number;
         endPoint: Observable<number>;
         random: PRNG;
+        clampValue: boolean;
       }): SceneObject => {
         let yPosition = 100;
 
@@ -74,6 +75,7 @@ describe("spring", () => {
             precision: 0.1,
             stiffness: 0.4,
             weight: 0.2,
+            clampValue: args.clampValue,
           },
         });
 
@@ -101,64 +103,67 @@ describe("spring", () => {
         });
       };
 
-      it.only("works", () => {
-        let endPointCount = 0;
-        const endPointSub = new Subject<number>();
+      [true, false].forEach((clampValue) => {
+        it(`works for clampValue=${clampValue}`, () => {
+          let endPointCount = 0;
+          const endPointSub = new Subject<number>();
 
-        const setEndPoint = (pos: number) => {
-          endPointCount++;
-          endPointSub.next(pos);
-        };
+          const setEndPoint = (pos: number) => {
+            endPointCount++;
+            endPointSub.next(pos);
+          };
 
-        const debugDraw$ = endPointSub.pipe(
-          map((endPoint) => (ctx: CanvasRenderingContext2D) => {
-            ctx.beginPath();
-            ctx.ellipse(
-              endPoint,
-              endPointCount * 80,
-              10,
-              10,
-              0,
-              0,
-              2 * Math.PI
-            );
-            ctx.stroke();
-          })
-        );
+          const debugDraw$ = endPointSub.pipe(
+            map((endPoint) => (ctx: CanvasRenderingContext2D) => {
+              ctx.beginPath();
+              ctx.ellipse(
+                endPoint,
+                endPointCount * 80,
+                10,
+                10,
+                0,
+                0,
+                2 * Math.PI
+              );
+              ctx.stroke();
+            })
+          );
 
-        cy.mountSceneObject({
-          makeObjects: (random) => [
-            makeSpringSceneObject({
-              random,
-              initial: 100,
-              endPoint: endPointSub,
-            }),
-          ],
-          seed: "zzz",
-          debugTrace: {
-            sources: (scene) => scene.getObjects(),
-            colour: () => {
-              return `hsl(${endPointCount * 80}, 80%, 50%)`;
+          cy.mountSceneObject({
+            makeObjects: (random) => [
+              makeSpringSceneObject({
+                random,
+                initial: 100,
+                endPoint: endPointSub,
+                clampValue,
+              }),
+            ],
+            seed: "zzz",
+            debugTrace: {
+              sources: (scene) => scene.getObjects(),
+              colour: () => {
+                return `hsl(${endPointCount * 80}, 80%, 50%)`;
+              },
             },
-          },
-          debugDraw$,
+            debugDraw$,
+          });
+
+          cy.interactiveWait(500, interactive).then(() => {
+            setEndPoint(200);
+          });
+
+          cy.interactiveWait(3000, interactive).then(() => {
+            setEndPoint(1000);
+          });
+
+          cy.interactiveWait(1500, interactive).then(() => {
+            setEndPoint(400);
+          });
+
+          cy.interactiveWait(8000, interactive);
+
+          cy.percySnapshot();
         });
-
-        cy.interactiveWait(500, interactive).then(() => {
-          setEndPoint(200);
-        });
-
-        cy.interactiveWait(3000, interactive).then(() => {
-          setEndPoint(1000);
-        });
-
-        cy.interactiveWait(1500, interactive).then(() => {
-          setEndPoint(400);
-        });
-
-        cy.interactiveWait(8000, interactive);
-
-        cy.percySnapshot();
       });
     });
 
@@ -167,6 +172,7 @@ describe("spring", () => {
         initial: Position;
         endPoint: Observable<Position>;
         random: PRNG;
+        clampValue: boolean;
       }): SceneObject => {
         let position = PositionSpringFns.make({
           position: args.initial,
@@ -177,6 +183,7 @@ describe("spring", () => {
             precision: 0.1,
             stiffness: 0.4,
             weight: 0.2,
+            clampValue: args.clampValue,
           },
         });
 
@@ -203,56 +210,59 @@ describe("spring", () => {
         });
       };
 
-      it("works", () => {
-        let endPointCount = 0;
-        const endPointSub = new Subject<Position>();
+      [true, false].forEach((clampValue) => {
+        it(`works for clampValue=${clampValue}`, () => {
+          let endPointCount = 0;
+          const endPointSub = new Subject<Position>();
 
-        const setEndPoint = (pos: Position) => {
-          endPointCount++;
-          endPointSub.next(pos);
-        };
+          const setEndPoint = (pos: Position) => {
+            endPointCount++;
+            endPointSub.next(pos);
+          };
 
-        const debugDraw$ = endPointSub.pipe(
-          map((endPoint) => (ctx: CanvasRenderingContext2D) => {
-            ctx.beginPath();
-            ctx.ellipse(endPoint.x, endPoint.y, 10, 10, 0, 0, 2 * Math.PI);
-            ctx.stroke();
-          })
-        );
+          const debugDraw$ = endPointSub.pipe(
+            map((endPoint) => (ctx: CanvasRenderingContext2D) => {
+              ctx.beginPath();
+              ctx.ellipse(endPoint.x, endPoint.y, 10, 10, 0, 0, 2 * Math.PI);
+              ctx.stroke();
+            })
+          );
 
-        cy.mountSceneObject({
-          makeObjects: (random) => [
-            makeSpringSceneObject({
-              random,
-              initial: PosFns.new(50, 100),
-              endPoint: endPointSub,
-            }),
-          ],
-          seed: "zzz",
-          debugTrace: {
-            sources: (scene) => scene.getObjects(),
-            colour: () => {
-              return `hsl(${endPointCount * 80}, 80%, 50%)`;
+          cy.mountSceneObject({
+            makeObjects: (random) => [
+              makeSpringSceneObject({
+                random,
+                initial: PosFns.new(50, 100),
+                endPoint: endPointSub,
+                clampValue,
+              }),
+            ],
+            seed: "zzz",
+            debugTrace: {
+              sources: (scene) => scene.getObjects(),
+              colour: () => {
+                return `hsl(${endPointCount * 80}, 80%, 50%)`;
+              },
             },
-          },
-          debugDraw$,
+            debugDraw$,
+          });
+
+          cy.interactiveWait(500, interactive).then(() => {
+            setEndPoint(PosFns.new(800, 120));
+          });
+
+          cy.interactiveWait(3000, interactive).then(() => {
+            setEndPoint(PosFns.new(400, 800));
+          });
+
+          cy.interactiveWait(500, interactive).then(() => {
+            setEndPoint(PosFns.new(1200, 600));
+          });
+
+          cy.interactiveWait(8000, interactive);
+
+          cy.percySnapshot();
         });
-
-        cy.interactiveWait(500, interactive).then(() => {
-          setEndPoint(PosFns.new(800, 120));
-        });
-
-        cy.interactiveWait(3000, interactive).then(() => {
-          setEndPoint(PosFns.new(400, 800));
-        });
-
-        cy.interactiveWait(1500, interactive).then(() => {
-          setEndPoint(PosFns.new(1200, 600));
-        });
-
-        cy.interactiveWait(8000, interactive);
-
-        cy.percySnapshot();
       });
     });
   });
