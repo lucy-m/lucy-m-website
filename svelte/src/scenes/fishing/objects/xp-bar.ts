@@ -112,6 +112,7 @@ export const makeXpBar = (args: {
         args.onStationary();
       }
       fadeInOpacity = Math.min(1, fadeInOpacity + fadeInRate);
+      console.log("Setting fade in opacity");
     },
     onDestroy: () => {
       sub.unsubscribe();

@@ -1,62 +1,68 @@
 import { z } from "zod";
 import { getDebugInfo, type SceneObject } from "../../../model";
 import { makeFishingScene } from "../fishing-scene";
+import type { FishingSceneState } from "../fishing-scene-state";
 
-// const interactive = Cypress.config("isInteractive");
-// These tests don't work in non-interactive mode
-const interactive = true;
+const interactive = Cypress.config("isInteractive");
+// const interactive = false;
 
 describe("fishing scene", () => {
-  describe("level 0", () => {
-    let fisherman: SceneObject | undefined;
-    let xpBar: SceneObject | undefined;
+  let fisherman: SceneObject | undefined;
+  let xpBar: SceneObject | undefined;
 
-    const getXpBarInfo = () => {
-      expect(xpBar).to.exist;
-      const info = getDebugInfo(
-        xpBar!,
-        z.object({
-          fillFracSpring: z.object({
-            position: z.number(),
-          }),
-          fadeInOpacity: z.number(),
-        })
-      );
+  const getXpBarInfo = () => {
+    expect(xpBar).to.exist;
+    const info = getDebugInfo(
+      xpBar!,
+      z.object({
+        fillFracSpring: z.object({
+          position: z.number(),
+        }),
+        fadeInOpacity: z.number(),
+      })
+    );
 
-      return info;
-    };
+    return info;
+  };
 
-    const retrieveFish = (fishId: string) => {
-      expect(fisherman).to.exist;
-      const info = getDebugInfo(
-        fisherman!,
-        z.object({
-          onFishRetrieved: z.function().args(z.string()),
-        })
-      );
-      info.onFishRetrieved(fishId);
-    };
+  const retrieveFish = (fishId: string) => {
+    expect(fisherman).to.exist;
+    const info = getDebugInfo(
+      fisherman!,
+      z.object({
+        onFishRetrieved: z.function().args(z.string()),
+      })
+    );
+    info.onFishRetrieved(fishId);
+  };
 
-    beforeEach(() => {
-      if (!interactive) {
-        cy.clock();
-      }
+  const renderFishingScene = (args: {
+    initialState: FishingSceneState | undefined;
+  }) => {
+    cy.mountViewScene({
+      sceneSpec: makeFishingScene(args.initialState),
+      seed: "abcd",
+      onSceneChange: (scene) => {
+        fisherman = scene
+          .getObjects()
+          .find((obj) => obj.typeName === "fisherman");
+
+        xpBar = scene.getObjects().find((obj) => obj.typeName === "xp-bar");
+      },
     });
+  };
 
+  beforeEach(() => {
+    if (!interactive) {
+      cy.clock();
+    }
+
+    cy.viewport(1400, 900);
+  });
+
+  describe("level 0", () => {
     beforeEach(() => {
-      cy.viewport(1400, 900);
-
-      cy.mountViewScene({
-        sceneSpec: makeFishingScene(),
-        seed: "abcd",
-        onSceneChange: (scene) => {
-          fisherman = scene
-            .getObjects()
-            .find((obj) => obj.typeName === "fisherman");
-
-          xpBar = scene.getObjects().find((obj) => obj.typeName === "xp-bar");
-        },
-      });
+      renderFishingScene({ initialState: undefined });
     });
 
     it("does not have xp bar", () => {
@@ -150,6 +156,40 @@ describe("fishing scene", () => {
             });
           });
         });
+      });
+    });
+  });
+
+  describe("level 5", () => {
+    beforeEach(() => {
+      renderFishingScene({
+        initialState: {
+          level: 5,
+          levelXp: 40,
+          nextLevelXp: 200,
+          totalXp: 740,
+        },
+      });
+    });
+
+    it("initialises xp bar correcly", () => {
+      cy.myWaitFor(() => getXpBarInfo().fadeInOpacity === 1, interactive);
+      cy.myWaitFor(
+        () => getXpBarInfo().fillFracSpring.position === 0.2,
+        interactive
+      );
+    });
+
+    describe("catching a fish", () => {
+      beforeEach(() => {
+        retrieveFish("some-fish");
+      });
+
+      it("updates xp correctly", () => {
+        cy.myWaitFor(
+          () => getXpBarInfo().fillFracSpring.position === 0.25,
+          interactive
+        );
       });
     });
   });

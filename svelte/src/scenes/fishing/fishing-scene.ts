@@ -10,7 +10,7 @@ import {
 } from "rxjs";
 import { PosFns, makeSceneObject, makeSceneType } from "../../model";
 import type { SceneEventOrAction, SceneSpec } from "../../model/scene-types";
-import { choose } from "../../utils";
+import { filterUndefined } from "../../utils";
 import { chooseOp } from "../../utils/choose-op";
 import {
   addXp,
@@ -34,12 +34,12 @@ const layerOrder = [
 ] as const;
 
 export const makeFishingScene =
-  (): SceneSpec =>
+  (initialState: FishingSceneState | undefined): SceneSpec =>
   ({ random, mountSvelteComponent }) => {
     const makeSceneObjectBound = makeSceneObject(random);
 
     const stateSub = new BehaviorSubject<FishingSceneState | undefined>(
-      undefined
+      initialState
     );
     const levelUpSub = new BehaviorSubject<
       FishingSceneNotification | undefined
@@ -100,38 +100,36 @@ export const makeFishingScene =
       })
     );
 
-    const objects = choose(
-      [
-        makeSceneObjectBound({
-          layerKey: "bg",
-          getPosition: () => PosFns.zero,
-          getLayers: () => [
-            {
-              kind: "image",
-              assetKey: "fishingBackground",
-              subLayer: "background",
-            },
-          ],
-        }),
-        fishingMan({
-          random,
-          onFishRetrieved: (fishId: string) => {
-            if (stateSub.value === undefined) {
-              mountSvelteComponent(FirstFishNotification, {});
-              stateSub.next(initialFishingSceneState);
-            } else {
-              const [nextState, notification] = addXp(10, stateSub.value);
-              stateSub.next(nextState);
-
-              if (notification) {
-                levelUpSub.next(notification);
-              }
-            }
+    const objects = filterUndefined([
+      makeSceneObjectBound({
+        layerKey: "bg",
+        getPosition: () => PosFns.zero,
+        getLayers: () => [
+          {
+            kind: "image",
+            assetKey: "fishingBackground",
+            subLayer: "background",
           },
-        }),
-      ],
-      (v) => v
-    );
+        ],
+      }),
+      fishingMan({
+        random,
+        onFishRetrieved: (fishId: string) => {
+          if (stateSub.value === undefined) {
+            mountSvelteComponent(FirstFishNotification, {});
+            stateSub.next(initialFishingSceneState);
+          } else {
+            const [nextState, notification] = addXp(10, stateSub.value);
+            stateSub.next(nextState);
+
+            if (notification) {
+              levelUpSub.next(notification);
+            }
+          }
+        },
+      }),
+      stateSub.value !== undefined ? xpBar : undefined,
+    ]);
 
     return makeSceneType({
       typeName: "fishing",

@@ -59,8 +59,6 @@ export const makeOverlayDisplay = (): OverlayDisplay => {
         showHide.kind === "show" ? showHide.component : undefined;
       const inOutValue = spring.position;
 
-      console.log("inOutValue", inOutValue, spring.endPoint);
-
       return { worldDisabled, overlayComponent, inOutValue };
     }),
     startWith({
