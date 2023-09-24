@@ -127,8 +127,7 @@ describe("fishing scene", () => {
                   cy.contains("button", "OK").click();
                 });
 
-                it.only("resets xp bar", () => {
-                  cy.interactiveWait(2000, interactive);
+                it("resets xp bar", () => {
                   cy.myWaitFor(() => getXpBarPosition() < 1, interactive);
                 });
               });

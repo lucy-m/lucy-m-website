@@ -38,6 +38,7 @@ export const makeOverlayDisplay = (): OverlayDisplay => {
         precision: 0.01,
         stiffness: 1,
         weight: 8,
+        clampValue: true,
       },
     },
     showHideSub.pipe(
