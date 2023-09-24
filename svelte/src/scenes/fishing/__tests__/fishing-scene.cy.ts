@@ -1,4 +1,5 @@
-import type { SceneObject } from "../../../model";
+import { z } from "zod";
+import { getDebugInfo, type SceneObject } from "../../../model";
 import { makeFishingScene } from "../fishing-scene";
 
 // const interactive = Cypress.config("isInteractive");
@@ -10,27 +11,30 @@ describe("fishing scene", () => {
     let fisherman: SceneObject | undefined;
     let xpBar: SceneObject | undefined;
 
-    const getXpBarPosition = () => {
-      expect(xpBar?._getDebugInfo).to.exist;
-      const debugInfo = xpBar!._getDebugInfo!();
-      const fillFracSpring = debugInfo?.fillFracSpring;
-      expect(typeof fillFracSpring?.position).to.eq("number");
-      return fillFracSpring!.position as number;
-    };
+    const getXpBarInfo = () => {
+      expect(xpBar).to.exist;
+      const info = getDebugInfo(
+        xpBar!,
+        z.object({
+          fillFracSpring: z.object({
+            position: z.number(),
+          }),
+          fadeInOpacity: z.number(),
+        })
+      );
 
-    const getXpBarOpacity = () => {
-      expect(xpBar?._getDebugInfo).to.exist;
-      const debugInfo = xpBar!._getDebugInfo!();
-      const fadeInOpacity = debugInfo?.fadeInOpacity;
-      expect(typeof fadeInOpacity).to.eq("number");
-      return fadeInOpacity as number;
+      return info;
     };
 
     const retrieveFish = (fishId: string) => {
-      expect(fisherman?._getDebugInfo).to.exist;
-      const debugInfo = fisherman!._getDebugInfo!();
-      expect(typeof debugInfo.onFishRetrieved).to.eq("function");
-      debugInfo.onFishRetrieved(fishId);
+      expect(fisherman).to.exist;
+      const info = getDebugInfo(
+        fisherman!,
+        z.object({
+          onFishRetrieved: z.function().args(z.string()),
+        })
+      );
+      info.onFishRetrieved(fishId);
     };
 
     beforeEach(() => {
@@ -77,11 +81,14 @@ describe("fishing scene", () => {
         beforeEach(() => {
           cy.interactiveWait(100, interactive);
           cy.contains("button", "OK").click();
-          cy.myWaitFor(() => !!xpBar && getXpBarOpacity() === 1, interactive);
+          cy.myWaitFor(
+            () => !!xpBar && getXpBarInfo().fadeInOpacity === 1,
+            interactive
+          );
         });
 
         it("xp bar displayed", () => {
-          expect(getXpBarPosition()).to.eq(0);
+          expect(getXpBarInfo().fillFracSpring.position).to.eq(0);
         });
 
         describe("second fish retrieved", () => {
@@ -95,7 +102,10 @@ describe("fishing scene", () => {
           });
 
           it("xp bar fills", () => {
-            cy.myWaitFor(() => getXpBarPosition() > 0, interactive);
+            cy.myWaitFor(
+              () => getXpBarInfo().fillFracSpring.position > 0,
+              interactive
+            );
           });
 
           describe("fishing enough to level up", () => {
@@ -111,7 +121,10 @@ describe("fishing scene", () => {
 
             describe("after xp bar fills", () => {
               beforeEach(() => {
-                cy.myWaitFor(() => getXpBarPosition() === 1, interactive);
+                cy.myWaitFor(
+                  () => getXpBarInfo().fillFracSpring.position === 1,
+                  interactive
+                );
               });
 
               it("shows level up notification", () => {
@@ -128,7 +141,10 @@ describe("fishing scene", () => {
                 });
 
                 it("resets xp bar", () => {
-                  cy.myWaitFor(() => getXpBarPosition() < 1, interactive);
+                  cy.myWaitFor(
+                    () => getXpBarInfo().fillFracSpring.position < 1,
+                    interactive
+                  );
                 });
               });
             });

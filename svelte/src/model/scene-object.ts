@@ -1,4 +1,5 @@
 import type { PRNG } from "seedrandom";
+import type { ZodSchema } from "zod";
 import { seededUuid } from "../utils";
 import type { AssetKey } from "./assets";
 import { PosFns, type Position } from "./position";
@@ -87,5 +88,19 @@ export const getObjectsInOrder = (
     return bottomToTop;
   } else {
     return bottomToTop.reverse();
+  }
+};
+
+/**
+ * Gets debug info and parses it with the given schema. Will throw if debug info
+ *   does not exist or does not match the schema.
+ */
+export const getDebugInfo = <T>(obj: SceneObject, schema: ZodSchema<T>): T => {
+  if (!obj._getDebugInfo) {
+    throw new Error("Debug info is not defined");
+  } else {
+    const debugInfo = obj._getDebugInfo();
+    const parsed = schema.parse(debugInfo);
+    return parsed;
   }
 };
