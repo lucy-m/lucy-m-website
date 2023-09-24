@@ -7,7 +7,7 @@ import {
   type SceneObject,
   type SceneType,
 } from "../../../model";
-import type { AnyFishingState } from "../fishing-state";
+import type { AnyFishingState } from "../fisherman-state";
 import { bobberBounds } from "../objects/bobber";
 import { fishingMan } from "../objects/fisherman";
 

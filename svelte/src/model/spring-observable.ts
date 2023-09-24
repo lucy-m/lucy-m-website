@@ -8,7 +8,6 @@ import {
   share,
   startWith,
 } from "rxjs";
-import { rafThrottle } from "./raf-throttle";
 import {
   NumberSpringFns,
   PositionSpringFns,
@@ -49,8 +48,7 @@ const makeSpringObservable =
             return springFns.set(current, next.update(current));
         }
       }, initialSpring),
-      distinctUntilChanged(),
-      rafThrottle()
+      distinctUntilChanged()
     );
 
     return springUpdates$.pipe(startWith(initialSpring), share());

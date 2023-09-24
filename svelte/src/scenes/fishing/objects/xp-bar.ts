@@ -11,12 +11,18 @@ import { sceneSize } from "../../scene-size";
 export const makeXpBar = (args: {
   random: PRNG;
   fillFrac$: Observable<number>;
+  onStationary: () => void;
 }): SceneObject => {
   const height = 50;
   const width = 750;
   const margin = 40;
   const outlineWidth = 4;
   const label = "XP";
+
+  const fadeInRate = 0.05;
+
+  // Set this to below 0 to delay fade in slightly
+  let fadeInOpacity = -2 * fadeInRate;
 
   let fillFracSpring = NumberSpringFns.make({
     endPoint: 0,
@@ -44,6 +50,8 @@ export const makeXpBar = (args: {
       {
         kind: "ctxDraw",
         draw: (ctx) => {
+          ctx.globalAlpha = Math.max(fadeInOpacity, 0);
+
           const labelSize = ctx.measureText(label);
 
           const leftMargin = margin + labelSize.width + 16;
@@ -100,12 +108,18 @@ export const makeXpBar = (args: {
     ],
     onTick: () => {
       fillFracSpring = NumberSpringFns.tick(fillFracSpring, 0.1);
+      if (fillFracSpring.stationary) {
+        args.onStationary();
+      }
+      fadeInOpacity = Math.min(1, fadeInOpacity + fadeInRate);
+      console.log("Setting fade in opacity");
     },
     onDestroy: () => {
       sub.unsubscribe();
     },
     _getDebugInfo: () => ({
       fillFracSpring,
+      fadeInOpacity,
     }),
   });
 };

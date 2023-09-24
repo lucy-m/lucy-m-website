@@ -1,9 +1,26 @@
-import { Subject, map, scan, share, startWith } from "rxjs";
+import {
+  BehaviorSubject,
+  Observable,
+  Subject,
+  combineLatest,
+  concatMap,
+  first,
+  map,
+  pairwise,
+} from "rxjs";
 import { PosFns, makeSceneObject, makeSceneType } from "../../model";
-import type { SceneSpec } from "../../model/scene-types";
-import FishCaughtNotification from "./FishCaughtNotification.svelte";
+import type { SceneEventOrAction, SceneSpec } from "../../model/scene-types";
+import { filterUndefined } from "../../utils";
+import { chooseOp } from "../../utils/choose-op";
+import {
+  addXp,
+  initialFishingSceneState,
+  type FishingSceneNotification,
+  type FishingSceneState,
+} from "./fishing-scene-state";
 import { fishingMan } from "./objects/fisherman";
 import { makeXpBar } from "./objects/xp-bar";
+import { FirstFishNotification, LevelUpNotification } from "./overlays";
 
 const layerOrder = [
   "bg",
@@ -17,23 +34,73 @@ const layerOrder = [
 ] as const;
 
 export const makeFishingScene =
-  (): SceneSpec =>
+  (initialState: FishingSceneState | undefined): SceneSpec =>
   ({ random, mountSvelteComponent }) => {
     const makeSceneObjectBound = makeSceneObject(random);
 
-    let firstFish = true;
+    const stateSub = new BehaviorSubject<FishingSceneState | undefined>(
+      initialState
+    );
+    const levelUpSub = new BehaviorSubject<
+      FishingSceneNotification | undefined
+    >(undefined);
+    const stationaryXpBar = new Subject<void>();
 
-    const addXp = new Subject<number>();
-
-    const xp$ = addXp.pipe(
-      scan((acc, add) => acc + add, 0),
-      startWith(0),
-      share()
+    const xpBarProgress$ = combineLatest([stateSub, levelUpSub]).pipe(
+      map(([nextState, levelUpNotification]) => {
+        if (nextState === undefined) {
+          return 0;
+        } else if (levelUpNotification) {
+          return 1;
+        } else {
+          return nextState.levelXp / nextState.nextLevelXp;
+        }
+      })
     );
 
-    const xpBarProgress$ = xp$.pipe(map((xp) => (xp % 100) / 100));
+    const sub = levelUpSub
+      .pipe(
+        concatMap((value) =>
+          stationaryXpBar.pipe(
+            map(() => value),
+            first()
+          )
+        )
+      )
+      .subscribe((notification) => {
+        if (notification !== undefined) {
+          mountSvelteComponent(LevelUpNotification, {
+            newLevel: notification.level,
+            onClosed: () => levelUpSub.next(undefined),
+          });
+        }
+      });
 
-    const objects = [
+    const onStationary = () => {
+      stationaryXpBar.next();
+    };
+
+    const xpBar = makeXpBar({
+      random,
+      fillFrac$: xpBarProgress$,
+      onStationary,
+    });
+
+    const events$: Observable<SceneEventOrAction> = stateSub.pipe(
+      pairwise(),
+      chooseOp(([previous, next]) => {
+        if (!previous && next) {
+          return {
+            kind: "addObject",
+            makeObject: () => xpBar,
+          } as SceneEventOrAction;
+        } else {
+          return undefined;
+        }
+      })
+    );
+
+    const objects = filterUndefined([
       makeSceneObjectBound({
         layerKey: "bg",
         getPosition: () => PosFns.zero,
@@ -48,20 +115,27 @@ export const makeFishingScene =
       fishingMan({
         random,
         onFishRetrieved: (fishId: string) => {
-          if (firstFish) {
-            mountSvelteComponent(FishCaughtNotification, {});
-            firstFish = false;
+          if (stateSub.value === undefined) {
+            mountSvelteComponent(FirstFishNotification, {});
+            stateSub.next(initialFishingSceneState);
+          } else {
+            const [nextState, notification] = addXp(10, stateSub.value);
+            stateSub.next(nextState);
+
+            if (notification) {
+              levelUpSub.next(notification);
+            }
           }
-          addXp.next(34);
         },
       }),
-      makeXpBar({ random, fillFrac$: xpBarProgress$ }),
-    ];
+      stateSub.value !== undefined ? xpBar : undefined,
+    ]);
 
     return makeSceneType({
       typeName: "fishing",
-      events: new Subject(),
+      events: events$,
       layerOrder,
       objects,
+      onDestroy: () => sub.unsubscribe(),
     });
   };

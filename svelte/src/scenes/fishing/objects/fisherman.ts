@@ -13,16 +13,16 @@ import {
   type SceneAction,
   type SceneObject,
 } from "../../../model";
-import { choose } from "../../../utils";
+import { filterUndefined } from "../../../utils";
+import { biteMarker } from "./bite-marker";
+import { makeBobber } from "./bobber";
 import {
   makeFishingStateReducer,
   toFlatState,
   type AnyFishingAction,
   type AnyFishingState,
   type FlatFishingState,
-} from "../fishing-state";
-import { biteMarker } from "./bite-marker";
-import { makeBobber } from "./bobber";
+} from "./fisherman-state";
 import { flyingFish } from "./flying-fish";
 import { reelingOverlay } from "./reeling-overlay";
 
@@ -125,15 +125,12 @@ export const fishingMan = (args: {
             : undefined;
         const flyingFishAction = stateBasedObjectAction((s) => s.flyingFish);
 
-        return choose(
-          [
-            bobberAction,
-            biteMarkerAction,
-            reelingOverlayAction,
-            flyingFishAction,
-          ],
-          (v) => v
-        );
+        return filterUndefined([
+          bobberAction,
+          biteMarkerAction,
+          reelingOverlayAction,
+          flyingFishAction,
+        ]);
       }
     ),
     mergeMap((v) => from(v))

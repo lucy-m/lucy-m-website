@@ -16,7 +16,10 @@ describe("canvas-draw", () => {
 
     interface TestCase {
       caseName: string;
-      drawLayers: (Omit<DrawLayer, "content"> & { assetKey: AssetKey })[];
+      drawLayers: (Omit<DrawLayer, "content"> & {
+        assetKey: AssetKey;
+        rotation?: number;
+      })[];
       only?: true;
     }
 
@@ -64,6 +67,7 @@ describe("canvas-draw", () => {
               content: {
                 kind: "image" as const,
                 image: images[drawLayer.assetKey],
+                rotation: drawLayer.rotation,
               },
             })),
           },

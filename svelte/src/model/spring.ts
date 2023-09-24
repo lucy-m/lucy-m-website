@@ -5,6 +5,12 @@ export interface SpringProperties {
   friction: number;
   weight: number;
   precision: number;
+  /**
+   * If the position is ever moving away from the endPoint,
+   *   its value will be set to the endPoint and it will
+   *   be set to stationary.
+   */
+  clampValue?: boolean;
 }
 
 export interface Spring<T> {
@@ -63,7 +69,7 @@ export const makeTick =
         position,
         velocity,
         endPoint,
-        properties: { stiffness, friction, weight },
+        properties: { stiffness, friction, weight, clampValue },
       } = spring;
 
       if (isStationary(spring, distance, zero)) {
@@ -81,10 +87,24 @@ export const makeTick =
       const frictionAcc = scale(velocity, -friction / weight);
       const acceleration = scale(add(springAcc, frictionAcc), dt / 100);
 
+      if (clampValue) {
+        const newPosition = add(position, velocity);
+
+        if (distance(newPosition, endPoint) > distance(position, endPoint)) {
+          return {
+            position: endPoint,
+            velocity: zero,
+            endPoint: endPoint,
+            stationary: true,
+            properties: spring.properties,
+          };
+        }
+      }
+
       return {
         position: add(position, velocity),
         velocity: add(velocity, acceleration),
-        endPoint: spring.endPoint,
+        endPoint: endPoint,
         stationary: false,
         properties: spring.properties,
       };
