@@ -12,7 +12,10 @@ export const initialFishingSceneState: FishingSceneState = {
   totalXp: 0,
 };
 
-export type FishingSceneNotification = Readonly<{ kind: "level-up" }>;
+export type FishingSceneNotification = Readonly<{
+  kind: "level-up";
+  level: number;
+}>;
 
 export const addXp = (
   xp: number,
@@ -28,7 +31,10 @@ export const addXp = (
       nextLevelXp: Math.floor((state.nextLevelXp + 10) * 1.1),
       totalXp: newTotalXp,
     };
-    const notification: FishingSceneNotification = { kind: "level-up" };
+    const notification: FishingSceneNotification = {
+      kind: "level-up",
+      level: newState.level,
+    };
 
     return [newState, notification];
   } else {

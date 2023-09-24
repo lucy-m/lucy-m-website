@@ -1,4 +1,11 @@
-import { BehaviorSubject, Observable, map, share, withLatestFrom } from "rxjs";
+import {
+  BehaviorSubject,
+  Observable,
+  map,
+  share,
+  startWith,
+  withLatestFrom,
+} from "rxjs";
 import type { ComponentType } from "svelte";
 import { makeNumberSpring } from "../../model";
 
@@ -51,7 +58,14 @@ export const makeOverlayDisplay = (): OverlayDisplay => {
         showHide.kind === "show" ? showHide.component : undefined;
       const inOutValue = spring.position;
 
+      console.log("inOutValue", inOutValue, spring.endPoint);
+
       return { worldDisabled, overlayComponent, inOutValue };
+    }),
+    startWith({
+      worldDisabled: false,
+      inOutValue: 0,
+      overlayComponent: undefined,
     }),
     share()
   );

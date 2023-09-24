@@ -15,6 +15,7 @@ export const makeSceneType =
     scene: Pick<SceneType, "typeName" | "layerOrder" | "onObjectEvent"> & {
       objects: readonly SceneObject[];
       events: Observable<SceneEventOrAction>;
+      onDestroy?: () => void;
     }
   ) =>
   (
@@ -130,6 +131,7 @@ export const makeSceneType =
     };
 
     const destroy = () => {
+      scene.onDestroy && scene.onDestroy();
       Object.values(eventSubscriptions).forEach((sub) => sub.unsubscribe());
       eventsSub.unsubscribe();
     };

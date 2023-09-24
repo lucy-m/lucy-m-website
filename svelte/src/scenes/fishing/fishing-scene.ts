@@ -1,4 +1,13 @@
-import { BehaviorSubject, Observable, map, pairwise } from "rxjs";
+import {
+  BehaviorSubject,
+  Observable,
+  Subject,
+  combineLatest,
+  concatMap,
+  first,
+  map,
+  pairwise,
+} from "rxjs";
 import { PosFns, makeSceneObject, makeSceneType } from "../../model";
 import type { SceneEventOrAction, SceneSpec } from "../../model/scene-types";
 import { choose } from "../../utils";
@@ -6,6 +15,7 @@ import { chooseOp } from "../../utils/choose-op";
 import {
   addXp,
   initialFishingSceneState,
+  type FishingSceneNotification,
   type FishingSceneState,
 } from "./fishing-scene-state";
 import { fishingMan } from "./objects/fisherman";
@@ -27,20 +37,20 @@ export const makeFishingScene =
   (): SceneSpec =>
   ({ random, mountSvelteComponent }) => {
     const makeSceneObjectBound = makeSceneObject(random);
-    let showLevelUpNotification: number | undefined;
 
     const stateSub = new BehaviorSubject<FishingSceneState | undefined>(
       undefined
     );
-    const xpBarProgress$ = stateSub.pipe(
-      pairwise(),
-      map(([prevState, nextState]) => {
+    const levelUpSub = new BehaviorSubject<
+      FishingSceneNotification | undefined
+    >(undefined);
+    const stationaryXpBar = new Subject<void>();
+
+    const xpBarProgress$ = combineLatest([stateSub, levelUpSub]).pipe(
+      map(([nextState, levelUpNotification]) => {
         if (nextState === undefined) {
           return 0;
-        } else if (
-          prevState !== undefined &&
-          nextState.level > prevState.level
-        ) {
+        } else if (levelUpNotification) {
           return 1;
         } else {
           return nextState.levelXp / nextState.nextLevelXp;
@@ -48,14 +58,26 @@ export const makeFishingScene =
       })
     );
 
+    const sub = levelUpSub
+      .pipe(
+        concatMap((value) =>
+          stationaryXpBar.pipe(
+            map(() => value),
+            first()
+          )
+        )
+      )
+      .subscribe((notification) => {
+        if (notification !== undefined) {
+          mountSvelteComponent(LevelUpNotification, {
+            newLevel: notification.level,
+            onClosed: () => levelUpSub.next(undefined),
+          });
+        }
+      });
+
     const onStationary = () => {
-      if (showLevelUpNotification !== undefined) {
-        mountSvelteComponent(LevelUpNotification, {
-          newLevel: showLevelUpNotification,
-        });
-        stateSub.next(stateSub.value);
-        showLevelUpNotification = undefined;
-      }
+      stationaryXpBar.next();
     };
 
     const xpBar = makeXpBar({
@@ -102,7 +124,7 @@ export const makeFishingScene =
               stateSub.next(nextState);
 
               if (notification) {
-                showLevelUpNotification = nextState.level;
+                levelUpSub.next(notification);
               }
             }
           },
@@ -116,5 +138,6 @@ export const makeFishingScene =
       events: events$,
       layerOrder,
       objects,
+      onDestroy: () => sub.unsubscribe(),
     });
   };

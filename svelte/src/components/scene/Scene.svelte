@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { map, Observable, startWith } from "rxjs";
+  import { map, Observable } from "rxjs";
   import seedrandom from "seedrandom";
   import type { ComponentType } from "svelte";
   import {
@@ -35,10 +35,7 @@
 
   const overlayDisplay = makeOverlayDisplay();
   const overlayDisplayState$ = overlayDisplay.state$;
-  const worldDisabled$ = overlayDisplayState$.pipe(
-    map((v) => v.worldDisabled),
-    startWith(false)
-  );
+  const worldDisabled$ = overlayDisplayState$.pipe(map((v) => v.worldDisabled));
 
   const mountSvelteComponent: SvelteComponentMounter = (
     component: ComponentType,

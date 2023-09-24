@@ -3,6 +3,12 @@
 
   export let unmountSelf: () => void;
   export let newLevel: number;
+  export let onClosed: () => void;
+
+  const onOkClick = () => {
+    onClosed();
+    unmountSelf();
+  };
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -11,7 +17,7 @@
     <div data-testid="level-up-notification">
       <p>Wow! You are now level {newLevel}</p>
     </div>
-    <button on:click={unmountSelf}>OK</button>
+    <button on:click={onOkClick}>OK</button>
   </div>
 </OverlayBase>
 
