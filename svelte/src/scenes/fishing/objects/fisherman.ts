@@ -149,7 +149,6 @@ export const fishingMan = (args: {
             : currentState.value.kind === "cast-out-swing"
             ? "castOffCastingMan"
             : "castOffWaitingMan",
-        subLayer: "background",
         position:
           currentState.value.kind === "cast-out-swing"
             ? PosFns.new(-50, -50)

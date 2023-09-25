@@ -1,7 +1,6 @@
 import type { AssetKey } from "./assets";
 import { PosFns, type Position } from "./position";
 import type { SceneType } from "./scene-types";
-import type { SubLayerKey } from "./sub-layer-key";
 
 type LayerContent =
   | {
@@ -25,31 +24,23 @@ export type DrawLayer = {
   position: Position;
 };
 
-type LayerByLayerKey = Partial<
-  Record<string, Partial<Record<SubLayerKey, DrawLayer[]>>>
->;
+type LayerByLayerKey = Partial<Record<string, DrawLayer[]>>;
 
 const addLayer = (
   layerKey: string,
-  subLayerKey: SubLayerKey,
   content: DrawLayer,
   imagesByLayer: LayerByLayerKey
 ): LayerByLayerKey => {
   const newSubLayerEntry: DrawLayer[] = [
-    ...(imagesByLayer[layerKey]?.[subLayerKey] ?? []),
+    ...(imagesByLayer[layerKey] ?? []),
     content,
   ];
 
   return {
     ...imagesByLayer,
-    [layerKey]: {
-      ...imagesByLayer[layerKey],
-      [subLayerKey]: newSubLayerEntry,
-    } as LayerByLayerKey,
+    [layerKey]: newSubLayerEntry,
   };
 };
-
-const sublayerOrder: SubLayerKey[] = ["background", "text"];
 
 const getLayerContentInOrder = (
   layerOrder: readonly string[],
@@ -64,14 +55,7 @@ const getLayerContentInOrder = (
   }
 
   return layerOrder.reduce<DrawLayer[]>((acc, layerKey) => {
-    const mergedSublayerItems: DrawLayer[] = sublayerOrder.reduce<DrawLayer[]>(
-      (acc, sublayer) => {
-        const items = imagesByLayer[layerKey]?.[sublayer] ?? [];
-
-        return [...acc, ...items];
-      },
-      []
-    );
+    const mergedSublayerItems: DrawLayer[] = imagesByLayer[layerKey] ?? [];
 
     return [...acc, ...mergedSublayerItems];
   }, []);
@@ -81,50 +65,44 @@ export const resolveScene = (
   scene: SceneType,
   images: Record<AssetKey, HTMLImageElement>
 ): DrawLayer[] => {
-  const sceneLayers: [string, SubLayerKey, DrawLayer][] = scene
+  const sceneLayers: [string, DrawLayer][] = scene
     .getObjects()
     .filter((obj) => !obj.hidden)
     .flatMap((obj) => {
-      return obj
-        .getLayers()
-        .map<[string, SubLayerKey, DrawLayer]>((objectLayerContent) => {
-          return [
-            obj.layerKey,
-            objectLayerContent.kind === "image"
-              ? objectLayerContent.subLayer
-              : "background",
-            {
-              content:
-                objectLayerContent.kind === "image"
-                  ? {
-                      kind: "image",
-                      image: images[objectLayerContent.assetKey],
-                      rotation: objectLayerContent.rotation,
-                    }
-                  : objectLayerContent.kind === "text"
-                  ? {
-                      kind: "text",
-                      maxWidth: objectLayerContent.maxWidth,
-                      text: objectLayerContent.text,
-                    }
-                  : {
-                      kind: "ctxDraw",
-                      draw: objectLayerContent.draw,
-                    },
-              position: PosFns.add(
-                ("position" in objectLayerContent
-                  ? objectLayerContent.position
-                  : undefined) ?? PosFns.zero,
-                obj.getPosition()
-              ),
-            },
-          ];
-        });
+      return obj.getLayers().map<[string, DrawLayer]>((objectLayerContent) => {
+        return [
+          obj.layerKey,
+          {
+            content:
+              objectLayerContent.kind === "image"
+                ? {
+                    kind: "image",
+                    image: images[objectLayerContent.assetKey],
+                    rotation: objectLayerContent.rotation,
+                  }
+                : objectLayerContent.kind === "text"
+                ? {
+                    kind: "text",
+                    maxWidth: objectLayerContent.maxWidth,
+                    text: objectLayerContent.text,
+                  }
+                : {
+                    kind: "ctxDraw",
+                    draw: objectLayerContent.draw,
+                  },
+            position: PosFns.add(
+              ("position" in objectLayerContent
+                ? objectLayerContent.position
+                : undefined) ?? PosFns.zero,
+              obj.getPosition()
+            ),
+          },
+        ];
+      });
     });
 
   const byLayerKeys = sceneLayers.reduce<LayerByLayerKey>(
-    (acc, [layerKey, subLayerKey, content]) =>
-      addLayer(layerKey, subLayerKey, content, acc),
+    (acc, [layerKey, content]) => addLayer(layerKey, content, acc),
     {}
   );
 

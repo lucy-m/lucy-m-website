@@ -3,7 +3,6 @@ import type { PRNG } from "seedrandom";
 import type { ComponentProps, ComponentType, SvelteComponent } from "svelte";
 import type { AssetKey } from "./assets";
 import type { Position } from "./position";
-import type { SubLayerKey } from "./sub-layer-key";
 
 export type EmptyState = Record<string, never>;
 
@@ -17,14 +16,12 @@ export type ObjectLayerContent =
   | {
       kind: "image";
       assetKey: AssetKey;
-      subLayer: SubLayerKey;
       position?: Position;
       rotation?: number;
     }
   | {
       /** Note, this kind of layer is not affected by object's position */
       kind: "ctxDraw";
-      subLayer: SubLayerKey;
       draw: (ctx: CanvasRenderingContext2D) => void;
     };
 

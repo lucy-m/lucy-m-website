@@ -59,7 +59,6 @@ export const makeCruisingBird = (
       {
         kind: "image",
         assetKey: flapUp ? "birdFlapUp" : "birdFlapDown",
-        subLayer: "background",
       },
     ],
     _getDebugInfo: () => ({

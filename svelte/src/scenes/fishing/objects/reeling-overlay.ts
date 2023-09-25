@@ -27,12 +27,10 @@ export const reelingOverlay = (args: {
       {
         kind: "image",
         assetKey: "bigPole",
-        subLayer: "background",
       },
       {
         kind: "image",
         assetKey: "reelSpinner",
-        subLayer: "background",
         position: PosFns.new(760, 365),
         rotation: -rotation,
       },

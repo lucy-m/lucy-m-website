@@ -48,7 +48,6 @@ export const makeIntroScene: SceneSpec = ({ random }) => {
       .map((position) => ({
         kind: "image",
         assetKey: randomTree(),
-        subLayer: "background",
         position,
       }));
 
@@ -67,7 +66,6 @@ export const makeIntroScene: SceneSpec = ({ random }) => {
       {
         kind: "image",
         assetKey: "speechBubble",
-        subLayer: "background",
       },
       {
         kind: "text",
@@ -86,9 +84,7 @@ export const makeIntroScene: SceneSpec = ({ random }) => {
     makeSceneObjectBound({
       getPosition: () => PosFns.zero,
       layerKey: "bg",
-      getLayers: () => [
-        { kind: "image", assetKey: "introBackground", subLayer: "background" },
-      ],
+      getLayers: () => [{ kind: "image", assetKey: "introBackground" }],
     }),
     makeTrees(20, [
       PosFns.new(0, 300),
@@ -107,9 +103,7 @@ export const makeIntroScene: SceneSpec = ({ random }) => {
       layerKey: "house",
       typeName: "small-house",
       getPosition: () => PosFns.new(285, 355),
-      getLayers: () => [
-        { kind: "image", assetKey: "houseSmall", subLayer: "background" },
-      ],
+      getLayers: () => [{ kind: "image", assetKey: "houseSmall" }],
       onInteract: () => [
         {
           kind: "changeScene",
@@ -122,8 +116,8 @@ export const makeIntroScene: SceneSpec = ({ random }) => {
       layerKey: "person",
       getPosition: () => PosFns.new(1260, 490),
       getLayers: () => [
-        { kind: "image", assetKey: "personSitting", subLayer: "background" },
-        { kind: "image", assetKey: "personHead", subLayer: "background" },
+        { kind: "image", assetKey: "personSitting" },
+        { kind: "image", assetKey: "personHead" },
       ],
       onInteract: () => [
         {

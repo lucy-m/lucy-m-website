@@ -79,7 +79,6 @@ describe("fisherman", () => {
               {
                 kind: "image",
                 assetKey: "fishingBackground",
-                subLayer: "background",
               },
             ],
           }),
@@ -308,7 +307,6 @@ describe("fisherman", () => {
                     {
                       kind: "image",
                       assetKey: "fishingBackground",
-                      subLayer: "background",
                     },
                   ],
                 }),

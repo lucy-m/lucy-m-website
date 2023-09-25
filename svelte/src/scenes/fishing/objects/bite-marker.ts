@@ -35,7 +35,6 @@ export const biteMarker = (args: {
       {
         kind: "image",
         assetKey: "biteMarker",
-        subLayer: "background",
       },
     ],
     onTick: () => {

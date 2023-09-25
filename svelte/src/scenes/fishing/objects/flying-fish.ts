@@ -52,7 +52,6 @@ export const flyingFish = (args: {
       {
         kind: "image",
         assetKey: "fish1",
-        subLayer: "background",
         position: PosFns.new(-75, -30),
         rotation,
       },

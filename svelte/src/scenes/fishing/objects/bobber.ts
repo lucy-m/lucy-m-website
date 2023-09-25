@@ -112,11 +112,9 @@ export const makeBobber = (args: {
       {
         kind: "image",
         assetKey: "bobber",
-        subLayer: "background",
       },
       {
         kind: "ctxDraw",
-        subLayer: "text",
         draw: (ctx) => {
           ctx.beginPath();
           ctx.strokeStyle = "hsla(0, 0%, 100%, 0.7)";

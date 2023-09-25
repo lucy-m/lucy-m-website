@@ -24,7 +24,6 @@ describe("scene object", () => {
           layers.map(([assetKey, position]) => ({
             kind: "image",
             assetKey,
-            subLayer: "background",
             position,
           })),
         layerKey: "",

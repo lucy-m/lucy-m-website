@@ -100,10 +100,10 @@ export const makeXpBar = (args: {
           }
 
           ctx.fillStyle = "white";
+
           ctx.textBaseline = "middle";
           ctx.fillText(label, margin, sceneSize.y - margin - height / 2);
         },
-        subLayer: "background",
       },
     ],
     onTick: () => {

@@ -106,7 +106,6 @@ export const makeFishingScene =
           {
             kind: "image",
             assetKey: "fishingBackground",
-            subLayer: "background",
           },
         ],
       }),

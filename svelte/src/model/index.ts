@@ -13,4 +13,3 @@ export * from "./scene-types";
 export * from "./shape";
 export * from "./spring";
 export * from "./spring-observable";
-export * from "./sub-layer-key";

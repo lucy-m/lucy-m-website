@@ -22,7 +22,6 @@ export const makeHouseScene: SceneSpec = ({ random, mountSvelteComponent }) => {
         {
           kind: "image",
           assetKey: "houseSmall",
-          subLayer: "background",
         },
         {
           kind: "text",
@@ -42,10 +41,11 @@ export const makeHouseScene: SceneSpec = ({ random, mountSvelteComponent }) => {
         {
           kind: "image",
           assetKey: "fish1",
-          subLayer: "background",
         },
       ],
-      onInteract: () => [{ kind: "changeScene", newScene: makeFishingScene() }],
+      onInteract: () => [
+        { kind: "changeScene", newScene: makeFishingScene(undefined) },
+      ],
     }),
   ];
 

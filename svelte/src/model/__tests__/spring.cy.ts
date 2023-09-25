@@ -88,7 +88,6 @@ describe("spring", () => {
           getLayers: () => [
             {
               kind: "image",
-              subLayer: "background",
               assetKey: "feather1",
             },
           ],
@@ -196,7 +195,6 @@ describe("spring", () => {
           getLayers: () => [
             {
               kind: "image",
-              subLayer: "background",
               assetKey: "feather1",
             },
           ],

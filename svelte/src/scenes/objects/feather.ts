@@ -37,7 +37,6 @@ export const makeFeather = (
       {
         kind: "image",
         assetKey: "feather1",
-        subLayer: "background",
         rotation: rotation,
       },
     ],
