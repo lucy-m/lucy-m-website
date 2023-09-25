@@ -6,24 +6,32 @@ import type { Position } from "./position";
 
 export type EmptyState = Record<string, never>;
 
-export type ObjectLayerContent =
-  | {
-      kind: "text";
-      text: string[];
-      position: Position;
-      maxWidth: number;
-    }
-  | {
-      kind: "image";
-      assetKey: AssetKey;
-      position?: Position;
-      rotation?: number;
-    }
-  | {
-      /** Note, this kind of layer is not affected by object's position */
-      kind: "ctxDraw";
-      draw: (ctx: CanvasRenderingContext2D) => void;
+export type ObjectLayerContent = Readonly<
+  (
+    | {
+        kind: "text";
+        text: string[];
+        position: Position;
+        maxWidth: number;
+      }
+    | {
+        kind: "image";
+        assetKey: AssetKey;
+        position?: Position;
+        rotation?: number;
+      }
+    | {
+        /** Note, this kind of layer is not affected by object's position */
+        kind: "ctxDraw";
+        draw: (ctx: CanvasRenderingContext2D) => void;
+      }
+  ) & {
+    shadow?: {
+      color: string;
+      blur: number;
     };
+  }
+>;
 
 export type SceneObject = {
   id: string;

@@ -23,7 +23,7 @@ describe("oscillator", () => {
 
       let oscillator = OscillatorFns.make({
         amplitude: 200,
-        initialX: 300,
+        initial: 300,
         period: 100,
         time: 0,
         ...args.overrides,
@@ -50,15 +50,15 @@ describe("oscillator", () => {
         makeOscillatorSceneObject({ random }),
         makeOscillatorSceneObject({
           random,
-          overrides: { time: 25, initialX: 700, amplitude: 50 },
+          overrides: { time: 25, initial: 700, amplitude: 50 },
         }),
         makeOscillatorSceneObject({
           random,
-          overrides: { period: 40, initialX: 1000, amplitude: 100 },
+          overrides: { period: 40, initial: 1000, amplitude: 100 },
         }),
         makeOscillatorSceneObject({
           random,
-          overrides: { period: 400, initialX: 1400, amplitude: 50 },
+          overrides: { period: 400, initial: 1400, amplitude: 50 },
         }),
       ],
       seed: "fry",

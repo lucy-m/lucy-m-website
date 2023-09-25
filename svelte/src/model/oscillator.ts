@@ -1,7 +1,7 @@
 export type Oscillator = Readonly<{
   amplitude: number;
   period: number;
-  initialX: number;
+  initial: number;
   position: number;
   time: number;
 }>;
@@ -13,7 +13,7 @@ const resolvePosition = (
   const value =
     oscillator.amplitude *
       Math.sin(((2 * Math.PI) / oscillator.period) * time) +
-    oscillator.initialX;
+    oscillator.initial;
 
   return value;
 };

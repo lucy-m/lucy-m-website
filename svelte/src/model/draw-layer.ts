@@ -101,6 +101,7 @@ export const resolveScene = (
                 : undefined) ?? PosFns.zero,
               obj.getPosition()
             ),
+            shadow: objectLayerContent.shadow,
           },
         ];
       });

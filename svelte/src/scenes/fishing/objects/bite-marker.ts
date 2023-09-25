@@ -1,7 +1,7 @@
 import type { PRNG } from "seedrandom";
 import {
   makeSceneObject,
-  NumberSpringFns,
+  OscillatorFns,
   PosFns,
   type Position,
   type SceneObject,
@@ -14,31 +14,30 @@ export const biteMarker = (args: {
 }): SceneObject => {
   const initialPosition = args.position;
 
-  let yOffset = NumberSpringFns.make({
-    position: 0,
-    endPoint: 0,
-    velocity: 0.4,
-    properties: {
-      friction: 0.4,
-      precision: 0.1,
-      stiffness: 0.5,
-      weight: 0.6,
-    },
+  let bounce = OscillatorFns.make({
+    amplitude: 20,
+    initial: 20,
+    period: 80,
+    time: 0,
   });
 
   return makeSceneObject(args.random)({
     typeName: "bite-marker",
     layerKey: "bite-marker",
     getPosition: () =>
-      PosFns.new(initialPosition.x, initialPosition.y + yOffset.position),
+      PosFns.new(initialPosition.x, initialPosition.y + bounce.position),
     getLayers: () => [
       {
         kind: "image",
         assetKey: "biteMarker",
+        shadow: {
+          color: "orange",
+          blur: bounce.position,
+        },
       },
     ],
     onTick: () => {
-      yOffset = NumberSpringFns.tick(yOffset, 0.5);
+      bounce = OscillatorFns.tick(bounce, 1);
     },
     onInteract: args.onInteract,
   });
