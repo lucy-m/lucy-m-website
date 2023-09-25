@@ -147,7 +147,7 @@ describe("fishing scene", () => {
                   cy.contains("button", "OK").click();
                 });
 
-                it.only("resets xp bar", () => {
+                it("resets xp bar", () => {
                   cy.myWaitFor(
                     () => getXpBarInfo().fillFracSpring.position < 1,
                     interactive

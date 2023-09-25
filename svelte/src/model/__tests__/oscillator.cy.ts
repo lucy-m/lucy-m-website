@@ -69,5 +69,7 @@ describe("oscillator", () => {
     });
 
     cy.interactiveWait(15_000, interactive);
+
+    cy.percySnapshot();
   });
 });
