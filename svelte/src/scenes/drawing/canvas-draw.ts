@@ -10,6 +10,11 @@ export const drawLayerContent =
     ctx.save();
     ctx.setTransform();
 
+    if (layer.shadow) {
+      ctx.shadowColor = layer.shadow.color;
+      ctx.shadowBlur = layer.shadow.blur;
+    }
+
     if (content.kind === "image") {
       if (content.rotation) {
         const size = PosFns.new(content.image.width, content.image.height);
