@@ -8,6 +8,7 @@ import {
 } from "rxjs";
 import type { PRNG } from "seedrandom";
 import {
+  OscillatorFns,
   PosFns,
   makeSceneObject,
   type SceneAction,
@@ -35,6 +36,13 @@ export const fishingMan = (args: {
   const currentState = new BehaviorSubject<AnyFishingState>(
     args.initialState ?? { kind: "idle" }
   );
+
+  let interactShadow = OscillatorFns.make({
+    amplitude: 10,
+    initial: 20,
+    period: 80,
+    time: 0,
+  });
 
   const stateReducer = makeFishingStateReducer({
     makeBobber: () =>
@@ -141,25 +149,36 @@ export const fishingMan = (args: {
     layerKey: "man",
     getPosition: () => PosFns.new(0, 120),
     getLayers: () => [
-      {
-        kind: "image",
-        assetKey:
-          currentState.value.kind === "idle"
-            ? "idleMan"
-            : currentState.value.kind === "cast-out-swing"
-            ? "castOffCastingMan"
-            : "castOffWaitingMan",
-        position:
-          currentState.value.kind === "cast-out-swing"
-            ? PosFns.new(-50, -50)
-            : PosFns.zero,
-      },
+      (() => {
+        if (currentState.value.kind === "idle") {
+          return {
+            kind: "image",
+            assetKey: "idleMan",
+            shadow: {
+              color: "yellow",
+              blur: interactShadow.position,
+            },
+          };
+        } else if (currentState.value.kind === "cast-out-swing") {
+          return {
+            kind: "image",
+            assetKey: "castOffCastingMan",
+            position: PosFns.new(-50, -50),
+          };
+        } else {
+          return {
+            kind: "image",
+            assetKey: "castOffWaitingMan",
+          };
+        }
+      })(),
     ],
     onInteract: () => {
       applyFishingAction({ kind: "start-cast-out-swing" });
     },
     onTick: () => {
       applyFishingAction({ kind: "tick" });
+      interactShadow = OscillatorFns.tick(interactShadow, 1);
     },
     events$,
     _getDebugInfo: () => ({

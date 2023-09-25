@@ -7,9 +7,8 @@ import {
   type SceneObject,
   type SceneType,
 } from "../../../model";
-import type { AnyFishingState } from "../fisherman-state";
-import { bobberBounds } from "../objects/bobber";
-import { fishingMan } from "../objects/fisherman";
+import type { AnyFishingState } from "../objects";
+import { bobberBounds, fishingMan } from "../objects";
 
 describe("fisherman", () => {
   describe("manual", () => {

@@ -3,6 +3,7 @@ export * from "./break-text";
 export * from "./destroyable";
 export * from "./draw-layer";
 export * from "./observe-element-size";
+export * from "./oscillator";
 export * from "./position";
 export * from "./positioned-image";
 export * from "./raf-throttle";

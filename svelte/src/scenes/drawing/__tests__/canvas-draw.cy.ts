@@ -30,6 +30,10 @@ describe("canvas-draw", () => {
           {
             assetKey: "houseSmall",
             position: PosFns.new(10, 20),
+            shadow: {
+              color: "red",
+              blur: 20,
+            },
           },
         ],
       },
