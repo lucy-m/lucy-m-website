@@ -8,18 +8,16 @@ import {
   map,
   pairwise,
 } from "rxjs";
+import type { SceneEventOrAction, SceneSpec } from "../../model";
 import { PosFns, makeSceneObject, makeSceneType } from "../../model";
-import type { SceneEventOrAction, SceneSpec } from "../../model/scene-types";
-import { filterUndefined } from "../../utils";
-import { chooseOp } from "../../utils/choose-op";
+import { chooseOp, filterUndefined } from "../../utils";
 import {
   addXp,
   initialFishingSceneState,
   type FishingSceneNotification,
   type FishingSceneState,
 } from "./fishing-scene-state";
-import { fishingMan } from "./objects/fisherman";
-import { makeXpBar } from "./objects/xp-bar";
+import { fishingMan, makeXpBar } from "./objects";
 import { FirstFishNotification, LevelUpNotification } from "./overlays";
 
 const layerOrder = [
