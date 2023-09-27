@@ -2,7 +2,10 @@ import { Subject } from "rxjs";
 import { z } from "zod";
 import { getDebugInfo, type Position, type SceneObject } from "../../../model";
 import { makeFishingScene } from "../fishing-scene";
-import type { FishingSceneState } from "../fishing-scene-state";
+import {
+  initialFishingSceneState,
+  type FishingSceneState,
+} from "../fishing-scene-state";
 
 const interactive = Cypress.config("isInteractive");
 // const interactive = false;
@@ -46,7 +49,10 @@ describe("fishing scene", () => {
     worldClickSub = new Subject();
 
     cy.mountViewScene({
-      sceneSpec: makeFishingScene(args.initialState),
+      sceneSpec: makeFishingScene({
+        initialState: args.initialState,
+        onStateChange: cy.spy().as("onStateChangeSpy"),
+      }),
       seed: "abcd",
       onSceneChange: (scene) => {
         fisherman = scene
@@ -62,12 +68,13 @@ describe("fishing scene", () => {
     });
   };
 
+  const getOnStateChangeSpy = () =>
+    cy.get<sinon.SinonSpy<[FishingSceneState], void>>("@onStateChangeSpy");
+
   beforeEach(() => {
     if (!interactive) {
       cy.clock();
     }
-
-    cy.viewport(1400, 900);
   });
 
   describe("level 0", () => {
@@ -91,6 +98,12 @@ describe("fishing scene", () => {
         cy.getByTestId("fish-caught-notification")
           .should("be.visible")
           .should("contain.text", "You caught your first fish");
+      });
+
+      it("calls onStateChange", () => {
+        getOnStateChangeSpy().then((spy) => {
+          expect(spy.lastCall.args[0]).to.deep.equal(initialFishingSceneState);
+        });
       });
 
       describe("overlay dismissed", () => {
@@ -122,6 +135,17 @@ describe("fishing scene", () => {
               () => getXpBarInfo().fillFracSpring.position > 0,
               interactive
             );
+          });
+
+          it("calls onStateChange", () => {
+            getOnStateChangeSpy().then((spy) => {
+              expect(spy.lastCall.args[0]).to.deep.equal({
+                level: 1,
+                levelXp: 10,
+                nextLevelXp: 30,
+                totalXp: 10,
+              } as FishingSceneState);
+            });
           });
 
           describe("opening menu", () => {
@@ -163,6 +187,17 @@ describe("fishing scene", () => {
                   "contain.text",
                   "level 2"
                 );
+              });
+
+              it("calls onStateChange", () => {
+                getOnStateChangeSpy().then((spy) => {
+                  expect(spy.lastCall.args[0]).to.deep.equal({
+                    level: 2,
+                    levelXp: 0,
+                    nextLevelXp: 44,
+                    totalXp: 30,
+                  } as FishingSceneState);
+                });
               });
 
               describe("dismissing overlay", () => {

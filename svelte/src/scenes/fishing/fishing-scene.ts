@@ -14,6 +14,7 @@ import { chooseOp, filterUndefined } from "../../utils";
 import { sceneSize } from "../scene-size";
 import {
   addXp,
+  fishingSceneStateSchema,
   initialFishingSceneState,
   type FishingSceneNotification,
   type FishingSceneState,
@@ -38,12 +39,15 @@ const layerOrder = [
 ] as const;
 
 export const makeFishingScene =
-  (initialState: FishingSceneState | undefined): SceneSpec =>
+  (args: {
+    initialState: FishingSceneState | undefined;
+    onStateChange: (state: FishingSceneState | undefined) => void;
+  }): SceneSpec =>
   ({ random, mountSvelteComponent }) => {
     const makeSceneObjectBound = makeSceneObject(random);
 
     const stateSub = new BehaviorSubject<FishingSceneState | undefined>(
-      initialState
+      args.initialState
     );
     const levelUpSub = new BehaviorSubject<
       FishingSceneNotification | undefined
@@ -79,6 +83,12 @@ export const makeFishingScene =
           });
         }
       });
+
+    sub.add(
+      stateSub.subscribe((newState) => {
+        args.onStateChange(newState);
+      })
+    );
 
     const onStationary = () => {
       stationaryXpBar.next();
@@ -158,3 +168,38 @@ export const makeFishingScene =
       onDestroy: () => sub.unsubscribe(),
     });
   };
+
+export const makeFishingSceneWithLocalStorage: SceneSpec = (() => {
+  const storageKey = "fishing-game-state";
+
+  const initialState: FishingSceneState | undefined = (() => {
+    const storageValue = localStorage.getItem(storageKey);
+
+    if (!storageValue) {
+      return undefined;
+    }
+
+    const jsonObject = JSON.parse(storageValue);
+    const parsed = fishingSceneStateSchema.safeParse(jsonObject);
+
+    if (parsed.success) {
+      return parsed.data;
+    } else {
+      return undefined;
+    }
+  })();
+
+  const onStateChange = (state: FishingSceneState | undefined) => {
+    if (state === undefined) {
+      localStorage.removeItem(storageKey);
+    } else {
+      const jsonObject = JSON.stringify(state);
+      localStorage.setItem(storageKey, jsonObject);
+    }
+  };
+
+  return makeFishingScene({
+    initialState,
+    onStateChange,
+  });
+})();
