@@ -154,6 +154,7 @@ export const makeFishingScene =
         onInteract: () => {
           mountSvelteComponent(GameMenu, {
             state: stateSub.value,
+            resetState: () => stateSub.next(undefined),
           });
         },
       }),
