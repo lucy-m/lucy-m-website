@@ -1,5 +1,6 @@
+import { Subject } from "rxjs";
 import { z } from "zod";
-import { getDebugInfo, type SceneObject } from "../../../model";
+import { getDebugInfo, type Position, type SceneObject } from "../../../model";
 import { makeFishingScene } from "../fishing-scene";
 import type { FishingSceneState } from "../fishing-scene-state";
 
@@ -9,6 +10,9 @@ const interactive = Cypress.config("isInteractive");
 describe("fishing scene", () => {
   let fisherman: SceneObject | undefined;
   let xpBar: SceneObject | undefined;
+  let gameMenu: SceneObject | undefined;
+
+  let worldClickSub: Subject<Position>;
 
   const getXpBarInfo = () => {
     expect(xpBar).to.exist;
@@ -39,6 +43,8 @@ describe("fishing scene", () => {
   const renderFishingScene = (args: {
     initialState: FishingSceneState | undefined;
   }) => {
+    worldClickSub = new Subject();
+
     cy.mountViewScene({
       sceneSpec: makeFishingScene(args.initialState),
       seed: "abcd",
@@ -48,7 +54,11 @@ describe("fishing scene", () => {
           .find((obj) => obj.typeName === "fisherman");
 
         xpBar = scene.getObjects().find((obj) => obj.typeName === "xp-bar");
+        gameMenu = scene
+          .getObjects()
+          .find((obj) => obj.typeName === "game-menu");
       },
+      worldClick$: worldClickSub,
     });
   };
 
@@ -112,6 +122,21 @@ describe("fishing scene", () => {
               () => getXpBarInfo().fillFracSpring.position > 0,
               interactive
             );
+          });
+
+          describe("opening menu", () => {
+            beforeEach(() => {
+              expect(gameMenu).to.exist;
+              worldClickSub.next(gameMenu!.getPosition());
+              cy.interactiveWait(1000, interactive);
+            });
+
+            it("displays correctly", () => {
+              cy.getByTestId("game-menu-overlay")
+                .should("be.visible")
+                .should("contain.text", "Level 1")
+                .should("contain.text", "XP 10/30");
+            });
           });
 
           describe("fishing enough to level up", () => {
@@ -190,6 +215,21 @@ describe("fishing scene", () => {
           () => getXpBarInfo().fillFracSpring.position === 0.25,
           interactive
         );
+      });
+
+      describe("opening menu", () => {
+        beforeEach(() => {
+          expect(gameMenu).to.exist;
+          worldClickSub.next(gameMenu!.getPosition());
+          cy.interactiveWait(1000, interactive);
+        });
+
+        it("displays correctly", () => {
+          cy.getByTestId("game-menu-overlay")
+            .should("be.visible")
+            .should("contain.text", "Level 5")
+            .should("contain.text", "XP 50/200");
+        });
       });
     });
   });

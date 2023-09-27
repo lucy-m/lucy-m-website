@@ -11,6 +11,7 @@ import {
 import type { SceneEventOrAction, SceneSpec } from "../../model";
 import { PosFns, makeSceneObject, makeSceneType } from "../../model";
 import { chooseOp, filterUndefined } from "../../utils";
+import { sceneSize } from "../scene-size";
 import {
   addXp,
   initialFishingSceneState,
@@ -18,7 +19,11 @@ import {
   type FishingSceneState,
 } from "./fishing-scene-state";
 import { fishingMan, makeXpBar } from "./objects";
-import { FirstFishNotification, LevelUpNotification } from "./overlays";
+import {
+  FirstFishNotification,
+  GameMenu,
+  LevelUpNotification,
+} from "./overlays";
 
 const layerOrder = [
   "bg",
@@ -28,6 +33,7 @@ const layerOrder = [
   "fish",
   "xp-bar",
   "reeling",
+  "ui",
   "debug",
 ] as const;
 
@@ -123,6 +129,22 @@ export const makeFishingScene =
               levelUpSub.next(notification);
             }
           }
+        },
+      }),
+      makeSceneObjectBound({
+        layerKey: "ui",
+        typeName: "game-menu",
+        getPosition: () => PosFns.new(sceneSize.x - 140, sceneSize.y - 140),
+        getLayers: () => [
+          {
+            kind: "image",
+            assetKey: "openGameMenuIcon",
+          },
+        ],
+        onInteract: () => {
+          mountSvelteComponent(GameMenu, {
+            state: stateSub.value,
+          });
         },
       }),
       stateSub.value !== undefined ? xpBar : undefined,
