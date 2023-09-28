@@ -24,6 +24,7 @@ describe("fishing scene", () => {
       z.object({
         fillFracSpring: z.object({
           position: z.number(),
+          velocity: z.number(),
         }),
         fadeInOpacity: z.number(),
       })
@@ -242,7 +243,12 @@ describe("fishing scene", () => {
 
     describe("catching a fish", () => {
       beforeEach(() => {
-        retrieveFish("some-fish");
+        cy.myWaitFor(
+          () => getXpBarInfo().fillFracSpring.velocity === 0,
+          interactive
+        ).then(() => {
+          retrieveFish("some-fish");
+        });
       });
 
       it("updates xp correctly", () => {

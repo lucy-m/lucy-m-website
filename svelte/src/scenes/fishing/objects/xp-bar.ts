@@ -56,6 +56,9 @@ export const makeXpBar = (args: {
 
           const leftMargin = margin + labelSize.width + 16;
 
+          ctx.shadowColor = "white";
+          ctx.shadowBlur = 2000 * fillFracSpring.velocity;
+
           ctx.fillStyle = "hsl(0, 0%, 20%)";
           ctx.fillRect(
             leftMargin,
@@ -63,6 +66,9 @@ export const makeXpBar = (args: {
             width,
             height
           );
+
+          ctx.shadowColor = "";
+          ctx.shadowBlur = 0;
 
           const gradient = ctx.createLinearGradient(
             leftMargin,

@@ -1,5 +1,10 @@
 import type { PRNG } from "seedrandom";
-import { makeSceneObject, PosFns, type SceneObject } from "../../../model";
+import {
+  makeSceneObject,
+  OscillatorFns,
+  PosFns,
+  type SceneObject,
+} from "../../../model";
 
 export const reelingOverlay = (args: {
   random: PRNG;
@@ -19,6 +24,13 @@ export const reelingOverlay = (args: {
   let rotationSpeed = minSpeed;
   let completeCalled = false;
 
+  let reelPulse = OscillatorFns.make({
+    amplitude: 30,
+    initial: 40,
+    time: 0,
+    period: 50,
+  });
+
   return makeSceneObject(args.random)((id) => ({
     typeName: "reeling-overlay",
     layerKey: "reeling",
@@ -33,9 +45,15 @@ export const reelingOverlay = (args: {
         assetKey: "reelSpinner",
         position: PosFns.new(760, 365),
         rotation: -rotation,
+        shadow: {
+          color: "orange",
+          blur: reelPulse.position,
+        },
       },
     ],
     onTick: () => {
+      reelPulse = OscillatorFns.tick(reelPulse, 1);
+
       rotation += rotationSpeed;
       rotationSpeed = Math.max(minSpeed, rotationSpeed * friction);
 

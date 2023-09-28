@@ -2,7 +2,7 @@ import type { AssetKey } from "./assets";
 import { PosFns, type Position } from "./position";
 import type { SceneType } from "./scene-types";
 
-type LayerContent =
+type LayerContent = Readonly<
   | {
       kind: "image";
       image: HTMLImageElement;
@@ -17,11 +17,16 @@ type LayerContent =
   | {
       kind: "ctxDraw";
       draw: (ctx: CanvasRenderingContext2D) => void;
-    };
+    }
+>;
 
 export type DrawLayer = {
   content: LayerContent;
   position: Position;
+  shadow?: {
+    color: string;
+    blur: number;
+  };
 };
 
 type LayerByLayerKey = Partial<Record<string, DrawLayer[]>>;
@@ -96,6 +101,7 @@ export const resolveScene = (
                 : undefined) ?? PosFns.zero,
               obj.getPosition()
             ),
+            shadow: objectLayerContent.shadow,
           },
         ];
       });
