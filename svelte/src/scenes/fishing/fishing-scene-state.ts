@@ -1,9 +1,15 @@
-export type FishingSceneState = Readonly<{
-  level: number;
-  levelXp: number;
-  nextLevelXp: number;
-  totalXp: number;
-}>;
+import { z } from "zod";
+
+export const fishingSceneStateSchema = z
+  .object({
+    level: z.number(),
+    levelXp: z.number(),
+    nextLevelXp: z.number(),
+    totalXp: z.number(),
+  })
+  .readonly();
+
+export type FishingSceneState = z.infer<typeof fishingSceneStateSchema>;
 
 export const initialFishingSceneState: FishingSceneState = {
   level: 1,

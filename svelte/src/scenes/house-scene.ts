@@ -6,7 +6,7 @@ import {
   type SceneObject,
   type SceneSpec,
 } from "../model";
-import { makeFishingScene } from "./fishing";
+import { makeFishingSceneWithLocalStorage } from "./fishing";
 import HouseSceneTest from "./HouseSceneTest.svelte";
 
 const layerOrder = ["bg", "house"] as const;
@@ -44,7 +44,7 @@ export const makeHouseScene: SceneSpec = ({ random, mountSvelteComponent }) => {
         },
       ],
       onInteract: () => [
-        { kind: "changeScene", newScene: makeFishingScene(undefined) },
+        { kind: "changeScene", newScene: makeFishingSceneWithLocalStorage },
       ],
     }),
   ];
