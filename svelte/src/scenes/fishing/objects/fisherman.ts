@@ -78,6 +78,7 @@ export const fishingMan = (args: {
           applyFishingAction({ kind: "fish-retrieved" });
           args.onFishRetrieved(prevState.fishId);
         },
+        getProficiency,
       }),
     makeFishId: () => "" + Math.abs(random.int32()),
   });
@@ -136,6 +137,7 @@ export const fishingMan = (args: {
                         kind: "finish-reel",
                       });
                     },
+                    getProficiency,
                   }),
               }
             : undefined;

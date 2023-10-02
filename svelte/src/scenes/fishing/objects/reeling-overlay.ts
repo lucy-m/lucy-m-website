@@ -9,13 +9,15 @@ import {
 export const reelingOverlay = (args: {
   random: PRNG;
   onComplete: () => void;
+  getProficiency: () => number;
 }): SceneObject => {
-  const minSpeed = 0.3;
   const friction = 0.97;
   const requiredRotation = 360 * 4;
   const yVelocity = 50;
   const yOffScreen = -1400;
   const yOnScreen = -100;
+  const speedRatio = 1 / args.getProficiency();
+  const minSpeed = 0.3 * speedRatio;
 
   let position = PosFns.new(-200, yOffScreen);
 
@@ -54,7 +56,7 @@ export const reelingOverlay = (args: {
     onTick: () => {
       reelPulse = OscillatorFns.tick(reelPulse, 1);
 
-      rotation += rotationSpeed;
+      rotation += rotationSpeed * speedRatio;
       rotationSpeed = Math.max(minSpeed, rotationSpeed * friction);
 
       if (rotation > requiredRotation && !completeCalled) {

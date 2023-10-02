@@ -91,6 +91,12 @@ export const makeBobber = (args: {
   onLand: () => void;
   random: PRNG;
 }): SceneObject => {
+  // TODO:
+  // - Pick a target point within the target region
+  // - Fix xVelocity according to proficiency
+  // - Calculate required yVelocity
+  // (Similar to flying fish)
+
   const xVelocity =
     args.random.quick() * (xVelocityMax - xVelocityMin) + xVelocityMin;
 

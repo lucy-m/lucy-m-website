@@ -1,5 +1,6 @@
 import fc from "fast-check";
 import { Subject } from "rxjs";
+import seedrandom from "seedrandom";
 import { z } from "zod";
 import {
   PosFns,
@@ -364,7 +365,7 @@ describe("fisherman", () => {
             }, interactive);
           });
 
-          it.only("has correct objects", () => {
+          it("has correct objects", () => {
             assertCorrectObjects({
               fisherman: true,
               bobber: true,
@@ -464,6 +465,33 @@ describe("fisherman", () => {
         }),
         { numRuns: 20 }
       );
+    });
+  });
+
+  describe("levels", () => {
+    it.only("works", () => {
+      const random = seedrandom("abcd");
+      const fisherman = fishingMan({
+        random,
+        onFishRetrieved: cy.spy().as("fishRetrieved"),
+        getCurrentLevel: () => 10,
+      });
+
+      const getFishingState = () =>
+        getDebugInfo(
+          fisherman,
+          z.object({
+            state: z.object({
+              kind: z.string(),
+            }),
+          })
+        );
+
+      expect(getFishingState().state.kind).to.eq("idle");
+
+      fisherman.onInteract!();
+
+      expect(getFishingState().state.kind).to.eq("cast-out-swing");
     });
   });
 });

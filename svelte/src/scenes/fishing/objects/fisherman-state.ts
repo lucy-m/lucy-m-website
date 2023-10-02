@@ -133,7 +133,11 @@ export const makeFishingStateReducer =
 
       case "cast-out-land": {
         if (state.kind === "cast-out-casting") {
-          return { kind: "cast-out-waiting", bobber: state.bobber, timer: 100 };
+          return {
+            kind: "cast-out-waiting",
+            bobber: state.bobber,
+            timer: Math.floor(150 * proficiency),
+          };
         } else {
           return state;
         }
