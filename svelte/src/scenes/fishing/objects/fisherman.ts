@@ -31,11 +31,15 @@ export const fishingMan = (args: {
   random: PRNG;
   onFishRetrieved: (fishId: string) => void;
   initialState?: AnyFishingState;
+  getCurrentLevel: () => number;
 }): SceneObject => {
   const { random } = args;
   const currentState = new BehaviorSubject<AnyFishingState>(
     args.initialState ?? { kind: "idle" }
   );
+  const getProficiency = () => {
+    return Math.pow(0.98, args.getCurrentLevel() - 1);
+  };
 
   let interactShadow = OscillatorFns.make({
     amplitude: 10,
@@ -79,7 +83,11 @@ export const fishingMan = (args: {
   });
 
   const applyFishingAction = (action: AnyFishingAction): void => {
-    const nextState = stateReducer(action, currentState.value);
+    const nextState = stateReducer(
+      action,
+      currentState.value,
+      getProficiency()
+    );
     if (nextState !== currentState.value) {
       currentState.next(nextState);
     }

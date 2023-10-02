@@ -124,6 +124,7 @@ export const makeFishingScene =
             }
           }
         },
+        getCurrentLevel: () => stateSub.value?.level ?? 0,
       }),
       stateSub.value !== undefined ? xpBar : undefined,
     ]);
