@@ -165,7 +165,7 @@ export const fishingMan = (args: {
             kind: "image",
             assetKey: "idleMan",
             shadow: {
-              color: "yellow",
+              color: "orange",
               blur: interactShadow.position,
             },
           };
