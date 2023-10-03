@@ -1,5 +1,6 @@
 import fc from "fast-check";
 import { Subject } from "rxjs";
+import seedrandom from "seedrandom";
 import { z } from "zod";
 import {
   getDebugInfo,
@@ -9,6 +10,7 @@ import {
   type SceneObject,
 } from "../../../model";
 import { bobberBounds, makeBobber } from "../objects";
+import { levelToProficiency } from "../objects/level-to-proficiency";
 
 describe("bobber", () => {
   let bobber: SceneObject | undefined;
@@ -27,7 +29,7 @@ describe("bobber", () => {
     }
   };
 
-  const mount = (overrides?: { seed?: string }) => {
+  const mount = (overrides?: { seed?: string; proficiency?: number }) => {
     bobber = undefined;
 
     const debugDrawSub = new Subject<(ctx: CanvasRenderingContext2D) => void>();
@@ -49,6 +51,7 @@ describe("bobber", () => {
         makeBobber({
           random,
           onLand: cy.spy().as("onLandSpy"),
+          getProficiency: () => overrides?.proficiency ?? 1,
         }),
       ],
       debugDraw$: debugDrawSub,
@@ -97,18 +100,8 @@ describe("bobber", () => {
 
   const waitForBobberStationary = (interactive: boolean) =>
     cy.myWaitFor(() => {
-      if (bobber) {
-        const debugInfo = getDebugInfo(
-          bobber,
-          z.object({
-            stationary: z.boolean(),
-          })
-        );
-
-        return debugInfo.stationary;
-      } else {
-        return false;
-      }
+      const debugInfo = getBobberInfo();
+      return debugInfo !== undefined ? debugInfo.stationary : false;
     }, interactive);
 
   describe("example", () => {
@@ -124,6 +117,20 @@ describe("bobber", () => {
     describe("level 0", () => {
       beforeEach(() => {
         mount();
+      });
+
+      it("lands", () => {
+        getOnLandSpy().should("not.have.been.called");
+
+        waitForBobberStationary(interactive);
+
+        getOnLandSpy().should("have.been.calledOnce");
+      });
+    });
+
+    describe("level 50", () => {
+      beforeEach(() => {
+        mount({ proficiency: levelToProficiency(50) });
       });
 
       it("lands", () => {
@@ -155,12 +162,70 @@ describe("bobber", () => {
 
               const targetOffset = PosFns.sub(bobberInfo.target, position);
 
-              expect(Math.abs(targetOffset.x)).to.be.lte(40);
-              expect(Math.abs(targetOffset.y)).to.be.lte(40);
+              expect(Math.abs(targetOffset.x)).to.be.lte(100);
+              expect(Math.abs(targetOffset.y)).to.be.lte(100);
             });
           });
         }),
         { numRuns: 20 }
+      );
+    });
+
+    describe("higher level lands before lower level", () => {
+      const getBobberInfo = (bobber: SceneObject) => {
+        return getDebugInfo(
+          bobber,
+          z.object({
+            target: positionSchema,
+            stationary: z.boolean(),
+          })
+        );
+      };
+
+      fc.assert(
+        fc.property(fc.string(), (seed) => {
+          it("seed " + seed, () => {
+            const bobber1 = makeBobber({
+              onLand: () => {},
+              getProficiency: () => 1,
+              random: seedrandom(seed),
+            });
+
+            const bobber2 = makeBobber({
+              onLand: () => {},
+              getProficiency: () => levelToProficiency(20),
+              random: seedrandom(seed),
+            });
+
+            expect(getBobberInfo(bobber1).stationary).to.be.false;
+            expect(getBobberInfo(bobber2).stationary).to.be.false;
+
+            const bobber1LandCount = (() => {
+              for (let i = 0; i < 200; i++) {
+                bobber1.onTick!();
+
+                if (getBobberInfo(bobber1).stationary) {
+                  return i;
+                }
+              }
+            })();
+            expect(bobber1LandCount).to.exist;
+
+            const bobber2LandCount = (() => {
+              for (let i = 0; i < 200; i++) {
+                bobber2.onTick!();
+
+                if (getBobberInfo(bobber2).stationary) {
+                  return i;
+                }
+              }
+            })();
+
+            expect(bobber2LandCount).to.exist;
+            expect(bobber2LandCount).to.be.lt(bobber1LandCount!);
+          });
+        }),
+        { numRuns: 100 }
       );
     });
   });

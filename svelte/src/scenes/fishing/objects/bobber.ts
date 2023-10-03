@@ -92,12 +92,15 @@ const initial = PosFns.new(0, 300);
 export const makeBobber = (args: {
   onLand: () => void;
   random: PRNG;
+  getProficiency: () => number;
 }): SceneObject => {
   const target = randomBetweenPosition(bobberBounds, args.random);
 
   let state: BobberState = (() => {
-    const gravity = 0.5;
-    const velocityX = 24;
+    const speedRatio = Math.pow(1 / args.getProficiency(), 0.7);
+
+    const gravity = 1.5 * Math.pow(speedRatio, 2);
+    const velocityX = 20 * speedRatio;
     const offset = PosFns.sub(target, initial);
 
     const velocityY =

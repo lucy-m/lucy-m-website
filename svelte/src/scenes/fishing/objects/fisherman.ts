@@ -25,6 +25,7 @@ import {
   type FlatFishingState,
 } from "./fisherman-state";
 import { flyingFish } from "./flying-fish";
+import { levelToProficiency } from "./level-to-proficiency";
 import { reelingOverlay } from "./reeling-overlay";
 
 export const fishingMan = (args: {
@@ -38,7 +39,7 @@ export const fishingMan = (args: {
     args.initialState ?? { kind: "idle" }
   );
   const getProficiency = () => {
-    return Math.pow(0.98, args.getCurrentLevel() - 1);
+    return levelToProficiency(args.getCurrentLevel());
   };
 
   let interactShadow = OscillatorFns.make({
@@ -54,6 +55,7 @@ export const fishingMan = (args: {
         onLand: () => {
           applyFishingAction({ kind: "cast-out-land" });
         },
+        getProficiency,
         random,
       }),
     makeFishBiteMarker: (prevState) =>
