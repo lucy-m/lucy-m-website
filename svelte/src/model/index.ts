@@ -7,6 +7,7 @@ export * from "./oscillator";
 export * from "./position";
 export * from "./positioned-image";
 export * from "./raf-throttle";
+export * from "./random-between";
 export * from "./random-interval";
 export * from "./scene";
 export * from "./scene-object";

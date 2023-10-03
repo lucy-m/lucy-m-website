@@ -1,7 +1,13 @@
-export interface Position {
-  x: number;
-  y: number;
-}
+import { z } from "zod";
+
+export const positionSchema = z
+  .object({
+    x: z.number(),
+    y: z.number(),
+  })
+  .readonly();
+
+export type Position = z.infer<typeof positionSchema>;
 
 const p = (x: number, y: number): Position => ({ x, y });
 const zero = p(0, 0);

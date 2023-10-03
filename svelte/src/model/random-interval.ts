@@ -1,16 +1,14 @@
 import { concatMap, map, of, repeat, timer, type Observable } from "rxjs";
 import type { PRNG } from "seedrandom";
+import { randomBetween } from "./random-between";
 
 export const randomInterval = (
-  range: readonly [number, number],
+  range: { min: number; max: number },
   random: PRNG
 ): Observable<void> => {
-  const min = Math.min(range[0], range[1]);
-  const max = Math.max(range[0], range[1]);
-
   return of("").pipe(
     concatMap(() => {
-      return timer(random.quick() * (max - min) + min);
+      return timer(randomBetween(range, random));
     }),
     map(() => {}),
     repeat()
