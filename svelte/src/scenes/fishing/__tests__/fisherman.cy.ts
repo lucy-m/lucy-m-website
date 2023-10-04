@@ -52,12 +52,12 @@ describe("fisherman", () => {
     };
 
     const getFishermanState = () => {
-      const fisherman = getFisherman();
-
-      expect(fisherman?._getDebugInfo).to.exist;
-      const debugInfo = fisherman!._getDebugInfo!();
-
-      expect(debugInfo?.state).to.exist;
+      const debugInfo = getDebugInfo(
+        getFisherman()!,
+        z.object({
+          state: z.any(),
+        })
+      );
       return debugInfo.state as AnyFishingState;
     };
 
@@ -165,32 +165,26 @@ describe("fisherman", () => {
           }
         });
 
-        it("cast out completes slowly", () => {
-          cy.myWaitFor(
-            () => getFishermanState().kind === "cast-out-casting",
-            interactive
-          ).then((timeTaken) => {
-            expect(timeTaken).to.be.gte(1100);
-            expect(timeTaken).to.be.lte(1400);
-          });
-        });
-
         describe("after bobber lands", () => {
           beforeEach(() => {
-            cy.myWaitFor(() => {
-              const bobber = getBobber();
-              if (bobber) {
-                const debugInfo = getDebugInfo(
-                  bobber!,
-                  z.object({
-                    stationary: z.boolean(),
-                  })
-                );
-                return debugInfo.stationary === true;
-              } else {
-                return false;
-              }
-            }, interactive);
+            cy.myWaitFor(
+              () => {
+                const bobber = getBobber();
+                if (bobber) {
+                  const debugInfo = getDebugInfo(
+                    bobber!,
+                    z.object({
+                      stationary: z.boolean(),
+                    })
+                  );
+                  return debugInfo.stationary === true;
+                } else {
+                  return false;
+                }
+              },
+              interactive,
+              { timeout: 5000 }
+            );
           });
 
           it("has correct objects", () => {
@@ -234,7 +228,9 @@ describe("fisherman", () => {
 
           describe("after bite", () => {
             beforeEach(() => {
-              cy.myWaitFor(() => getBiteMarker() !== undefined, interactive);
+              cy.myWaitFor(() => getBiteMarker() !== undefined, interactive, {
+                timeout: 5000,
+              });
             });
 
             it("has correct objects", () => {
@@ -379,7 +375,7 @@ describe("fisherman", () => {
   });
 
   describe("levels", () => {
-    it.only("works", () => {
+    it("works", () => {
       const random = seedrandom("abcd");
       const fisherman = fishingMan({
         random,

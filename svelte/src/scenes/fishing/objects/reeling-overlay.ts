@@ -16,7 +16,7 @@ export const reelingOverlay = (args: {
   const yVelocity = 50;
   const yOffScreen = -1400;
   const yOnScreen = -100;
-  const speedRatio = 1 / args.getProficiency();
+  const speedRatio = Math.pow(args.getProficiency(), -1.5);
   const minSpeed = 0.3 * speedRatio;
 
   let position = PosFns.new(-200, yOffScreen);
@@ -56,7 +56,7 @@ export const reelingOverlay = (args: {
     onTick: () => {
       reelPulse = OscillatorFns.tick(reelPulse, 1);
 
-      rotation += rotationSpeed * speedRatio;
+      rotation += rotationSpeed;
       rotationSpeed = Math.max(minSpeed, rotationSpeed * friction);
 
       if (rotation > requiredRotation && !completeCalled) {
@@ -83,7 +83,7 @@ export const reelingOverlay = (args: {
       }
     },
     onInteract: () => {
-      rotationSpeed += 2;
+      rotationSpeed += 2 * speedRatio;
     },
     _getDebugInfo: () => ({
       rotation,

@@ -33,6 +33,7 @@ describe("fishing scene state", () => {
 
     expect(notification).to.deep.eq({
       kind: "level-up",
+      level: 4,
     });
   });
 });
