@@ -12,14 +12,16 @@ export const flyingFish = (args: {
   initial: Position;
   target: Position;
   onTargetReached: () => void;
+  getProficiency: () => number;
 }): SceneObject => {
   let stationary = false;
   let position = args.initial;
 
-  const gravity = 0.2;
+  const speedRatio = Math.pow(1 / args.getProficiency(), 0.7);
+  const gravity = 0.2 * Math.pow(speedRatio, 2);
   const offset = PosFns.sub(args.target, args.initial);
   const leftToRight = offset.x > 0;
-  const velocityX = leftToRight ? 12 : -12;
+  const velocityX = (leftToRight ? 12 : -12) * speedRatio;
 
   let velocityY =
     (offset.y * velocityX) / offset.x - (gravity * offset.x) / (2 * velocityX);

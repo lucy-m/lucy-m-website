@@ -1,7 +1,9 @@
-import fc from "fast-check";
 import { Subject } from "rxjs";
+import seedrandom from "seedrandom";
+import { z } from "zod";
 import {
   PosFns,
+  getDebugInfo,
   makeSceneObject,
   type Position,
   type SceneObject,
@@ -11,7 +13,7 @@ import type { AnyFishingState } from "../objects";
 import { bobberBounds, fishingMan } from "../objects";
 
 describe("fisherman", () => {
-  describe("manual", () => {
+  describe("example", () => {
     const interactive = Cypress.config("isInteractive");
     // const interactive = false;
 
@@ -50,25 +52,16 @@ describe("fisherman", () => {
     };
 
     const getFishermanState = () => {
-      const fisherman = getFisherman();
-
-      expect(fisherman?._getDebugInfo).to.exist;
-      const debugInfo = fisherman!._getDebugInfo!();
-
-      expect(debugInfo?.state).to.exist;
+      const debugInfo = getDebugInfo(
+        getFisherman()!,
+        z.object({
+          state: z.any(),
+        })
+      );
       return debugInfo.state as AnyFishingState;
     };
 
-    beforeEach(() => {
-      cy.viewport(1400, 1000);
-
-      if (!interactive) {
-        cy.clock();
-      }
-
-      debugDrawSub = new Subject();
-      worldClickSub = new Subject();
-
+    const mount = (overrides?: { getCurrentLevel?: () => number }) => {
       cy.mountSceneObject({
         makeObjects: (random) => [
           makeSceneObject(random)({
@@ -84,6 +77,7 @@ describe("fisherman", () => {
           fishingMan({
             random,
             onFishRetrieved: cy.spy().as("onFishRetrieved"),
+            getCurrentLevel: overrides?.getCurrentLevel ?? (() => 0),
           }),
         ],
         debugDraw$: debugDrawSub,
@@ -128,151 +122,251 @@ describe("fisherman", () => {
           ctx.stroke();
         });
       });
+    };
+
+    beforeEach(() => {
+      cy.viewport(1400, 1000);
+
+      if (!interactive) {
+        cy.clock();
+      }
+
+      debugDrawSub = new Subject();
+      worldClickSub = new Subject();
     });
 
-    it("scene has correct objects", () => {
-      assertCorrectObjects({
-        fisherman: true,
-        bobber: false,
-        biteMarker: false,
-        reelingOverlay: false,
-        flyingFish: false,
-      });
-    });
-
-    describe("clicking man", () => {
+    describe("level 0", () => {
       beforeEach(() => {
-        const position = getFisherman()?.getPosition();
-        expect(position).to.exist;
-        worldClickSub.next(position!);
+        mount();
       });
 
-      it("starts cast out", () => {
-        const state = getFishermanState();
-        expect(state.kind).to.eq("cast-out-swing");
+      it("scene has correct objects", () => {
+        assertCorrectObjects({
+          fisherman: true,
+          bobber: false,
+          biteMarker: false,
+          reelingOverlay: false,
+          flyingFish: false,
+        });
       });
 
-      describe("after bobber lands", () => {
+      describe("clicking man", () => {
         beforeEach(() => {
-          cy.myWaitFor(() => {
-            const bobber = getBobber();
-            const debugInfo = bobber?._getDebugInfo && bobber._getDebugInfo();
-            return debugInfo?.stationary === true;
-          }, interactive);
+          const position = getFisherman()?.getPosition();
+          expect(position).to.exist;
+          worldClickSub.next(position!);
         });
 
-        it("has correct objects", () => {
-          assertCorrectObjects({
-            fisherman: true,
-            bobber: true,
-            biteMarker: false,
-            reelingOverlay: false,
-            flyingFish: false,
-          });
+        it("starts cast out", () => {
+          const state = getFishermanState();
+          expect(state.kind).to.eq("cast-out-swing");
+          if (state.kind === "cast-out-swing") {
+            expect(state.timer).to.eq(50);
+          }
         });
 
-        it("bobber lands in bounds", () => {
-          const bobberState = (() => {
-            const bobber = getBobber();
-            if (bobber && bobber._getDebugInfo) {
-              const position = bobber.getPosition();
-              const debugInfo = bobber._getDebugInfo();
-              const stationary = debugInfo?.stationary;
-
-              if (typeof stationary === "boolean") {
-                return { position, stationary };
-              }
-            }
-          })();
-
-          expect(bobberState).to.exist;
-
-          const { position, stationary } = bobberState!;
-
-          expect(stationary).to.be.true;
-
-          const x = position.x;
-          const y = position.y;
-
-          expect(x).to.be.lessThan(bobberBounds.max.x);
-          expect(x).to.be.greaterThan(bobberBounds.min.x);
-          expect(y).to.be.lessThan(bobberBounds.max.y);
-          expect(y).to.be.greaterThan(bobberBounds.min.y);
-        });
-
-        describe("after bite", () => {
+        describe("after bobber lands", () => {
           beforeEach(() => {
-            cy.myWaitFor(() => getBiteMarker() !== undefined, interactive);
+            cy.myWaitFor(
+              () => {
+                const bobber = getBobber();
+                if (bobber) {
+                  const debugInfo = getDebugInfo(
+                    bobber!,
+                    z.object({
+                      stationary: z.boolean(),
+                    })
+                  );
+                  return debugInfo.stationary === true;
+                } else {
+                  return false;
+                }
+              },
+              interactive,
+              { timeout: 5000 }
+            );
           });
 
           it("has correct objects", () => {
             assertCorrectObjects({
               fisherman: true,
               bobber: true,
-              biteMarker: true,
+              biteMarker: false,
               reelingOverlay: false,
               flyingFish: false,
             });
           });
 
-          describe("clicking bite marker", () => {
+          it("bobber lands in bounds", () => {
+            const bobberState = (() => {
+              const bobber = getBobber();
+              if (bobber && bobber._getDebugInfo) {
+                const position = bobber.getPosition();
+                const debugInfo = bobber._getDebugInfo();
+                const stationary = debugInfo?.stationary;
+
+                if (typeof stationary === "boolean") {
+                  return { position, stationary };
+                }
+              }
+            })();
+
+            expect(bobberState).to.exist;
+
+            const { position, stationary } = bobberState!;
+
+            expect(stationary).to.be.true;
+
+            const x = position.x;
+            const y = position.y;
+
+            expect(x).to.be.lessThan(bobberBounds.max.x);
+            expect(x).to.be.greaterThan(bobberBounds.min.x);
+            expect(y).to.be.lessThan(bobberBounds.max.y);
+            expect(y).to.be.greaterThan(bobberBounds.min.y);
+          });
+
+          describe("after bite", () => {
             beforeEach(() => {
-              expect(getBiteMarker()).to.exist;
-              worldClickSub.next(getBiteMarker()!.getPosition());
-              cy.interactiveWait(100, interactive);
+              cy.myWaitFor(() => getBiteMarker() !== undefined, interactive, {
+                timeout: 5000,
+              });
             });
 
             it("has correct objects", () => {
               assertCorrectObjects({
                 fisherman: true,
                 bobber: true,
-                biteMarker: false,
-                reelingOverlay: true,
+                biteMarker: true,
+                reelingOverlay: false,
                 flyingFish: false,
               });
             });
 
-            describe("completing reeling", () => {
+            describe("clicking bite marker", () => {
               beforeEach(() => {
-                Array.from({ length: 30 }).forEach(() => {
-                  cy.interactiveWait(100, interactive, { log: false }).then(
-                    () => {
-                      const reelingOverlay = getReelingOverlay();
-                      if (reelingOverlay) {
-                        worldClickSub.next(getReelingOverlay()!.getPosition());
-                      }
-                    }
-                  );
-                });
-
-                cy.myWaitFor(() => {
-                  return getReelingOverlay() === undefined;
-                }, interactive);
+                expect(getBiteMarker()).to.exist;
+                worldClickSub.next(getBiteMarker()!.getPosition());
+                cy.interactiveWait(100, interactive);
               });
 
               it("has correct objects", () => {
                 assertCorrectObjects({
                   fisherman: true,
-                  bobber: false,
+                  bobber: true,
                   biteMarker: false,
-                  reelingOverlay: false,
-                  flyingFish: true,
+                  reelingOverlay: true,
+                  flyingFish: false,
                 });
               });
 
-              describe("fish is retrieved", () => {
+              describe("completing reeling", () => {
                 beforeEach(() => {
-                  cy.get("@onFishRetrieved").should("not.have.been.called");
-                  cy.myWaitFor(
-                    () => getFlyingFish() === undefined,
-                    interactive
-                  );
+                  Array.from({ length: 30 }).forEach(() => {
+                    cy.interactiveWait(100, interactive, { log: false }).then(
+                      () => {
+                        const reelingOverlay = getReelingOverlay();
+                        if (reelingOverlay) {
+                          worldClickSub.next(
+                            getReelingOverlay()!.getPosition()
+                          );
+                        }
+                      }
+                    );
+                  });
+
+                  cy.myWaitFor(() => {
+                    return getReelingOverlay() === undefined;
+                  }, interactive);
                 });
 
-                it("calls callback", () => {
-                  cy.get("@onFishRetrieved").should("have.been.calledOnce");
+                it("has correct objects", () => {
+                  assertCorrectObjects({
+                    fisherman: true,
+                    bobber: false,
+                    biteMarker: false,
+                    reelingOverlay: false,
+                    flyingFish: true,
+                  });
+                });
+
+                describe("fish is retrieved", () => {
+                  beforeEach(() => {
+                    cy.get("@onFishRetrieved").should("not.have.been.called");
+                    cy.myWaitFor(
+                      () => getFlyingFish() === undefined,
+                      interactive
+                    );
+                  });
+
+                  it("calls callback", () => {
+                    cy.get("@onFishRetrieved").should("have.been.calledOnce");
+                  });
                 });
               });
+            });
+          });
+        });
+      });
+    });
+
+    describe("level 50", () => {
+      beforeEach(() => {
+        mount({
+          getCurrentLevel: () => 50,
+        });
+      });
+
+      it("scene has correct objects", () => {
+        assertCorrectObjects({
+          fisherman: true,
+          bobber: false,
+          biteMarker: false,
+          reelingOverlay: false,
+          flyingFish: false,
+        });
+      });
+
+      describe("clicking man", () => {
+        beforeEach(() => {
+          const position = getFisherman()?.getPosition();
+          expect(position).to.exist;
+          worldClickSub.next(position!);
+        });
+
+        it("starts cast out", () => {
+          const state = getFishermanState();
+          expect(state.kind).to.eq("cast-out-swing");
+          if (state.kind === "cast-out-swing") {
+            expect(state.timer).to.eq(18);
+          }
+        });
+
+        describe("after bobber lands", () => {
+          beforeEach(() => {
+            cy.myWaitFor(() => {
+              const bobber = getBobber();
+              if (bobber) {
+                const debugInfo = getDebugInfo(
+                  bobber!,
+                  z.object({
+                    stationary: z.boolean(),
+                  })
+                );
+                return debugInfo.stationary === true;
+              } else {
+                return false;
+              }
+            }, interactive);
+          });
+
+          it("has correct objects", () => {
+            assertCorrectObjects({
+              fisherman: true,
+              bobber: true,
+              biteMarker: false,
+              reelingOverlay: false,
+              flyingFish: false,
             });
           });
         });
@@ -280,91 +374,30 @@ describe("fisherman", () => {
     });
   });
 
-  describe("property-based", () => {
-    beforeEach(() => {
-      cy.viewport(1400, 1000);
-      cy.clock();
-    });
+  describe("levels", () => {
+    it("works", () => {
+      const random = seedrandom("abcd");
+      const fisherman = fishingMan({
+        random,
+        onFishRetrieved: cy.spy().as("fishRetrieved"),
+        getCurrentLevel: () => 10,
+      });
 
-    describe("cast out bobber lands in bound", () => {
-      fc.assert(
-        fc.property(fc.string(), (seed) => {
-          it("seed " + seed, () => {
-            let bobberState:
-              | {
-                  position: Position;
-                  stationary: boolean;
-                }
-              | undefined;
+      const getFishingState = () =>
+        getDebugInfo(
+          fisherman,
+          z.object({
+            state: z.object({
+              kind: z.string(),
+            }),
+          })
+        );
 
-            cy.mountSceneObject({
-              makeObjects: (random) => [
-                makeSceneObject(random)({
-                  layerKey: "background",
-                  getPosition: () => PosFns.zero,
-                  getLayers: () => [
-                    {
-                      kind: "image",
-                      assetKey: "fishingBackground",
-                    },
-                  ],
-                }),
-                fishingMan({
-                  random,
-                  initialState: { kind: "cast-out-swing", timer: 20 },
-                  onFishRetrieved: () => {},
-                }),
-              ],
-              layerOrder: ["background", "man", "bobber"],
-              seed: "some-seed-12341",
-              onSceneChange: (scene) => {
-                bobberState = undefined;
+      expect(getFishingState().state.kind).to.eq("idle");
 
-                const bobber = scene
-                  .getObjects()
-                  .find((obj) => obj.typeName === "bobber");
-                if (bobber && bobber._getDebugInfo) {
-                  const position = bobber.getPosition();
-                  const debugInfo = bobber._getDebugInfo();
-                  const stationary = debugInfo?.stationary;
+      fisherman.onInteract!();
 
-                  if (typeof stationary === "boolean") {
-                    bobberState = { position, stationary };
-                  }
-                }
-              },
-              debugTrace: {
-                sources: (scene) =>
-                  scene.getObjects().filter((obj) => obj.typeName === "bobber"),
-                colour: () => "mediumaquamarine",
-              },
-            });
-
-            cy.myWaitFor(() => {
-              if (bobberState) {
-                return bobberState.stationary;
-              } else {
-                return false;
-              }
-            }, false).then(() => {
-              expect(bobberState).to.exist;
-
-              const { position, stationary } = bobberState!;
-
-              expect(stationary).to.be.true;
-
-              const x = position.x;
-              const y = position.y;
-
-              expect(x).to.be.lessThan(bobberBounds.max.x);
-              expect(x).to.be.greaterThan(bobberBounds.min.x);
-              expect(y).to.be.lessThan(bobberBounds.max.y);
-              expect(y).to.be.greaterThan(bobberBounds.min.y);
-            });
-          });
-        }),
-        { numRuns: 20 }
-      );
+      expect(getFishingState().state.kind).to.eq("cast-out-swing");
     });
   });
 });

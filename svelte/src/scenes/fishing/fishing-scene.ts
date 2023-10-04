@@ -140,6 +140,7 @@ export const makeFishingScene =
             }
           }
         },
+        getCurrentLevel: () => stateSub.value?.level ?? 0,
       }),
       makeSceneObjectBound({
         layerKey: "ui",

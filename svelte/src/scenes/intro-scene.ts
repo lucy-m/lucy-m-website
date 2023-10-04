@@ -131,7 +131,7 @@ export const makeIntroScene: SceneSpec = ({ random }) => {
 
   const events: Observable<SceneAction> = merge(
     timer(200),
-    randomInterval([6000, 15000], random)
+    randomInterval({ min: 6000, max: 15000 }, random)
   ).pipe(
     map(() => ({
       kind: "addObject",

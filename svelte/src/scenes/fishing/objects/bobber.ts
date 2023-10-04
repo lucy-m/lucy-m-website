@@ -3,6 +3,7 @@ import {
   NumberSpringFns,
   PosFns,
   makeSceneObject,
+  randomBetweenPosition,
   type NumberSpring,
   type Position,
   type SceneObject,
@@ -15,17 +16,13 @@ export const bobberBounds = {
 
 const rodEnd = PosFns.new(1060, 175);
 
-const gravity = 1.05;
-
-const xVelocityMax = 33;
-const xVelocityMin = 15;
-
 export type BobberState =
   | {
       kind: "throwing";
       velocity: Position;
-      yTarget: number;
       position: Position;
+      target: Position;
+      gravity: number;
     }
   | {
       kind: "stationary";
@@ -45,12 +42,14 @@ const getPosition = (state: BobberState): Position => {
 const tickBobberState = (state: BobberState): BobberState => {
   switch (state.kind) {
     case "throwing": {
-      const { velocity, yTarget, position } = state;
+      const { velocity, position, target } = state;
+
+      const myDistance = PosFns.distance(target, position);
 
       if (
         position.x + velocity.x > bobberBounds.max.x ||
         position.y + velocity.y > bobberBounds.max.y ||
-        position.y > yTarget
+        myDistance < Math.abs(velocity.x) + Math.abs(velocity.y)
       ) {
         return {
           kind: "stationary",
@@ -72,8 +71,9 @@ const tickBobberState = (state: BobberState): BobberState => {
       return {
         kind: "throwing",
         position: PosFns.add(position, velocity),
-        velocity: PosFns.new(velocity.x, velocity.y + gravity),
-        yTarget,
+        velocity: PosFns.new(velocity.x, velocity.y + state.gravity),
+        target,
+        gravity: state.gravity,
       };
     }
 
@@ -87,23 +87,35 @@ const tickBobberState = (state: BobberState): BobberState => {
   }
 };
 
+const initial = PosFns.new(0, 300);
+
 export const makeBobber = (args: {
   onLand: () => void;
   random: PRNG;
+  getProficiency: () => number;
 }): SceneObject => {
-  const xVelocity =
-    args.random.quick() * (xVelocityMax - xVelocityMin) + xVelocityMin;
+  const target = randomBetweenPosition(bobberBounds, args.random);
 
-  const yTarget =
-    args.random.quick() * (bobberBounds.max.y - bobberBounds.min.y) +
-    bobberBounds.min.y;
+  let state: BobberState = (() => {
+    const speedRatio = Math.pow(1 / args.getProficiency(), 0.7);
 
-  let state: BobberState = {
-    kind: "throwing",
-    position: PosFns.new(-100, 300),
-    velocity: PosFns.new(xVelocity, -26),
-    yTarget,
-  };
+    const gravity = 1.5 * Math.pow(speedRatio, 2);
+    const velocityX = 20 * speedRatio;
+    const offset = PosFns.sub(target, initial);
+
+    const velocityY =
+      (offset.y * velocityX) / offset.x -
+      (gravity * offset.x) / (2 * velocityX);
+
+    return {
+      kind: "throwing",
+      position: initial,
+      velocity: PosFns.new(velocityX, velocityY),
+      target,
+      gravity,
+    };
+  })();
+
   return makeSceneObject(args.random)({
     typeName: "bobber",
     layerKey: "bobber",
@@ -135,6 +147,7 @@ export const makeBobber = (args: {
     },
     _getDebugInfo: () => ({
       stationary: state.kind === "stationary",
+      target,
     }),
   });
 };

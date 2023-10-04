@@ -63,6 +63,7 @@ describe("flying-fish", () => {
         initial: PosFns.new(1300, 900),
         target: PosFns.new(200, 600),
         onTargetReached: cy.spy().as("onTargetReached"),
+        getProficiency: () => 1,
       });
     });
 
@@ -89,6 +90,7 @@ describe("flying-fish", () => {
         initial: PosFns.new(400, 800),
         target: PosFns.new(1400, 800),
         onTargetReached: cy.spy().as("onTargetReached"),
+        getProficiency: () => 1,
       });
     });
 

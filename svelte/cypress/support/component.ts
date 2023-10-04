@@ -139,7 +139,7 @@ const myWaitFor = (
   const timeout = options?.timeout ?? 4000;
 
   const inner = (progress: number): Cypress.Chainable => {
-    return interactiveWait(100, interactive, { log: false }).then(() => {
+    return interactiveWait(step, interactive, { log: false }).then(() => {
       if (predicate()) {
         return;
       } else {

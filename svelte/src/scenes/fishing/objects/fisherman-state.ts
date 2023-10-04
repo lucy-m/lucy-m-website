@@ -88,7 +88,11 @@ export const makeFishingStateReducer =
     makeFlyingFish: (prevState: FishingState<"reeling">) => SceneObject;
     makeFishId: () => string;
   }) =>
-  (action: AnyFishingAction, state: AnyFishingState): AnyFishingState => {
+  (
+    action: AnyFishingAction,
+    state: AnyFishingState,
+    proficiency: number
+  ): AnyFishingState => {
     switch (action.kind) {
       case "tick": {
         if ("timer" in state) {
@@ -118,7 +122,10 @@ export const makeFishingStateReducer =
 
       case "start-cast-out-swing": {
         if (state.kind === "idle") {
-          return { kind: "cast-out-swing", timer: 35 };
+          return {
+            kind: "cast-out-swing",
+            timer: Math.floor(50 * proficiency),
+          };
         } else {
           return state;
         }
@@ -126,7 +133,11 @@ export const makeFishingStateReducer =
 
       case "cast-out-land": {
         if (state.kind === "cast-out-casting") {
-          return { kind: "cast-out-waiting", bobber: state.bobber, timer: 35 };
+          return {
+            kind: "cast-out-waiting",
+            bobber: state.bobber,
+            timer: Math.floor(150 * proficiency),
+          };
         } else {
           return state;
         }
