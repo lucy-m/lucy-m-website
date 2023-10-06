@@ -116,6 +116,12 @@ export const makeSceneType =
           });
           eventSubscriptions[obj.id] = subscription;
         }
+        if (obj.onAddedToScene) {
+          const actions = obj.onAddedToScene();
+          if (actions) {
+            applySceneActions(actions);
+          }
+        }
         objects.push(obj);
       }
     };

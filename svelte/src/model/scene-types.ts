@@ -41,6 +41,7 @@ export type SceneObject = {
   events$?: Observable<SceneAction>;
   getPosition: () => Position;
   getLayers: () => ObjectLayerContent[];
+  onAddedToScene?: () => SceneAction[] | void;
   onInteract?: () => SceneAction[] | void;
   onTick?: () => SceneAction[] | void;
   onDestroy?: () => void;

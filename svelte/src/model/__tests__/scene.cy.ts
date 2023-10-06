@@ -12,7 +12,10 @@ describe("scene", () => {
   const images = {} as Record<AssetKey, ImageBitmap>;
 
   const makeTestSceneObject = (
-    optional?: Pick<SceneObject, "onTick" | "events$" | "onDestroy">
+    optional?: Pick<
+      SceneObject,
+      "onTick" | "onAddedToScene" | "events$" | "onDestroy"
+    >
   ): SceneObject =>
     makeSceneObject(random)({
       getLayers: () => [],
@@ -53,6 +56,7 @@ describe("scene", () => {
       objectA = makeTestSceneObject({
         events$: objectAEvents,
         onDestroy: cy.spy().as("onADestroySpy"),
+        onAddedToScene: cy.spy().as("onAddedToSceneSpy"),
       });
 
       scene = makeTestScene([objectA], {
@@ -70,9 +74,21 @@ describe("scene", () => {
     });
 
     it("sceneAction addObject event updates the scene", () => {
-      const newObject = makeTestSceneObject();
+      const newObject = makeTestSceneObject({
+        onAddedToScene: cy.spy().as("newOnAdded"),
+      });
       objectAEvents.next({ kind: "addObject", makeObject: () => newObject });
       expect(scene.getObjects()).to.have.length(2);
+      cy.get("@newOnAdded").should("have.been.calledOnce");
+    });
+
+    it("sceneAction addObject for existing object does not change scene", () => {
+      cy.get<Sinon.SinonSpy>("@onAddedToSceneSpy").then((spy) => {
+        spy.resetHistory();
+        objectAEvents.next({ kind: "addObject", makeObject: () => objectA });
+        expect(scene.getObjects()).to.have.length(1);
+        cy.get("@onAddedToSceneSpy").should("not.have.been.called");
+      });
     });
 
     it("sceneAction removeObject event updates the scene", () => {
