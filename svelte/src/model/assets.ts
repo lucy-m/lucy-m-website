@@ -1,5 +1,14 @@
 import { entriesToRecord, recordToEntries } from "../utils";
 
+const fishPaths = {
+  commonBrown: "/assets/scene-fishing/fish/1_brown.png",
+  commonGrey: "/assets/scene-fishing/fish/2_grey.png",
+};
+
+type FishStates = "no-bg" | "shadow";
+
+type FishAsset = `${keyof typeof fishPaths}.${FishStates}`;
+
 const imagePaths = {
   introBackground: "/assets/scene-intro/background.PNG",
   personSitting: "/assets/scene-intro/person-sitting.png",
@@ -23,11 +32,9 @@ const imagePaths = {
   reelSpinner: "/assets/scene-fishing/reel-spinner.PNG",
   fish1: "/assets/scene-fishing/fish-1.PNG",
   openGameMenuIcon: "/assets/scene-fishing/menu.PNG",
-
-  brownFish: "/assets/scene-fishing/fish/1_brown.png",
 };
 
-export type AssetKey = keyof typeof imagePaths;
+export type AssetKey = keyof typeof imagePaths | FishAsset;
 
 const loadImage = (absPath: string): Promise<ImageBitmap> => {
   const image = new Image();
@@ -39,10 +46,56 @@ const loadImage = (absPath: string): Promise<ImageBitmap> => {
   }).then(() => createImageBitmap(image));
 };
 
+const shadowise = (image: ImageBitmap): Promise<ImageBitmap> => {
+  const offscreen = new OffscreenCanvas(image.width, image.height);
+  const ctx = offscreen.getContext("2d");
+  if (!ctx) {
+    throw new Error("Could not shadowize image");
+  }
+  ctx.drawImage(image, 0, 0);
+  const imageData = ctx.getImageData(0, 0, image.width, image.height);
+
+  for (let i = 0; i < imageData.data.length; i += 4) {
+    const a = imageData.data[i + 3];
+
+    if (a > 0) {
+      imageData.data[i] = 0;
+      imageData.data[i + 1] = 0;
+      imageData.data[i + 2] = 0;
+      imageData.data[i + 3] = 50;
+    }
+  }
+
+  const bitmap = createImageBitmap(imageData);
+
+  return bitmap;
+};
+
 export const loadImages = (): Promise<Record<AssetKey, ImageBitmap>> => {
-  const promises = recordToEntries(imagePaths).map(([assetKey, path]) =>
-    loadImage(path).then((image) => [assetKey, image] as const)
+  const imagePromises = Promise.all(
+    recordToEntries(imagePaths).map(([assetKey, path]) =>
+      loadImage(path).then((image) => [assetKey, image] as const)
+    )
   );
 
-  return Promise.all(promises).then((entries) => entriesToRecord(entries));
+  const fishPromises = Promise.all(
+    recordToEntries(fishPaths).map(([assetKey, path]) =>
+      loadImage(path).then((image) => {
+        return shadowise(image).then((shadowised) => {
+          return [
+            [(assetKey + ".no-bg") as FishAsset, image] as const,
+            [(assetKey + ".shadow") as FishAsset, shadowised] as const,
+          ];
+        });
+      })
+    )
+  ).then((fishes) => {
+    const flattened = fishes.reduce((a, b) => [...a, ...b], []);
+    return flattened;
+  });
+
+  return Promise.all([imagePromises, fishPromises]).then(([images, fishes]) => {
+    const entries = [...images, ...fishes];
+    return entriesToRecord<AssetKey, ImageBitmap>(entries);
+  });
 };

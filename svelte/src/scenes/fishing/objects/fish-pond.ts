@@ -5,6 +5,9 @@ import {
   type SceneObject,
   type Shape,
 } from "../../../model";
+import { swimmingFish } from "./swimming-fish";
+
+const capacity = 1;
 
 export const makeFishPond = (args: { random: PRNG }): SceneObject => {
   const pondBounds: Shape = [
@@ -15,15 +18,12 @@ export const makeFishPond = (args: { random: PRNG }): SceneObject => {
     PosFns.new(500, 900),
   ];
 
+  let fishCount = 0;
+
   return makeSceneObject(args.random)({
     layerKey: "pond",
     getPosition: () => PosFns.zero,
     getLayers: () => [
-      {
-        kind: "image",
-        assetKey: "brownFish",
-        position: PosFns.new(1200, 500),
-      },
       {
         kind: "ctxDraw",
         draw: (ctx) => {
@@ -36,5 +36,16 @@ export const makeFishPond = (args: { random: PRNG }): SceneObject => {
         },
       },
     ],
+    onTick: () => {
+      if (fishCount < capacity) {
+        fishCount++;
+        return [
+          {
+            kind: "addObject",
+            makeObject: () => swimmingFish({ random: args.random }),
+          },
+        ];
+      }
+    },
   });
 };
