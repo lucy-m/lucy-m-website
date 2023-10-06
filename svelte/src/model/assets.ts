@@ -29,17 +29,17 @@ const imagePaths = {
 
 export type AssetKey = keyof typeof imagePaths;
 
-const loadImage = (absPath: string): Promise<HTMLImageElement> => {
+const loadImage = (absPath: string): Promise<ImageBitmap> => {
   const image = new Image();
   return new Promise<void>((resolve) => {
     image.onload = () => {
       resolve();
     };
     image.src = absPath;
-  }).then(() => image);
+  }).then(() => createImageBitmap(image));
 };
 
-export const loadImages = (): Promise<Record<AssetKey, HTMLImageElement>> => {
+export const loadImages = (): Promise<Record<AssetKey, ImageBitmap>> => {
   const promises = recordToEntries(imagePaths).map(([assetKey, path]) =>
     loadImage(path).then((image) => [assetKey, image] as const)
   );

@@ -19,7 +19,7 @@ export const makeSceneType =
     }
   ) =>
   (
-    images: Record<string, HTMLImageElement>,
+    images: Record<string, ImageBitmap>,
     onSceneChange: (newScene: SceneSpec) => void
   ): SceneType => {
     let objects: SceneObject[] = [];

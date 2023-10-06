@@ -32,7 +32,7 @@ import { drawLayerContent } from "./canvas-draw";
 const redrawCanvas = (
   ctx: CanvasRenderingContext2D,
   scene: SceneType,
-  images: Record<AssetKey, HTMLImageElement>
+  images: Record<AssetKey, ImageBitmap>
 ) => {
   if (ctx) {
     ctx.clearRect(0, 0, sceneSize.x, sceneSize.y);
@@ -49,7 +49,7 @@ export const viewScene = (
   canvas: HTMLCanvasElement,
   args: {
     initialSceneSpec: SceneSpec;
-    images: Record<AssetKey, HTMLImageElement>;
+    images: Record<AssetKey, ImageBitmap>;
     onSceneChange?: (scene: SceneType) => void;
     worldClick$?: Observable<Position>;
     seed: string;

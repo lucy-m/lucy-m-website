@@ -8,11 +8,7 @@ describe("scene object", () => {
     const random = seedrandom();
 
     const makeTestImage = (width: number, height: number) => {
-      const img = new Image();
-      img.width = width;
-      img.height = height;
-
-      return img;
+      return { width, height } as ImageBitmap;
     };
 
     const makeTestObject = (
@@ -31,14 +27,14 @@ describe("scene object", () => {
       });
     };
 
-    const assets: Record<AssetKey, HTMLImageElement> = (() => {
-      const value: Partial<Record<AssetKey, HTMLImageElement>> = {
+    const assets: Record<AssetKey, ImageBitmap> = (() => {
+      const value: Partial<Record<AssetKey, ImageBitmap>> = {
         introBackground: makeTestImage(200, 150),
         tree1: makeTestImage(40, 15),
         tree2: makeTestImage(1, 1),
       };
 
-      return value as unknown as Record<AssetKey, HTMLImageElement>;
+      return value as unknown as Record<AssetKey, ImageBitmap>;
     })();
 
     it("empty object", () => {

@@ -9,7 +9,7 @@ import type { SceneAction, SceneObject, SceneType } from "../scene-types";
 
 describe("scene", () => {
   const random = seedrandom();
-  const images = {} as Record<AssetKey, HTMLImageElement>;
+  const images = {} as Record<AssetKey, ImageBitmap>;
 
   const makeTestSceneObject = (
     optional?: Pick<SceneObject, "onTick" | "events$" | "onDestroy">
