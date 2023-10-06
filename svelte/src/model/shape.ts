@@ -147,6 +147,13 @@ export const getBoundingBox = (
   return reduced;
 };
 
+/**
+ * Generates a point in the shape by getting its bounding
+ *   box, getting a point in it, then checking if it is in the shape.
+ * The shape must be convex.
+ * If your shape does not cover at least 25% of its bounding box
+ *   you may have a bad time.
+ */
 export const generatePointsInShape = (
   target: number,
   shape: Shape,

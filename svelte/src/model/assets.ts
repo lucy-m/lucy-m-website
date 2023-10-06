@@ -5,9 +5,11 @@ const fishPaths = {
   commonGrey: "/assets/scene-fishing/fish/2_grey.png",
 };
 
+export type FishName = keyof typeof fishPaths;
+
 type FishStates = "no-bg" | "shadow";
 
-type FishAsset = `${keyof typeof fishPaths}.${FishStates}`;
+type FishAsset = `${FishName}.${FishStates}`;
 
 const imagePaths = {
   introBackground: "/assets/scene-intro/background.PNG",
@@ -59,10 +61,10 @@ const shadowise = (image: ImageBitmap): Promise<ImageBitmap> => {
     const a = imageData.data[i + 3];
 
     if (a > 0) {
-      imageData.data[i] = 0;
-      imageData.data[i + 1] = 0;
-      imageData.data[i + 2] = 0;
-      imageData.data[i + 3] = 50;
+      imageData.data[i] = 60;
+      imageData.data[i + 1] = 102;
+      imageData.data[i + 2] = 115;
+      imageData.data[i + 3] = 255;
     }
   }
 
