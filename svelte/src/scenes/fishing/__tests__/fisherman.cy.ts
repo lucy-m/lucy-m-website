@@ -278,6 +278,13 @@ describe("fisherman", () => {
                   });
                 });
 
+                it("removes fish from pond", () => {
+                  const fish = lastScene
+                    .getObjects()
+                    .filter((obj) => obj.typeName === "swimming-fish");
+                  expect(fish).to.have.length(3);
+                });
+
                 describe("fish is retrieved", () => {
                   beforeEach(() => {
                     cy.get("@onFishRetrieved").should("not.have.been.called");

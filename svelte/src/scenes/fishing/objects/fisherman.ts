@@ -1,6 +1,7 @@
 import {
   BehaviorSubject,
   distinctUntilKeyChanged,
+  filter,
   from,
   map,
   mergeMap,
@@ -209,6 +210,12 @@ export const fishingMan = (args: {
                   return undefined;
                 }
               })
+            ),
+            removeBitingFish$: currentState.pipe(
+              distinctUntilKeyChanged("kind"),
+              pairwise(),
+              filter(([prev, next]) => prev.kind === "reeling"),
+              map(() => {})
             ),
             onFishBite: (fishType) => {
               applyFishingAction({ kind: "fish-bite", fishType });

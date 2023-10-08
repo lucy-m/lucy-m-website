@@ -8,6 +8,7 @@ import {
   type SceneObject,
   type Shape,
 } from "../../../model";
+import { sceneSize } from "../../scene-size";
 import { swimmingFish } from "./swimming-fish";
 
 const capacity = 4;
@@ -22,11 +23,38 @@ export const pondBounds: Shape = [
 export const makeFishPond = (args: {
   random: PRNG;
   bobberLocation$: Observable<Position | undefined>;
+  removeBitingFish$: Observable<void>;
   onFishBite: (type: FishName) => void;
 }): SceneObject => {
   const { random } = args;
 
   const bobberLocation$ = args.bobberLocation$.pipe(share());
+  const removeBitingFish$ = args.removeBitingFish$.pipe(share());
+
+  let fishCount = 0;
+
+  const makeSwimmingFish = (initial: Position | undefined): SceneObject => {
+    const baseObject = swimmingFish({
+      random,
+      initial,
+      pondBounds,
+      bobberLocation$,
+      onBite: (type) => args.onFishBite(type),
+      removeBitingFish$,
+    });
+
+    return {
+      ...baseObject,
+      onAddedToScene: () => {
+        fishCount++;
+        return baseObject.onAddedToScene && baseObject.onAddedToScene();
+      },
+      onDestroy: () => {
+        fishCount--;
+        return baseObject.onDestroy && baseObject.onDestroy();
+      },
+    };
+  };
 
   return makeSceneObject(args.random)({
     layerKey: "pond",
@@ -35,13 +63,18 @@ export const makeFishPond = (args: {
     onAddedToScene: () =>
       Array.from({ length: capacity }).map(() => ({
         kind: "addObject",
-        makeObject: () =>
-          swimmingFish({
-            random,
-            pondBounds,
-            bobberLocation$,
-            onBite: (type) => args.onFishBite(type),
-          }),
+        makeObject: () => makeSwimmingFish(undefined),
       })),
+    onTick: () => {
+      if (fishCount < capacity) {
+        return [
+          {
+            kind: "addObject",
+            makeObject: () =>
+              makeSwimmingFish(PosFns.new(sceneSize.x + 50, sceneSize.y / 2)),
+          },
+        ];
+      }
+    },
   });
 };

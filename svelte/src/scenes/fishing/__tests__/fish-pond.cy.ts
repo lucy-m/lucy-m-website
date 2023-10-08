@@ -1,3 +1,4 @@
+import type Sinon from "cypress/types/sinon";
 import fc from "fast-check";
 import { Subject } from "rxjs";
 import seedrandom from "seedrandom";
@@ -8,6 +9,7 @@ import {
   getDebugInfo,
   pointInShape,
   type Position,
+  type SceneObject,
   type SceneType,
 } from "../../../model";
 import { chooseOp } from "../../../utils";
@@ -20,10 +22,29 @@ describe("fish pond", () => {
     // const interactive = false;
 
     let bobberLocation: Subject<Position | undefined>;
+    let removeBitingFish: Subject<void>;
     let lastScene: SceneType;
+    let onFishBiteSpy: Sinon.SinonSpy;
+
+    const getBitingFish = (): SceneObject[] => {
+      const fish = lastScene
+        .getObjects()
+        .filter((obj) => obj.typeName === "swimming-fish");
+      const bitingFish = fish.filter((fish) => {
+        const debugInfo = getDebugInfo(
+          fish,
+          z.object({
+            stateKind: z.string(),
+          })
+        );
+        return debugInfo.stateKind === "biting";
+      });
+      return bitingFish;
+    };
 
     const mount = () => {
       bobberLocation = new Subject();
+      removeBitingFish = new Subject();
 
       const debugDraw$ = bobberLocation.pipe(
         chooseOp((pos) => {
@@ -39,15 +60,21 @@ describe("fish pond", () => {
         })
       );
 
+      onFishBiteSpy = cy
+        .stub()
+        .as("onFishBite")
+        .callsFake(() => {
+          bobberLocation.next(undefined);
+        });
+
       return cy.mountSceneObject({
         makeObjects: (random) => [
           fishingBg(random),
           makeFishPond({
             random,
             bobberLocation$: bobberLocation,
-            onFishBite: () => {
-              bobberLocation.next(undefined);
-            },
+            onFishBite: onFishBiteSpy,
+            removeBitingFish$: removeBitingFish,
           }),
         ],
         seed: "pond",
@@ -80,9 +107,34 @@ describe("fish pond", () => {
         bobberLocation.next(PosFns.new(900, 500));
       });
 
-      it("works", () => {
-        cy.interactiveWait(10_000, interactive).then(() => {
-          bobberLocation.next(undefined);
+      describe("fish bites", () => {
+        beforeEach(() => {
+          cy.myWaitFor(() => onFishBiteSpy.callCount > 0, interactive);
+        });
+
+        it("has a biting fish", () => {
+          expect(getBitingFish()).to.have.length(1);
+        });
+
+        describe("remove biting fish", () => {
+          beforeEach(() => {
+            removeBitingFish.next();
+          });
+
+          it("removes correct fish", () => {
+            expect(getBitingFish()).to.have.length(0);
+          });
+
+          it.only("replaces fish", () => {
+            cy.myWaitFor(
+              () =>
+                lastScene
+                  .getObjects()
+                  .filter((obj) => obj.typeName === "swimming-fish").length ===
+                4,
+              interactive
+            );
+          });
         });
       });
     });
@@ -115,6 +167,7 @@ describe("fish pond", () => {
                   random,
                   bobberLocation$: bobberLocationSub,
                   onFishBite: () => {},
+                  removeBitingFish$: new Subject(),
                 }),
               ],
               seed,
@@ -193,7 +246,7 @@ describe("fish pond", () => {
       );
     });
 
-    describe.only("onBite called once per bobber", () => {
+    describe("onBite called once per bobber", () => {
       fc.assert(
         fc.property(fc.string(), (seed) => {
           it("seed " + seed, () => {
@@ -213,6 +266,7 @@ describe("fish pond", () => {
                   random,
                   bobberLocation$: bobberLocationSub,
                   onFishBite: biteSpy,
+                  removeBitingFish$: new Subject(),
                 }),
               ],
             }).then(() => {
