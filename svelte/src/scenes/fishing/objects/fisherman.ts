@@ -17,6 +17,7 @@ import {
 import { filterUndefined } from "../../../utils";
 import { biteMarker } from "./bite-marker";
 import { makeBobber } from "./bobber";
+import { makeFishPond } from "./fish-pond";
 import {
   makeFishingStateReducer,
   toFlatState,
@@ -192,6 +193,25 @@ export const fishingMan = (args: {
       applyFishingAction({ kind: "tick" });
       interactShadow = OscillatorFns.tick(interactShadow, 1);
     },
+    onAddedToScene: () => [
+      {
+        kind: "addObject",
+        makeObject: () =>
+          makeFishPond({
+            random,
+            bobberLocation$: currentState.pipe(
+              distinctUntilKeyChanged("kind"),
+              map((state) => {
+                if (state.kind === "cast-out-waiting") {
+                  return state.bobber.getPosition();
+                } else {
+                  return undefined;
+                }
+              })
+            ),
+          }),
+      },
+    ],
     events$,
     _getDebugInfo: () => ({
       state: currentState.value,

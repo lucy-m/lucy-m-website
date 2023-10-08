@@ -125,8 +125,6 @@ describe("fisherman", () => {
     };
 
     beforeEach(() => {
-      cy.viewport(1400, 1000);
-
       if (!interactive) {
         cy.clock();
       }

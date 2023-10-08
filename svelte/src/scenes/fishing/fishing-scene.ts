@@ -20,7 +20,6 @@ import {
   type FishingSceneState,
 } from "./fishing-scene-state";
 import { fishingMan, makeXpBar } from "./objects";
-import { makeFishPond } from "./objects/fish-pond";
 import {
   FirstFishNotification,
   GameMenu,
@@ -127,7 +126,6 @@ export const makeFishingScene =
           },
         ],
       }),
-      makeFishPond({ random }),
       fishingMan({
         random,
         onFishRetrieved: (fishId: string) => {

@@ -32,6 +32,14 @@ const distance = (a: Position, b: Position): number => {
   return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 };
 
+const magnitude = (p: Position): number => {
+  return Math.abs(p.x) + Math.abs(p.y);
+};
+
+const normalise = (p: Position): Position => {
+  return scale(p, 1 / magnitude(p));
+};
+
 export const PosFns = {
   new: p,
   zero,
@@ -40,4 +48,6 @@ export const PosFns = {
   scale,
   neg,
   distance,
+  magnitude,
+  normalise,
 };
