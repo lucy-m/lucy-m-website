@@ -181,10 +181,12 @@ export const swimmingFish = (args: {
   };
 
   const fishType: FishName = (() => {
-    if (random.quick() < 0.5) {
+    if (random.quick() < 0.33) {
       return "commonBrown";
-    } else {
+    } else if (random.quick() < 0.67) {
       return "commonGrey";
+    } else {
+      return "commonBrownGrey";
     }
   })();
 
