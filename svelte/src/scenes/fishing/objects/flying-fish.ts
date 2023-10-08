@@ -1,7 +1,8 @@
 import type { PRNG } from "seedrandom";
 import {
-  makeSceneObject,
   PosFns,
+  makeSceneObject,
+  type FishName,
   type Position,
   type SceneObject,
 } from "../../../model";
@@ -11,6 +12,7 @@ export const flyingFish = (args: {
   random: PRNG;
   initial: Position;
   target: Position;
+  fishType: FishName;
   onTargetReached: () => void;
   getProficiency: () => number;
 }): SceneObject => {
@@ -53,7 +55,7 @@ export const flyingFish = (args: {
     getLayers: () => [
       {
         kind: "image",
-        assetKey: "fish1",
+        assetKey: `${args.fishType}.no-bg`,
         position: PosFns.new(-75, -30),
         rotation,
       },

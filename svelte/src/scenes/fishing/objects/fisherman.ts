@@ -11,6 +11,7 @@ import {
   OscillatorFns,
   PosFns,
   makeSceneObject,
+  type FishName,
   type SceneAction,
   type SceneObject,
 } from "../../../model";
@@ -31,7 +32,7 @@ import { reelingOverlay } from "./reeling-overlay";
 
 export const fishingMan = (args: {
   random: PRNG;
-  onFishRetrieved: (fishId: string) => void;
+  onFishRetrieved: (fishType: FishName) => void;
   initialState?: AnyFishingState;
   getCurrentLevel: () => number;
 }): SceneObject => {
@@ -77,9 +78,10 @@ export const fishingMan = (args: {
         random,
         initial: prevState.bobber.getPosition(),
         target: PosFns.new(100, 400),
+        fishType: prevState.fishType,
         onTargetReached: () => {
           applyFishingAction({ kind: "fish-retrieved" });
-          args.onFishRetrieved(prevState.fishId);
+          args.onFishRetrieved(prevState.fishType);
         },
         getProficiency,
       }),
@@ -208,8 +210,8 @@ export const fishingMan = (args: {
                 }
               })
             ),
-            onFishBite: (type) => {
-              applyFishingAction({ kind: "fish-bite", type });
+            onFishBite: (fishType) => {
+              applyFishingAction({ kind: "fish-bite", fishType });
             },
           }),
       },

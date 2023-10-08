@@ -18,25 +18,25 @@ export type AnyFishingState = Readonly<
     }
   | {
       kind: "got-a-bite";
-      fishId: string;
+      fishType: FishName;
       bobber: SceneObject;
       biteMarker: SceneObject;
     }
   | {
       kind: "reeling";
       bobber: SceneObject;
-      fishId: string;
+      fishType: FishName;
     }
   | {
       kind: "retrieving-fish";
       flyingFish: SceneObject;
-      fishId: string;
+      fishType: FishName;
     }
 >;
 
 export type FlatFishingState = {
   kind: AnyFishingState["kind"];
-  fishId: string | undefined;
+  fishType: FishName | undefined;
   bobber: SceneObject | undefined;
   biteMarker: SceneObject | undefined;
   flyingFish: SceneObject | undefined;
@@ -45,11 +45,11 @@ export type FlatFishingState = {
 export const toFlatState = (anyState: AnyFishingState): FlatFishingState => {
   const kind = anyState.kind;
   const bobber = "bobber" in anyState ? anyState.bobber : undefined;
-  const fishId = "fishId" in anyState ? anyState.fishId : undefined;
+  const fishType = "fishType" in anyState ? anyState.fishType : undefined;
   const biteMarker = "biteMarker" in anyState ? anyState.biteMarker : undefined;
   const flyingFish = "flyingFish" in anyState ? anyState.flyingFish : undefined;
 
-  return { kind, bobber, fishId, biteMarker, flyingFish };
+  return { kind, bobber, fishType, biteMarker, flyingFish };
 };
 
 export type FishingState<T extends AnyFishingState["kind"]> = Extract<
@@ -64,7 +64,7 @@ export class AnyFishingActionCls {
 export type AnyFishingAction =
   | { kind: "start-cast-out-swing" }
   | { kind: "cast-out-land" }
-  | { kind: "fish-bite"; type: FishName }
+  | { kind: "fish-bite"; fishType: FishName }
   | {
       kind: "start-reel";
     }
@@ -138,7 +138,7 @@ export const makeFishingStateReducer =
         if (state.kind === "cast-out-waiting") {
           return {
             kind: "got-a-bite",
-            fishId: action.type,
+            fishType: action.fishType,
             biteMarker: args.makeFishBiteMarker(state),
             bobber: state.bobber,
           };
@@ -151,7 +151,7 @@ export const makeFishingStateReducer =
         if (state.kind === "got-a-bite") {
           return {
             kind: "reeling",
-            fishId: state.fishId,
+            fishType: state.fishType,
             bobber: state.bobber,
           };
         } else {
@@ -164,7 +164,7 @@ export const makeFishingStateReducer =
           return {
             kind: "retrieving-fish",
             flyingFish: args.makeFlyingFish(state),
-            fishId: state.fishId,
+            fishType: state.fishType,
           };
         } else {
           return state;
