@@ -85,6 +85,7 @@ describe("fisherman", () => {
         layerOrder: [
           "background",
           "man",
+          "pond",
           "bobber",
           "bite-marker",
           "fish",
@@ -110,17 +111,6 @@ describe("fisherman", () => {
             }
           },
         },
-      }).then(() => {
-        debugDrawSub.next((ctx) => {
-          ctx.strokeStyle = "yellow";
-          ctx.rect(
-            bobberBounds.min.x,
-            bobberBounds.min.y,
-            bobberBounds.max.x - bobberBounds.min.x,
-            bobberBounds.max.y - bobberBounds.min.y
-          );
-          ctx.stroke();
-        });
       });
     };
 

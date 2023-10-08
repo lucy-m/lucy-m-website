@@ -83,7 +83,6 @@ export const fishingMan = (args: {
         },
         getProficiency,
       }),
-    makeFishId: () => "" + Math.abs(random.int32()),
   });
 
   const applyFishingAction = (action: AnyFishingAction): void => {
@@ -209,6 +208,9 @@ export const fishingMan = (args: {
                 }
               })
             ),
+            onFishBite: (type) => {
+              applyFishingAction({ kind: "fish-bite", type });
+            },
           }),
       },
     ],

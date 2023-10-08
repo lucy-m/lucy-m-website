@@ -24,7 +24,6 @@ type FishState = Readonly<
       kind: "chasing";
       current: Position;
       velocity: Position;
-      target: Position;
     }
   | {
       kind: "biting";
@@ -43,6 +42,7 @@ export const swimmingFish = (args: {
   random: PRNG;
   pondBounds: Shape;
   bobberLocation$: Observable<Position | undefined>;
+  onBite: (fishName: FishName) => void;
 }): SceneObject => {
   const { random } = args;
 
@@ -93,7 +93,6 @@ export const swimmingFish = (args: {
       },
     ],
     onTick: () => {
-      // TODO: Prevent fish moving out of pond
       if (state.kind === "wandering") {
         const closeToEdge = !pointInShape(
           pondBounds,
@@ -109,16 +108,19 @@ export const swimmingFish = (args: {
               properties: wanderingSpringProperties,
             }),
           };
-        } else if (bobberLocation && random.quick() < 0.02) {
+        } else if (bobberLocation && random.quick() < 0.01) {
           const current = state.location.position;
           const target = bobberLocation;
           const toTarget = PosFns.sub(target, current);
-          const velocity = PosFns.normalise(toTarget);
+          const magnitude = PosFns.magnitude(toTarget);
+          const velocity = PosFns.scale(
+            PosFns.normalise(toTarget),
+            Math.sqrt(magnitude) * 0.4
+          );
 
           state = {
             kind: "chasing",
             current,
-            target,
             velocity,
           };
         } else if (random.quick() < 0.01) {
@@ -135,21 +137,22 @@ export const swimmingFish = (args: {
           };
         }
       } else if (state.kind === "chasing") {
-        if (random.quick() < 0.04) {
+        if (bobberLocation === undefined) {
           state = {
             kind: "wandering",
             location: PositionSpringFns.make({
               endPoint: getPointInPond(),
-              velocity: state.velocity,
+              velocity: PosFns.scale(state.velocity, 0.2),
               position: state.current,
               properties: wanderingSpringProperties,
             }),
           };
         } else {
           if (
-            PosFns.distance(state.current, state.target) <
+            PosFns.distance(state.current, bobberLocation) <
             2 * PosFns.magnitude(state.velocity)
           ) {
+            args.onBite(fishType);
             state = {
               kind: "biting",
               position: state.current,
@@ -158,7 +161,6 @@ export const swimmingFish = (args: {
             state = {
               kind: "chasing",
               current: PosFns.add(state.current, state.velocity),
-              target: state.target,
               velocity: state.velocity,
             };
           }

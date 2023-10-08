@@ -1,4 +1,4 @@
-import type { SceneObject } from "../../../model";
+import type { FishName, SceneObject } from "../../../model";
 
 export type AnyFishingState = Readonly<
   | {
@@ -15,7 +15,6 @@ export type AnyFishingState = Readonly<
   | {
       kind: "cast-out-waiting";
       bobber: SceneObject;
-      timer: number;
     }
   | {
       kind: "got-a-bite";
@@ -65,6 +64,7 @@ export class AnyFishingActionCls {
 export type AnyFishingAction =
   | { kind: "start-cast-out-swing" }
   | { kind: "cast-out-land" }
+  | { kind: "fish-bite"; type: FishName }
   | {
       kind: "start-reel";
     }
@@ -86,7 +86,6 @@ export const makeFishingStateReducer =
       prevState: FishingState<"cast-out-waiting">
     ) => SceneObject;
     makeFlyingFish: (prevState: FishingState<"reeling">) => SceneObject;
-    makeFishId: () => string;
   }) =>
   (
     action: AnyFishingAction,
@@ -101,13 +100,6 @@ export const makeFishingStateReducer =
               return {
                 kind: "cast-out-casting",
                 bobber: args.makeBobber(state),
-              };
-            } else if (state.kind === "cast-out-waiting") {
-              return {
-                kind: "got-a-bite",
-                fishId: args.makeFishId(),
-                bobber: state.bobber,
-                biteMarker: args.makeFishBiteMarker(state),
               };
             } else {
               return state;
@@ -136,7 +128,19 @@ export const makeFishingStateReducer =
           return {
             kind: "cast-out-waiting",
             bobber: state.bobber,
-            timer: Math.floor(150 * proficiency),
+          };
+        } else {
+          return state;
+        }
+      }
+
+      case "fish-bite": {
+        if (state.kind === "cast-out-waiting") {
+          return {
+            kind: "got-a-bite",
+            fishId: action.type,
+            biteMarker: args.makeFishBiteMarker(state),
+            bobber: state.bobber,
           };
         } else {
           return state;

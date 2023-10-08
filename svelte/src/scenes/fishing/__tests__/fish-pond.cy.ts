@@ -42,7 +42,13 @@ describe("fish pond", () => {
       return cy.mountSceneObject({
         makeObjects: (random) => [
           fishingBg(random),
-          makeFishPond({ random, bobberLocation$: bobberLocation }),
+          makeFishPond({
+            random,
+            bobberLocation$: bobberLocation,
+            onFishBite: () => {
+              bobberLocation.next(undefined);
+            },
+          }),
         ],
         seed: "pond",
         onSceneChange: (scene) => {
@@ -83,16 +89,18 @@ describe("fish pond", () => {
   });
 
   describe("property", () => {
+    const interactive = false;
+
+    beforeEach(() => {
+      if (!interactive) {
+        cy.clock();
+      }
+    });
+
     describe("fish never moves outside pond bounds", () => {
       fc.assert(
         fc.property(fc.string(), (seed) => {
           it("seed " + seed, () => {
-            const interactive = false;
-
-            if (!interactive) {
-              cy.clock();
-            }
-
             const debugDrawSub = new Subject<
               (ctx: CanvasRenderingContext2D) => void
             >();
@@ -103,7 +111,11 @@ describe("fish pond", () => {
             cy.mountSceneObject({
               makeObjects: (random) => [
                 fishingBg(random),
-                makeFishPond({ random, bobberLocation$: bobberLocationSub }),
+                makeFishPond({
+                  random,
+                  bobberLocation$: bobberLocationSub,
+                  onFishBite: () => {},
+                }),
               ],
               seed,
               onSceneChange: (scene) => {
@@ -174,6 +186,66 @@ describe("fish pond", () => {
                 (p) => !pointInShape(pondBounds, p)
               );
               expect(outOfBoundPositions).to.be.empty;
+            });
+          });
+        }),
+        { numRuns: 10 }
+      );
+    });
+
+    describe.only("onBite called once per bobber", () => {
+      fc.assert(
+        fc.property(fc.string(), (seed) => {
+          it("seed " + seed, () => {
+            const bobberLocationSub = new Subject<Position | undefined>();
+            const random = seedrandom(seed);
+            const biteSpy = cy
+              .stub()
+              .as("onBiteSpy")
+              .callsFake(() => {
+                bobberLocationSub.next(undefined);
+              });
+            cy.mountSceneObject({
+              seed,
+              makeObjects: (random) => [
+                fishingBg(random),
+                makeFishPond({
+                  random,
+                  bobberLocation$: bobberLocationSub,
+                  onFishBite: biteSpy,
+                }),
+              ],
+            }).then(() => {
+              const bobberLocation = generatePointsInShape(
+                1,
+                pondBounds,
+                random
+              )[0];
+              bobberLocationSub.next(bobberLocation);
+            });
+
+            cy.myWaitFor(() => biteSpy.callCount > 0, interactive, {
+              timeout: 10_000,
+            });
+
+            cy.interactiveWait(10_000, interactive)
+              .then(() => {
+                expect(biteSpy.callCount).to.eq(1);
+              })
+              .then(() => {
+                const bobberLocation = generatePointsInShape(
+                  1,
+                  pondBounds,
+                  random
+                )[0];
+                bobberLocationSub.next(bobberLocation);
+              });
+
+            cy.myWaitFor(() => biteSpy.callCount > 1, interactive, {
+              timeout: 15_000,
+            });
+            cy.interactiveWait(10_000, interactive).then(() => {
+              expect(biteSpy.callCount).to.eq(2);
             });
           });
         }),

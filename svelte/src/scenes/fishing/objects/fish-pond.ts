@@ -3,13 +3,14 @@ import type { PRNG } from "seedrandom";
 import {
   PosFns,
   makeSceneObject,
+  type FishName,
   type Position,
   type SceneObject,
   type Shape,
 } from "../../../model";
 import { swimmingFish } from "./swimming-fish";
 
-const capacity = 3;
+const capacity = 4;
 export const pondBounds: Shape = [
   PosFns.new(600, 350),
   PosFns.new(1250, 250),
@@ -21,6 +22,7 @@ export const pondBounds: Shape = [
 export const makeFishPond = (args: {
   random: PRNG;
   bobberLocation$: Observable<Position | undefined>;
+  onFishBite: (type: FishName) => void;
 }): SceneObject => {
   const { random } = args;
 
@@ -33,7 +35,13 @@ export const makeFishPond = (args: {
     onAddedToScene: () =>
       Array.from({ length: capacity }).map(() => ({
         kind: "addObject",
-        makeObject: () => swimmingFish({ random, pondBounds, bobberLocation$ }),
+        makeObject: () =>
+          swimmingFish({
+            random,
+            pondBounds,
+            bobberLocation$,
+            onBite: (type) => args.onFishBite(type),
+          }),
       })),
   });
 };
