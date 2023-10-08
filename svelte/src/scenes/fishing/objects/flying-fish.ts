@@ -55,7 +55,7 @@ export const flyingFish = (args: {
     getLayers: () => [
       {
         kind: "image",
-        assetKey: `${args.fishType}.no-bg`,
+        assetKey: `${args.fishType}.no-bg-flip`,
         position: PosFns.new(-75, -30),
         rotation,
       },

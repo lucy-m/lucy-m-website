@@ -30,12 +30,26 @@ type FishState = Readonly<
   | {
       kind: "biting";
       position: Position;
+      flipped: boolean;
     }
   | {
       kind: "entering";
       position: Position;
     }
 >;
+
+const isFlipped = (state: FishState): boolean => {
+  switch (state.kind) {
+    case "wandering":
+      return state.location.velocity.x < 0;
+    case "chasing":
+      return state.velocity.x < 0;
+    case "biting":
+      return state.flipped;
+    case "entering":
+      return true;
+  }
+};
 
 const wanderingSpringProperties: SpringProperties = {
   friction: 15,
@@ -116,6 +130,7 @@ const tickState = (args: {
         return {
           kind: "biting",
           position: state.current,
+          flipped: isFlipped(state),
         };
       } else {
         return {
@@ -210,7 +225,9 @@ export const swimmingFish = (args: {
     getLayers: () => [
       {
         kind: "image",
-        assetKey: `${fishType}.shadow`,
+        assetKey: isFlipped(state)
+          ? `${fishType}.shadow-flip`
+          : `${fishType}.shadow`,
         position: PosFns.new(-85, -50),
       },
     ],

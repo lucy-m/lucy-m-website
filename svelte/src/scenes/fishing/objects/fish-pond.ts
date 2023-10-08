@@ -66,7 +66,7 @@ export const makeFishPond = (args: {
         makeObject: () => makeSwimmingFish(undefined),
       })),
     onTick: () => {
-      if (fishCount < capacity) {
+      if (fishCount < capacity && random.quick() < 0.01) {
         return [
           {
             kind: "addObject",

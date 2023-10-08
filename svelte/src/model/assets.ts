@@ -7,7 +7,7 @@ const fishPaths = {
 
 export type FishName = keyof typeof fishPaths;
 
-type FishStates = "no-bg" | "shadow";
+type FishStates = "no-bg" | "shadow" | "no-bg-flip" | "shadow-flip";
 
 type FishAsset = `${FishName}.${FishStates}`;
 
@@ -72,6 +72,20 @@ const shadowise = (image: ImageBitmap): Promise<ImageBitmap> => {
   return bitmap;
 };
 
+const flip = (image: ImageBitmap): Promise<ImageBitmap> => {
+  const offscreen = new OffscreenCanvas(image.width, image.height);
+  const ctx = offscreen.getContext("2d");
+  if (!ctx) {
+    throw new Error("Could not flip image");
+  }
+  ctx.scale(-1, 1);
+  ctx.translate(-image.width, 0);
+  ctx.drawImage(image, 0, 0);
+  const imageData = ctx.getImageData(0, 0, image.width, image.height);
+  const bitmap = createImageBitmap(imageData);
+  return bitmap;
+};
+
 export const loadImages = (): Promise<Record<AssetKey, ImageBitmap>> => {
   const imagePromises = Promise.all(
     recordToEntries(imagePaths).map(([assetKey, path]) =>
@@ -82,12 +96,23 @@ export const loadImages = (): Promise<Record<AssetKey, ImageBitmap>> => {
   const fishPromises = Promise.all(
     recordToEntries(fishPaths).map(([assetKey, path]) =>
       loadImage(path).then((image) => {
-        return shadowise(image).then((shadowised) => {
-          return [
-            [(assetKey + ".no-bg") as FishAsset, image] as const,
-            [(assetKey + ".shadow") as FishAsset, shadowised] as const,
-          ];
-        });
+        const shadowised = shadowise(image);
+        const flipped = flip(image);
+        const shadowisedFlipped = shadowised.then(flip);
+
+        return Promise.all([shadowised, flipped, shadowisedFlipped]).then(
+          ([shadowised, flipped, shadowisedFlipped]) => {
+            return [
+              [(assetKey + ".no-bg") as FishAsset, image] as const,
+              [(assetKey + ".shadow") as FishAsset, shadowised] as const,
+              [(assetKey + ".no-bg-flip") as FishAsset, flipped] as const,
+              [
+                (assetKey + ".shadow-flip") as FishAsset,
+                shadowisedFlipped,
+              ] as const,
+            ];
+          }
+        );
       })
     )
   ).then((fishes) => {
