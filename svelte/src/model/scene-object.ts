@@ -30,7 +30,7 @@ export const makeSceneObject =
  */
 export const getObjectBoundingBox = (
   obj: SceneObject,
-  images: Record<AssetKey, HTMLImageElement>
+  images: Record<AssetKey, ImageBitmap>
 ): { topLeft: Position; bottomRight: Position } => {
   const relativeBoundingBox = obj
     .getLayers()

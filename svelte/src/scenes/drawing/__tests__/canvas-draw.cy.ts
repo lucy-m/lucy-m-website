@@ -8,7 +8,7 @@ import CanvasDrawFixture from "./CanvasDrawFixture.svelte";
 
 describe("canvas-draw", () => {
   describe("images", () => {
-    let images: Record<AssetKey, HTMLImageElement>;
+    let images: Record<AssetKey, ImageBitmap>;
 
     beforeEach(async () => {
       images = await loadImages();

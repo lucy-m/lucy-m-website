@@ -41,7 +41,6 @@
   .menu-wrapper {
     display: flex;
     flex-direction: column;
-    width: 300px;
     row-gap: 32px;
   }
 

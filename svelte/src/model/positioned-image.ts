@@ -1,6 +1,6 @@
 import type { Position } from "./position";
 
 export interface PositionedImage {
-  image: HTMLImageElement;
+  image: ImageBitmap;
   position: Position;
 }

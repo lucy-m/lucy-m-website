@@ -19,7 +19,7 @@ export const makeSceneType =
     }
   ) =>
   (
-    images: Record<string, HTMLImageElement>,
+    images: Record<string, ImageBitmap>,
     onSceneChange: (newScene: SceneSpec) => void
   ): SceneType => {
     let objects: SceneObject[] = [];
@@ -115,6 +115,12 @@ export const makeSceneType =
             }
           });
           eventSubscriptions[obj.id] = subscription;
+        }
+        if (obj.onAddedToScene) {
+          const actions = obj.onAddedToScene();
+          if (actions) {
+            applySceneActions(actions);
+          }
         }
         objects.push(obj);
       }

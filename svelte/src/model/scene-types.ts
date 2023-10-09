@@ -41,6 +41,7 @@ export type SceneObject = {
   events$?: Observable<SceneAction>;
   getPosition: () => Position;
   getLayers: () => ObjectLayerContent[];
+  onAddedToScene?: () => SceneAction[] | void;
   onInteract?: () => SceneAction[] | void;
   onTick?: () => SceneAction[] | void;
   onDestroy?: () => void;
@@ -71,7 +72,7 @@ export type SceneSpec = (args: {
   random: PRNG;
   mountSvelteComponent: SvelteComponentMounter;
 }) => (
-  images: Record<string, HTMLImageElement>,
+  images: Record<string, ImageBitmap>,
   onSceneChange: (newScene: SceneSpec) => void
 ) => SceneType;
 

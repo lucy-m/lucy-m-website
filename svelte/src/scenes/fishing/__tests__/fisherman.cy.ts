@@ -85,6 +85,7 @@ describe("fisherman", () => {
         layerOrder: [
           "background",
           "man",
+          "pond",
           "bobber",
           "bite-marker",
           "fish",
@@ -110,23 +111,10 @@ describe("fisherman", () => {
             }
           },
         },
-      }).then(() => {
-        debugDrawSub.next((ctx) => {
-          ctx.strokeStyle = "yellow";
-          ctx.rect(
-            bobberBounds.min.x,
-            bobberBounds.min.y,
-            bobberBounds.max.x - bobberBounds.min.x,
-            bobberBounds.max.y - bobberBounds.min.y
-          );
-          ctx.stroke();
-        });
       });
     };
 
     beforeEach(() => {
-      cy.viewport(1400, 1000);
-
       if (!interactive) {
         cy.clock();
       }
@@ -288,6 +276,13 @@ describe("fisherman", () => {
                     reelingOverlay: false,
                     flyingFish: true,
                   });
+                });
+
+                it("removes fish from pond", () => {
+                  const fish = lastScene
+                    .getObjects()
+                    .filter((obj) => obj.typeName === "swimming-fish");
+                  expect(fish).to.have.length(3);
                 });
 
                 describe("fish is retrieved", () => {

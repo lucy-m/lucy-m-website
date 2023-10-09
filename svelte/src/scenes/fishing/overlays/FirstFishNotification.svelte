@@ -7,7 +7,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <OverlayBase>
   <div class="content">
-    <div data-testid="fish-caught-notification">
+    <div data-testid="first-fish-overlay">
       <p>Congratulations!</p>
       <p>You caught your first fish! Keep going and soon you will level up!</p>
     </div>
@@ -17,7 +17,6 @@
 
 <style>
   .content {
-    max-width: 300px;
     display: flex;
     flex-direction: column;
     row-gap: 32px;

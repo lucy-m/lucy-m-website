@@ -1,6 +1,7 @@
 import {
   BehaviorSubject,
   distinctUntilKeyChanged,
+  filter,
   from,
   map,
   mergeMap,
@@ -11,12 +12,14 @@ import {
   OscillatorFns,
   PosFns,
   makeSceneObject,
+  type FishName,
   type SceneAction,
   type SceneObject,
 } from "../../../model";
 import { filterUndefined } from "../../../utils";
 import { biteMarker } from "./bite-marker";
 import { makeBobber } from "./bobber";
+import { makeFishPond } from "./fish-pond";
 import {
   makeFishingStateReducer,
   toFlatState,
@@ -30,7 +33,7 @@ import { reelingOverlay } from "./reeling-overlay";
 
 export const fishingMan = (args: {
   random: PRNG;
-  onFishRetrieved: (fishId: string) => void;
+  onFishRetrieved: (fishType: FishName) => void;
   initialState?: AnyFishingState;
   getCurrentLevel: () => number;
 }): SceneObject => {
@@ -76,13 +79,13 @@ export const fishingMan = (args: {
         random,
         initial: prevState.bobber.getPosition(),
         target: PosFns.new(100, 400),
+        fishType: prevState.fishType,
         onTargetReached: () => {
           applyFishingAction({ kind: "fish-retrieved" });
-          args.onFishRetrieved(prevState.fishId);
+          args.onFishRetrieved(prevState.fishType);
         },
         getProficiency,
       }),
-    makeFishId: () => "" + Math.abs(random.int32()),
   });
 
   const applyFishingAction = (action: AnyFishingAction): void => {
@@ -192,6 +195,34 @@ export const fishingMan = (args: {
       applyFishingAction({ kind: "tick" });
       interactShadow = OscillatorFns.tick(interactShadow, 1);
     },
+    onAddedToScene: () => [
+      {
+        kind: "addObject",
+        makeObject: () =>
+          makeFishPond({
+            random,
+            bobberLocation$: currentState.pipe(
+              distinctUntilKeyChanged("kind"),
+              map((state) => {
+                if (state.kind === "cast-out-waiting") {
+                  return state.bobber.getPosition();
+                } else {
+                  return undefined;
+                }
+              })
+            ),
+            removeBitingFish$: currentState.pipe(
+              distinctUntilKeyChanged("kind"),
+              pairwise(),
+              filter(([prev, next]) => prev.kind === "reeling"),
+              map(() => {})
+            ),
+            onFishBite: (fishType) => {
+              applyFishingAction({ kind: "fish-bite", fishType });
+            },
+          }),
+      },
+    ],
     events$,
     _getDebugInfo: () => ({
       state: currentState.value,

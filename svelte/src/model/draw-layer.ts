@@ -5,7 +5,7 @@ import type { SceneType } from "./scene-types";
 type LayerContent = Readonly<
   | {
       kind: "image";
-      image: HTMLImageElement;
+      image: ImageBitmap;
       /** Rotation in degrees around center of object */
       rotation?: number;
     }
@@ -68,7 +68,7 @@ const getLayerContentInOrder = (
 
 export const resolveScene = (
   scene: SceneType,
-  images: Record<AssetKey, HTMLImageElement>
+  images: Record<AssetKey, ImageBitmap>
 ): DrawLayer[] => {
   const sceneLayers: [string, DrawLayer][] = scene
     .getObjects()

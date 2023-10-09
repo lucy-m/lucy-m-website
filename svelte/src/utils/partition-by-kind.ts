@@ -1,16 +1,3 @@
-type TestInterface =
-  | {
-      kind: "a";
-    }
-  | {
-      kind: "b";
-      someData: number;
-    }
-  | {
-      kind: "c";
-      otherData: string;
-    };
-
 export type Partitioned<T extends { kind: string }, TKey extends T["kind"]> = {
   [K in TKey]: readonly Extract<T, { kind: TKey }>[];
 } & {
