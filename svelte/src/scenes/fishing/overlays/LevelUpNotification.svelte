@@ -23,7 +23,6 @@
 
 <style>
   .content {
-    max-width: 300px;
     display: flex;
     flex-direction: column;
     row-gap: 32px;

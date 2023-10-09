@@ -3,7 +3,7 @@ import { entriesToRecord, recordToEntries } from "../utils";
 const fishPaths = {
   commonBrown: "/assets/scene-fishing/fish/1_brown.png",
   commonGrey: "/assets/scene-fishing/fish/2_grey.png",
-  commonBrownGrey: "/assets/scene-fishing/fish/3_grey_brown.png",
+  commonBrownGrey: "/assets/scene-fishing/fish/3_brown_grey.png",
 } as const;
 
 export type FishName = keyof typeof fishPaths;
