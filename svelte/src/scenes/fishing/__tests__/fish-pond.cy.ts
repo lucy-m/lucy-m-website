@@ -125,7 +125,7 @@ describe("fish pond", () => {
             expect(getBitingFish()).to.have.length(0);
           });
 
-          it.only("replaces fish", () => {
+          it("replaces fish", () => {
             cy.myWaitFor(
               () =>
                 lastScene
