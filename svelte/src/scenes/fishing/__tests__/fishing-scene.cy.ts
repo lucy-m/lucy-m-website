@@ -44,6 +44,20 @@ describe("fishing scene", () => {
     info.onFishRetrieved(fishId);
   };
 
+  const waitForWorldEnabled = () => {
+    return cy.get("canvas").then(([canvas]) => {
+      return cy.myWaitFor(
+        () => !canvas.className.includes("disabled"),
+        interactive
+      );
+    });
+  };
+
+  const dismissFishCaughtOverlay = () => {
+    cy.contains("button", "Cool").click();
+    return waitForWorldEnabled();
+  };
+
   const renderFishingScene = (args: {
     initialState: FishingSceneState | undefined;
   }) => {
@@ -96,7 +110,7 @@ describe("fishing scene", () => {
       });
 
       it("shows overlay", () => {
-        cy.getByTestId("fish-caught-notification")
+        cy.getByTestId("first-fish-overlay")
           .should("be.visible")
           .should("contain.text", "You caught your first fish");
       });
@@ -111,10 +125,12 @@ describe("fishing scene", () => {
         beforeEach(() => {
           cy.interactiveWait(100, interactive);
           cy.contains("button", "OK").click();
-          cy.myWaitFor(
-            () => !!xpBar && getXpBarInfo().fadeInOpacity === 1,
-            interactive
-          );
+          waitForWorldEnabled();
+        });
+
+        it("does not show first fish caught overlay", () => {
+          cy.interactiveWait(100, interactive);
+          cy.getByTestId("first-fish-overlay").should("not.exist");
         });
 
         it("xp bar displayed", () => {
@@ -126,92 +142,107 @@ describe("fishing scene", () => {
             retrieveFish("fish2");
           });
 
-          it("does not show overlay", () => {
-            cy.interactiveWait(100, interactive);
-            cy.getByTestId("fish-caught-notification").should("not.exist");
-          });
-
-          it("xp bar fills", () => {
-            cy.myWaitFor(
-              () => getXpBarInfo().fillFracSpring.position > 0,
-              interactive
-            );
-          });
-
           it("calls onStateChange", () => {
+            const expected: FishingSceneState = {
+              level: 1,
+              levelXp: 10,
+              nextLevelXp: 30,
+              totalXp: 10,
+              caughtFish: ["fish2"],
+            };
             getOnStateChangeSpy().then((spy) => {
-              expect(spy.lastCall.args[0]).to.deep.equal({
-                level: 1,
-                levelXp: 10,
-                nextLevelXp: 30,
-                totalXp: 10,
-              } as FishingSceneState);
+              expect(spy.lastCall.args[0]).to.deep.equal(expected);
             });
           });
 
-          describe("opening menu", () => {
-            beforeEach(() => {
-              expect(gameMenu).to.exist;
-              worldClickSub.next(gameMenu!.getPosition());
-              cy.interactiveWait(1000, interactive);
-            });
-
-            it("displays correctly", () => {
-              cy.getByTestId("game-menu-overlay")
-                .should("be.visible")
-                .should("contain.text", "Level 1")
-                .should("contain.text", "XP 10/30");
-            });
+          it("displays new fish notification", () => {
+            cy.getByTestId("new-fish-caught-overlay").contains("fish2");
           });
 
-          describe("fishing enough to level up", () => {
+          describe("dismissing overlay", () => {
             beforeEach(() => {
-              retrieveFish("fish3");
-              retrieveFish("fish4");
-            });
-
-            it("does not show overlay immediately", () => {
               cy.interactiveWait(100, interactive);
-              cy.getByTestId("level-up-notification").should("not.exist");
+              dismissFishCaughtOverlay();
             });
 
-            describe("after xp bar fills", () => {
+            it("xp bar fills", () => {
+              cy.myWaitFor(
+                () => getXpBarInfo().fillFracSpring.position > 0,
+                interactive
+              );
+            });
+
+            describe("opening menu", () => {
               beforeEach(() => {
-                cy.myWaitFor(
-                  () => getXpBarInfo().fillFracSpring.position === 1,
-                  interactive
-                );
+                expect(gameMenu).to.exist;
+                worldClickSub.next(gameMenu!.getPosition());
+                cy.interactiveWait(1000, interactive);
               });
 
-              it("shows level up notification", () => {
-                cy.getByTestId("level-up-notification").should(
-                  "contain.text",
-                  "level 2"
-                );
+              it("displays correctly", () => {
+                cy.getByTestId("game-menu-overlay")
+                  .should("be.visible")
+                  .should("contain.text", "Level 1")
+                  .should("contain.text", "XP 10/30");
+              });
+            });
+
+            describe("fishing enough to level up", () => {
+              beforeEach(() => {
+                retrieveFish("fish3");
+                dismissFishCaughtOverlay().then(() => {
+                  retrieveFish("fish4");
+                  dismissFishCaughtOverlay();
+                });
               });
 
-              it("calls onStateChange", () => {
-                getOnStateChangeSpy().then((spy) => {
-                  expect(spy.lastCall.args[0]).to.deep.equal({
+              it("does not show overlay immediately", () => {
+                cy.interactiveWait(100, interactive);
+                cy.getByTestId("level-up-notification").should("not.exist");
+              });
+
+              describe("after xp bar fills", () => {
+                beforeEach(() => {
+                  cy.myWaitFor(
+                    () => getXpBarInfo().fillFracSpring.position === 1,
+                    interactive
+                  );
+                });
+
+                it("shows level up notification", () => {
+                  cy.getByTestId("level-up-notification").should(
+                    "contain.text",
+                    "level 2"
+                  );
+                });
+
+                it("calls onStateChange", () => {
+                  const expected: FishingSceneState = {
                     level: 2,
                     levelXp: 0,
                     nextLevelXp: 44,
                     totalXp: 30,
-                  } as FishingSceneState);
-                });
-              });
+                    caughtFish: ["fish2", "fish3", "fish4"],
+                  };
 
-              describe("dismissing overlay", () => {
-                beforeEach(() => {
-                  cy.interactiveWait(500, interactive);
-                  cy.contains("button", "OK").click();
+                  getOnStateChangeSpy().then((spy) => {
+                    expect(spy.lastCall.args[0]).to.deep.equal(expected);
+                  });
                 });
 
-                it("resets xp bar", () => {
-                  cy.myWaitFor(
-                    () => getXpBarInfo().fillFracSpring.position < 1,
-                    interactive
-                  );
+                describe("dismissing overlay", () => {
+                  beforeEach(() => {
+                    cy.interactiveWait(500, interactive);
+                    cy.contains("button", "OK").click();
+                    waitForWorldEnabled();
+                  });
+
+                  it("resets xp bar", () => {
+                    cy.myWaitFor(
+                      () => getXpBarInfo().fillFracSpring.position < 0.8,
+                      interactive
+                    );
+                  });
                 });
               });
             });
@@ -229,6 +260,7 @@ describe("fishing scene", () => {
           levelXp: 40,
           nextLevelXp: 200,
           totalXp: 740,
+          caughtFish: [],
         },
       });
     });
@@ -248,6 +280,7 @@ describe("fishing scene", () => {
           interactive
         ).then(() => {
           retrieveFish("some-fish");
+          dismissFishCaughtOverlay();
         });
       });
 

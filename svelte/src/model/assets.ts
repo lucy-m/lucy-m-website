@@ -4,7 +4,7 @@ const fishPaths = {
   commonBrown: "/assets/scene-fishing/fish/1_brown.png",
   commonGrey: "/assets/scene-fishing/fish/2_grey.png",
   commonBrownGrey: "/assets/scene-fishing/fish/3_grey_brown.png",
-};
+} as const;
 
 export type FishName = keyof typeof fishPaths;
 
@@ -34,7 +34,7 @@ const imagePaths = {
   bigPole: "/assets/scene-fishing/pole.PNG",
   reelSpinner: "/assets/scene-fishing/reel-spinner.PNG",
   openGameMenuIcon: "/assets/scene-fishing/menu.PNG",
-};
+} as const;
 
 export type AssetKey = keyof typeof imagePaths | FishAsset;
 

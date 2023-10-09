@@ -1,4 +1,6 @@
 import { z } from "zod";
+import type { FishName } from "../../model";
+import { filterUndefined } from "../../utils";
 
 export const fishingSceneStateSchema = z
   .object({
@@ -6,6 +8,7 @@ export const fishingSceneStateSchema = z
     levelXp: z.number(),
     nextLevelXp: z.number(),
     totalXp: z.number(),
+    caughtFish: z.array(z.string()).readonly(),
   })
   .readonly();
 
@@ -16,19 +19,34 @@ export const initialFishingSceneState: FishingSceneState = {
   levelXp: 0,
   nextLevelXp: 30,
   totalXp: 0,
+  caughtFish: [],
 };
 
-export type FishingSceneNotification = Readonly<{
-  kind: "level-up";
-  level: number;
-}>;
+export type FishingSceneNotification = Readonly<
+  | {
+      kind: "level-up";
+      level: number;
+    }
+  | { kind: "new-fish-type-caught"; fishType: FishName }
+>;
 
-export const addXp = (
-  xp: number,
+export const caughtFish = (
+  fishType: FishName,
   state: FishingSceneState
-): [FishingSceneState, FishingSceneNotification | undefined] => {
+): [FishingSceneState, FishingSceneNotification[]] => {
+  const xp = 10;
   const newLevelXp = state.levelXp + xp;
   const newTotalXp = state.totalXp + xp;
+
+  const [caughtFish, newFishNotification] = state.caughtFish.includes(fishType)
+    ? ([state.caughtFish, undefined] as const)
+    : ([
+        [...state.caughtFish, fishType],
+        {
+          kind: "new-fish-type-caught",
+          fishType,
+        } as FishingSceneNotification,
+      ] as const);
 
   if (newLevelXp >= state.nextLevelXp) {
     const newState: FishingSceneState = {
@@ -36,21 +54,23 @@ export const addXp = (
       levelXp: newLevelXp - state.nextLevelXp,
       nextLevelXp: Math.floor((state.nextLevelXp + 10) * 1.1),
       totalXp: newTotalXp,
+      caughtFish,
     };
     const notification: FishingSceneNotification = {
       kind: "level-up",
       level: newState.level,
     };
 
-    return [newState, notification];
+    return [newState, filterUndefined([notification, newFishNotification])];
   } else {
     const newState: FishingSceneState = {
       level: state.level,
       levelXp: newLevelXp,
       nextLevelXp: state.nextLevelXp,
       totalXp: newTotalXp,
+      caughtFish,
     };
 
-    return [newState, undefined];
+    return [newState, filterUndefined([newFishNotification])];
   }
 };

@@ -8,12 +8,12 @@ import {
   map,
   pairwise,
 } from "rxjs";
-import type { SceneEventOrAction, SceneSpec } from "../../model";
+import type { FishName, SceneEventOrAction, SceneSpec } from "../../model";
 import { PosFns, makeSceneObject, makeSceneType } from "../../model";
-import { chooseOp, filterUndefined } from "../../utils";
+import { chooseOp, filterUndefined, partitionByAllKinds } from "../../utils";
 import { sceneSize } from "../scene-size";
 import {
-  addXp,
+  caughtFish,
   fishingSceneStateSchema,
   initialFishingSceneState,
   type FishingSceneNotification,
@@ -24,6 +24,7 @@ import {
   FirstFishNotification,
   GameMenu,
   LevelUpNotification,
+  NewFishCaught,
 } from "./overlays";
 
 const layerOrder = [
@@ -51,8 +52,9 @@ export const makeFishingScene =
       args.initialState
     );
     const levelUpSub = new BehaviorSubject<
-      FishingSceneNotification | undefined
+      Extract<FishingSceneNotification, { kind: "level-up" }> | undefined
     >(undefined);
+
     const stationaryXpBar = new Subject<void>();
 
     const xpBarProgress$ = combineLatest([stateSub, levelUpSub]).pipe(
@@ -128,16 +130,29 @@ export const makeFishingScene =
       }),
       fishingMan({
         random,
-        onFishRetrieved: (fishId: string) => {
+        onFishRetrieved: (fishType: FishName) => {
           if (stateSub.value === undefined) {
             mountSvelteComponent(FirstFishNotification, {});
             stateSub.next(initialFishingSceneState);
           } else {
-            const [nextState, notification] = addXp(10, stateSub.value);
+            const [nextState, notifications] = caughtFish(
+              fishType,
+              stateSub.value
+            );
             stateSub.next(nextState);
 
-            if (notification) {
-              levelUpSub.next(notification);
+            const byKind = partitionByAllKinds(notifications);
+
+            const levelUp = byKind["level-up"]?.[0];
+            if (levelUp) {
+              levelUpSub.next(levelUp);
+            }
+
+            const newFishType = byKind["new-fish-type-caught"]?.[0];
+            if (newFishType) {
+              mountSvelteComponent(NewFishCaught, {
+                fishType: newFishType.fishType,
+              });
             }
           }
         },
