@@ -45,9 +45,11 @@ describe("NewFishCaught", () => {
     testCases.forEach(({ fishType, expected, only }) => {
       (only ? describe.only : describe)("case " + fishType, () => {
         beforeEach(() => {
-          cy.mountWithFixture(NewFishCaught, {
-            unmountSelf: cy.spy().as("unmountSelfSpy"),
-            fishType,
+          cy.mount(NewFishCaught, {
+            props: {
+              unmountSelf: cy.spy().as("unmountSelfSpy"),
+              fishType,
+            },
           });
         });
 
@@ -60,7 +62,5 @@ describe("NewFishCaught", () => {
         });
       });
     });
-
-    it("works", () => {});
   });
 });

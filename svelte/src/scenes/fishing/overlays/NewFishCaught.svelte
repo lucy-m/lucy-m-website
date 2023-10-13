@@ -8,11 +8,21 @@
   const fishData = getFishData(fishType);
 </script>
 
-<OverlayBase>
+<OverlayBase width="wide">
   <div class="content" data-testid="new-fish-caught-overlay">
-    <p>You caught a new fish!</p>
+    <p class="header">You caught a new fish!</p>
     <div class="fish-display">
-      <p class="fish-name">{fishData.displayName}</p>
+      <div class="fish-data">
+        <dl>
+          <dt>Name</dt>
+          <dd>{fishData.displayName}</dd>
+          <dt>Weight</dt>
+          <dd>{fishData.weight.toFixed(1)} kg</dd>
+        </dl>
+        <blockquote>
+          {fishData.flavour}
+        </blockquote>
+      </div>
       <div class="loading-container">
         <img src={fishData.backgroundSrc} alt="" />
       </div>
@@ -28,10 +38,29 @@
     row-gap: 24px;
   }
 
+  .header {
+    text-align: center;
+    font-size: 1.5rem;
+    font-family: "Bitter";
+    letter-spacing: -1px;
+    background-color: hsl(208, 30%, 85%);
+    margin: -16px;
+    padding: 16px;
+    padding-bottom: 4px;
+    margin-bottom: 0;
+  }
+
+  .fish-display {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    column-gap: 16px;
+  }
+
   .loading-container {
     position: relative;
     width: 100%;
     padding-top: 100%;
+    height: 0;
     background: hsl(210, 12%, 96%);
     background-image: linear-gradient(
       to right,
@@ -63,9 +92,33 @@
     top: 0;
   }
 
-  .fish-name {
-    font-size: 1.5rem;
+  .fish-data {
+    display: flex;
+    flex-direction: column;
+    row-gap: 8px;
+    justify-content: space-between;
+  }
+
+  dl {
+    margin: 0;
+  }
+
+  dt {
+    font-size: 0.7rem;
+  }
+
+  dd {
+    margin-left: 16px;
+  }
+
+  dd + dt {
+    margin-top: 8px;
+  }
+
+  blockquote {
+    margin: 0;
+    font-style: italic;
     font-family: "Bitter";
-    letter-spacing: -1px;
+    font-size: 0.8rem;
   }
 </style>
