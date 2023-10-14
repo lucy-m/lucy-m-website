@@ -1,6 +1,11 @@
 import type { Observable } from "rxjs";
 import type { PRNG } from "seedrandom";
-import { makeSceneObject, PosFns, type SceneObject } from "../../../model";
+import {
+  makeSceneObject,
+  OscillatorFns,
+  PosFns,
+  type SceneObject,
+} from "../../../model";
 import { sceneSize } from "../../scene-size";
 import type { FishingSceneState } from "../fishing-scene-state";
 
@@ -15,6 +20,13 @@ export const makeTalentMenuIcon = (args: {
     currentState = state;
   });
 
+  let interactShadow = OscillatorFns.make({
+    amplitude: 10,
+    initial: 20,
+    period: 80,
+    time: 0,
+  });
+
   return makeSceneObject(args.random)({
     layerKey: "ui",
     typeName: "talent-menu",
@@ -23,12 +35,22 @@ export const makeTalentMenuIcon = (args: {
       {
         kind: "image",
         assetKey: "openTalentsIcon",
+        shadow:
+          currentState && currentState.level - 1 > currentState.talents.length
+            ? {
+                color: "hsl(37, 18%, 89%)",
+                blur: interactShadow.position,
+              }
+            : undefined,
       },
     ],
     onInteract: () => {
       if (currentState) {
         args.openTalentMenu(currentState);
       }
+    },
+    onTick: () => {
+      interactShadow = OscillatorFns.tick(interactShadow, 1);
     },
     onDestroy: () => {
       s.unsubscribe();

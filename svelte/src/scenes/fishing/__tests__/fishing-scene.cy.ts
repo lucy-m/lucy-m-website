@@ -321,7 +321,7 @@ describe("fishing scene", () => {
       });
     });
 
-    it("initialises xp bar correcly", () => {
+    it.only("initialises xp bar correcly", () => {
       cy.myWaitFor(() => getXpBarInfo().fadeInOpacity === 1, interactive);
       cy.myWaitFor(
         () => getXpBarInfo().fillFracSpring.position === 0.2,

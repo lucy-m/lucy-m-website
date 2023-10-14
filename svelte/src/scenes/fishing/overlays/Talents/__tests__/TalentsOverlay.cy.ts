@@ -24,7 +24,7 @@ describe("TalentsOverlay", () => {
   let images: Record<AssetKey, ImageBitmap>;
 
   const getTalentViewer = () => cy.getByTestId("talent-viewer");
-  const getTalentSquares = () => cy.get("canvas");
+  const getTalentSquares = () => cy.getByTestId("talent-icon");
 
   beforeEach(() => {
     cy.viewport(800, 600);
