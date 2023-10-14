@@ -25,6 +25,7 @@ describe("TalentsOverlay", () => {
 
   const getTalentViewer = () => cy.getByTestId("talent-viewer");
   const getTalentSquares = () => cy.getByTestId("talent-icon");
+  const getLearnButton = () => cy.contains("button", "Learn");
 
   beforeEach(() => {
     cy.viewport(800, 600);
@@ -77,7 +78,7 @@ describe("TalentsOverlay", () => {
 
       describe("clicking learn", () => {
         beforeEach(() => {
-          cy.contains("button", "Learn").click();
+          getLearnButton().click();
         });
 
         it("displays correctly", () => {
@@ -102,6 +103,26 @@ describe("TalentsOverlay", () => {
             cy.get("@unmountSelf").should("have.been.calledOnce");
           });
         });
+
+        describe("clicking a dependent item", () => {
+          beforeEach(() => {
+            getTalentSquares().eq(2).click();
+          });
+
+          it("learn is enabled", () => {
+            getLearnButton().should("be.enabled");
+          });
+        });
+      });
+    });
+
+    describe("selecting a second row talent", () => {
+      beforeEach(() => {
+        getTalentSquares().eq(2).click();
+      });
+
+      it("learn is disabled", () => {
+        getLearnButton().should("be.disabled");
       });
     });
   });
@@ -126,7 +147,7 @@ describe("TalentsOverlay", () => {
       });
 
       it("does not have learn button", () => {
-        cy.contains("button", "Learn").should("not.exist");
+        getLearnButton().should("not.exist");
       });
     });
 
@@ -136,7 +157,7 @@ describe("TalentsOverlay", () => {
       });
 
       it("learn button is disabled", () => {
-        cy.contains("button", "Learn").should("be.disabled");
+        getLearnButton().should("be.disabled");
       });
     });
   });

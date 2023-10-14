@@ -5,7 +5,12 @@
   import DependencyGraph from "./DependencyGraph.svelte";
   import TalentViewer from "./TalentDetails.svelte";
   import TalentSquare from "./TalentSquare.svelte";
-  import { talentTree, type TalentId } from "./talents";
+  import {
+    getDependencies,
+    getTalentDependentsSatisfied,
+    talentTree,
+    type TalentId,
+  } from "./talents";
 
   export let unmountSelf: () => void;
   export let onClosed: (talents: readonly TalentId[]) => void;
@@ -15,13 +20,15 @@
   export let totalTalentPoints: number;
 
   let wrapperEl: HTMLElement | undefined;
-  let selected: TalentId | undefined;
+  let selected: { talent: TalentId; row: number; column: number } | undefined;
 
   $: wrapperSize = wrapperEl && observeElementSize(wrapperEl);
 
   const onLearnTalent = (talentId: TalentId) => {
     learned = [...learned, talentId];
   };
+
+  const dependencies = getDependencies(talentTree);
 
   const itemSize = 100;
   const itemGap = 48;
@@ -78,9 +85,15 @@
                     {xIndex}
                     {yIndex}
                     learned={learned.includes(talent.id)}
-                    selected={selected === talent.id}
+                    selected={selected?.talent === talent.id}
                     setSelected={() => {
-                      selected = talent?.id;
+                      if (talent) {
+                        selected = {
+                          talent: talent.id,
+                          row: yIndex,
+                          column: xIndex,
+                        };
+                      }
                     }}
                     clearSelected={() => {
                       selected = undefined;
@@ -96,13 +109,18 @@
     <div class="side-panel">
       {#if selected}
         <TalentViewer
-          talentId={selected}
-          learned={learned.includes(selected)}
+          talentId={selected.talent}
+          learned={learned.includes(selected.talent)}
           pointsAvailable={totalTalentPoints - learned.length}
+          dependentsSatisfied={getTalentDependentsSatisfied(
+            selected,
+            dependencies,
+            learned
+          )}
           onLearn={(
             (talentId) => () =>
               onLearnTalent(talentId)
-          )(selected)}
+          )(selected.talent)}
         />
       {:else}
         Selected talent will appear here

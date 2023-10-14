@@ -11,6 +11,22 @@ export type TalentInfo = Readonly<{
 
 const nyiDescription = ["Coming soon..."];
 
+export const getTalentDependentsSatisfied = (
+  position: { row: number; column: number },
+  dependencies: readonly TalentTreeDependency[],
+  learned: readonly TalentId[]
+): boolean => {
+  const myDependency = dependencies.find(
+    (d) => d.from.row === position.row && d.from.column === position.column
+  );
+
+  if (!myDependency || !myDependency.to.talentId) {
+    return true;
+  } else {
+    return learned.includes(myDependency.to.talentId);
+  }
+};
+
 export const getTalentInfo = (id: TalentId): TalentInfo => {
   switch (id) {
     case "proficiency":
@@ -75,12 +91,12 @@ export const talentTree: TalentTree = [
 
 export type TalentTreeDependency = Readonly<{
   from: { row: number; column: number };
-  to: { row: number; column: number };
+  to: { row: number; column: number; talentId: TalentId | undefined };
 }>;
 
 export const getDependencies = (
   talentTree: TalentTree
-): TalentTreeDependency[] => {
+): readonly TalentTreeDependency[] => {
   return talentTree.reduce((acc, row, rowIndex) => {
     const rowResults: TalentTreeDependency[] = filterUndefined(
       row.map((item, colIndex) => {
@@ -91,7 +107,11 @@ export const getDependencies = (
         } else {
           return {
             from: { row: rowIndex, column: colIndex },
-            to: { row: rowIndex - 1, column: toColumn },
+            to: {
+              row: rowIndex - 1,
+              column: toColumn,
+              talentId: talentTree[rowIndex - 1]?.[toColumn]?.id,
+            },
           };
         }
       })
