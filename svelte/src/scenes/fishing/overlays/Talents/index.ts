@@ -1,1 +1,1 @@
-export { default as Talents } from "./Talents.svelte";
+export { default as TalentsOverlay } from "./TalentsOverlay.svelte";

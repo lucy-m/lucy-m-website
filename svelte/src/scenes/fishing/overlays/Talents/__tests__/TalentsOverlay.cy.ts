@@ -1,7 +1,7 @@
-import { loadImages, type AssetKey } from "../../../../model";
-import { Talents } from "../Talents";
+import { TalentsOverlay } from "..";
+import { loadImages, type AssetKey } from "../../../../../model";
 
-describe("talents", () => {
+describe("TalentsOverlay", () => {
   let images: Record<AssetKey, ImageBitmap>;
 
   const getTalentViewer = () => cy.getByTestId("talent-viewer");
@@ -20,7 +20,7 @@ describe("talents", () => {
 
   describe("some scenario", () => {
     beforeEach(() => {
-      cy.mount(Talents, { props: { images } });
+      cy.mount(TalentsOverlay, { props: { images } });
     });
 
     it("displays all talents correctly", () => {

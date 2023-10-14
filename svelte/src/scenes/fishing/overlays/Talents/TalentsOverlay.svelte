@@ -2,6 +2,7 @@
   import { observeElementSize, type AssetKey } from "../../../../model";
   import { recordToEntries } from "../../../../utils";
   import OverlayBase from "../OverlayBase.svelte";
+  import DependencyGraph from "./DependencyGraph.svelte";
   import TalentSquare from "./TalentSquare.svelte";
   import TalentViewer from "./TalentViewer.svelte";
   import { talentTree, type TalentId } from "./talents";
@@ -50,18 +51,27 @@
           class="talent-tree-styles-wrapper"
           style={styleVariables($wrapperSize.clientWidth)}
         >
+          <div class="dependency-wrapper">
+            <DependencyGraph
+              {talentTree}
+              {targetHeight}
+              {targetWidth}
+              {itemSize}
+              {itemGap}
+            />
+          </div>
           <div class="talent-tree-viewer">
             {#each talentTree as talentTreeRow, yIndex}
-              {#each talentTreeRow as talentId, xIndex}
-                {#if talentId !== undefined}
+              {#each talentTreeRow as talent, xIndex}
+                {#if talent !== undefined}
                   <TalentSquare
                     {images}
-                    {talentId}
+                    talentId={talent.id}
                     {xIndex}
                     {yIndex}
-                    selected={selected === talentId}
+                    selected={selected === talent.id}
                     setSelected={() => {
-                      selected = talentId;
+                      selected = talent?.id;
                     }}
                     clearSelected={() => {
                       selected = undefined;
@@ -100,6 +110,13 @@
 
   .talent-tree-styles-wrapper {
     height: var(--height);
+  }
+
+  .dependency-wrapper {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .talent-tree-viewer {

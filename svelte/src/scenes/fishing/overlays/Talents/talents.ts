@@ -1,4 +1,5 @@
 import type { AssetKey } from "../../../../model";
+import { filterUndefined } from "../../../../utils";
 
 export type TalentId = "proficency" | "idle" | "events" | "shop";
 
@@ -50,15 +51,53 @@ export const getTalentInfo = (id: TalentId): TalentInfo => {
   }
 };
 
+export type TalentRowEntry = Readonly<{
+  id: TalentId;
+  dependsOn?: 0 | 1 | 2;
+}>;
+
 export type TalentRow = [
-  TalentId | undefined,
-  TalentId | undefined,
-  TalentId | undefined
+  TalentRowEntry | undefined,
+  TalentRowEntry | undefined,
+  TalentRowEntry | undefined
 ];
 
 export type TalentTree = TalentRow[];
 
 export const talentTree: TalentTree = [
-  [undefined, "proficency", undefined],
-  ["idle", "events", "shop"],
+  [undefined, { id: "proficency" }, undefined],
+  [
+    { id: "idle", dependsOn: 1 },
+    { id: "events", dependsOn: 1 },
+    { id: "shop", dependsOn: 1 },
+  ],
+  [{ id: "idle", dependsOn: 2 }, undefined, undefined],
 ];
+
+export type TalentTreeDependency = Readonly<{
+  from: { row: number; column: number };
+  to: { row: number; column: number };
+}>;
+
+export const getDependencies = (
+  talentTree: TalentTree
+): TalentTreeDependency[] => {
+  return talentTree.reduce((acc, row, rowIndex) => {
+    const rowResults: TalentTreeDependency[] = filterUndefined(
+      row.map((item, colIndex) => {
+        const toColumn = item?.dependsOn;
+
+        if (toColumn === undefined) {
+          return undefined;
+        } else {
+          return {
+            from: { row: rowIndex, column: colIndex },
+            to: { row: rowIndex - 1, column: toColumn },
+          };
+        }
+      })
+    );
+
+    return [...acc, ...rowResults];
+  }, [] as TalentTreeDependency[]);
+};
