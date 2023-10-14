@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { FishName } from "../../model";
 import { filterUndefined } from "../../utils";
+import type { TalentId } from "./overlays/Talents/talents";
 
 export const fishingSceneStateSchema = z
   .object({
@@ -77,4 +78,14 @@ export const caughtFish = (
 
     return [newState, filterUndefined([newFishNotification])];
   }
+};
+
+export const talentsChanged = (
+  state: FishingSceneState,
+  talents: readonly TalentId[]
+): FishingSceneState => {
+  return {
+    ...state,
+    talents,
+  };
 };

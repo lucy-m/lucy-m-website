@@ -1,8 +1,10 @@
 import {
   caughtFish,
+  talentsChanged,
   type FishingSceneNotification,
   type FishingSceneState,
 } from "../fishing-scene-state";
+import type { TalentId } from "../overlays/Talents/talents";
 
 describe("fishing scene state", () => {
   describe("caughtFish", () => {
@@ -159,6 +161,25 @@ describe("fishing scene state", () => {
           expect(notification).to.deep.eq(expected);
         });
       });
+    });
+  });
+
+  describe("talentsChanged", () => {
+    it("sets talents", () => {
+      const initialState: FishingSceneState = {
+        level: 3,
+        levelXp: 100,
+        nextLevelXp: 150,
+        totalXp: 300,
+        caughtFish: [],
+        talents: [],
+      };
+
+      const newTalents: readonly TalentId[] = ["proficiency", "idle"];
+
+      const newState = talentsChanged(initialState, newTalents);
+
+      expect(newState.talents).to.deep.eq(newTalents);
     });
   });
 });
