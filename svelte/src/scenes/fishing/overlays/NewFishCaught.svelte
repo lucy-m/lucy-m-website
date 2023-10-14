@@ -43,9 +43,9 @@
     font-size: 1.5rem;
     font-family: "Bitter";
     letter-spacing: -1px;
-    background-color: hsl(208, 30%, 85%);
-    margin: -16px;
-    padding: 16px;
+    background-color: var(--overlay-background-dark);
+    margin: calc(var(--overlay-padding) * -1);
+    padding: var(--overlay-padding);
     padding-bottom: 4px;
     margin-bottom: 0;
   }

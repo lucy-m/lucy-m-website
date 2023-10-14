@@ -4,6 +4,9 @@ import { Talents } from "../Talents";
 describe("talents", () => {
   let images: Record<AssetKey, ImageBitmap>;
 
+  const getTalentViewer = () => cy.getByTestId("talent-viewer");
+  const getTalentSquares = () => cy.get("canvas");
+
   beforeEach(() => {
     cy.viewport(800, 600);
   });
@@ -20,8 +23,37 @@ describe("talents", () => {
       cy.mount(Talents, { props: { images } });
     });
 
-    it.only("works", () => {
-      cy.get("canvas").eq(0).click();
+    it("displays all talents correctly", () => {
+      getTalentSquares().should("have.length", 4);
+      cy.percySnapshot();
+    });
+
+    it("does not display talent viewer", () => {
+      getTalentViewer().should("not.exist");
+    });
+
+    describe("selecting the first talent", () => {
+      beforeEach(() => {
+        getTalentSquares().eq(0).click();
+      });
+
+      it("displays talents correctly", () => {
+        cy.percySnapshot();
+      });
+
+      it.only("displays correct item in talent viewer panel", () => {
+        getTalentViewer().should("contain.text", "Learning the ropes");
+      });
+
+      describe("selecting another item", () => {
+        beforeEach(() => {
+          getTalentSquares().eq(1).click();
+        });
+
+        it("displays correct item in talent viewer panel", () => {
+          getTalentViewer().should("contain.text", "Incredible multitasking");
+        });
+      });
     });
   });
 });

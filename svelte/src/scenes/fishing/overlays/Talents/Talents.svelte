@@ -2,21 +2,15 @@
   import { observeElementSize, type AssetKey } from "../../../../model";
   import { recordToEntries } from "../../../../utils";
   import OverlayBase from "../OverlayBase.svelte";
-  import { talentTree, type Talent } from "./talents";
+  import TalentSquare from "./TalentSquare.svelte";
+  import TalentViewer from "./TalentViewer.svelte";
+  import { talentTree, type TalentId } from "./talents";
 
   export let images: Record<AssetKey, ImageBitmap>;
 
   let wrapperEl: HTMLElement | undefined;
 
-  let selected: { talent: Talent; xIndex: number; yIndex: number } | undefined;
-
-  $: isSelected = (x: number, y: number): boolean => {
-    if (selected) {
-      return selected.xIndex === x && selected.yIndex === y;
-    } else {
-      return false;
-    }
-  };
+  let selected: TalentId | undefined;
 
   $: wrapperSize = wrapperEl && observeElementSize(wrapperEl);
 
@@ -46,23 +40,6 @@
 
     return asString;
   };
-
-  const drawImage = (
-    canvas: HTMLCanvasElement,
-    args: { assetKey: AssetKey }
-  ) => {
-    canvas.width = 100;
-    canvas.height = 100;
-
-    const ctx = canvas.getContext("2d");
-
-    if (!ctx) {
-      throw new Error("Could not get canvas context");
-    } else {
-      const image = images[args.assetKey];
-      ctx.drawImage(image, 0, 0);
-    }
-  };
 </script>
 
 <OverlayBase width="wide">
@@ -75,20 +52,19 @@
         >
           <div class="talent-tree-viewer">
             {#each talentTree as talentTreeRow, yIndex}
-              {#each talentTreeRow as talent, xIndex}
-                {#if talent !== undefined}
-                  <canvas
-                    use:drawImage={{ assetKey: talent.image }}
-                    class="talent-tree-item"
-                    class:selected={isSelected(xIndex, yIndex)}
-                    style:grid-column={xIndex + 1}
-                    style:grid-row={yIndex + 1}
-                    on:click={() => {
-                      if (isSelected(xIndex, yIndex) || !talent) {
-                        selected = undefined;
-                      } else {
-                        selected = { talent, xIndex, yIndex };
-                      }
+              {#each talentTreeRow as talentId, xIndex}
+                {#if talentId !== undefined}
+                  <TalentSquare
+                    {images}
+                    {talentId}
+                    {xIndex}
+                    {yIndex}
+                    selected={selected === talentId}
+                    setSelected={() => {
+                      selected = talentId;
+                    }}
+                    clearSelected={() => {
+                      selected = undefined;
                     }}
                   />
                 {/if}
@@ -98,9 +74,9 @@
         </div>
       {/if}
     </div>
-    <div>
+    <div class="side-panel">
       {#if selected}
-        {selected.talent.name}
+        <TalentViewer talentId={selected} />
       {:else}
         Selected talent will appear here
       {/if}
@@ -112,7 +88,7 @@
   .wrapper {
     display: grid;
     grid-template-columns: 3fr 2fr;
-    column-gap: 16px;
+    column-gap: calc(var(--overlay-padding) * 2);
     max-height: calc(100vh - 24px);
   }
 
@@ -137,12 +113,9 @@
     transform-origin: top left;
   }
 
-  .talent-tree-item {
-    width: 100%;
-    height: 100%;
-  }
-
-  .talent-tree-item.selected {
-    outline: 8px solid hsl(273deg 47% 55%);
+  .side-panel {
+    background-color: var(--overlay-background-dark);
+    margin: calc(var(--overlay-padding) * -1);
+    padding: var(--overlay-padding);
   }
 </style>
