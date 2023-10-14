@@ -9,6 +9,10 @@
   export let selected: boolean;
   export let setSelected: () => void;
   export let clearSelected: () => void;
+  export let learned: boolean;
+
+  const initiallyLearned = learned;
+  $: newlyLearned = learned && !initiallyLearned;
 
   const talentInfo = getTalentInfo(talentId);
 
@@ -30,20 +34,25 @@
   };
 </script>
 
-<canvas
-  use:drawImage={{ assetKey: talentInfo.image }}
-  class="talent-tree-item"
+<div
   class:selected
   style:grid-column={xIndex + 1}
   style:grid-row={yIndex + 1}
-  on:click={() => {
-    if (selected) {
-      clearSelected();
-    } else {
-      setSelected();
-    }
-  }}
-/>
+  class:newlyLearned
+>
+  <canvas
+    use:drawImage={{ assetKey: talentInfo.image }}
+    class="talent-tree-item"
+    class:unlearned={!learned}
+    on:click={() => {
+      if (selected) {
+        clearSelected();
+      } else {
+        setSelected();
+      }
+    }}
+  />
+</div>
 
 <style>
   .talent-tree-item {
@@ -51,7 +60,28 @@
     height: 100%;
   }
 
-  .talent-tree-item.selected {
+  .unlearned {
+    filter: grayscale(1);
+  }
+
+  .selected {
     outline: 8px solid hsl(273deg 47% 55%);
+  }
+
+  .newlyLearned {
+    animation-name: pulse-outline;
+    animation-direction: alternate;
+    animation-iteration-count: 2;
+    animation-duration: 0.5s;
+  }
+
+  @keyframes pulse-outline {
+    from {
+      outline-width: 8px;
+    }
+
+    to {
+      outline-width: 20px;
+    }
   }
 </style>

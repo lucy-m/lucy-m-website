@@ -2,6 +2,8 @@
   import { getTalentInfo, type TalentId } from "./talents";
 
   export let talentId: TalentId;
+  export let learned: boolean;
+  export let onLearn: () => void;
 
   $: talentInfo = getTalentInfo(talentId);
 
@@ -19,7 +21,9 @@
       {/each}
     </p>
   {/each}
-  <button>Learn</button>
+  {#if !learned}
+    <button on:click={onLearn}>Learn</button>
+  {/if}
 </div>
 
 <style>

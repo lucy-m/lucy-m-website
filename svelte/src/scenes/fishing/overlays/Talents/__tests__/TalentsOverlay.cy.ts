@@ -18,9 +18,9 @@ describe("TalentsOverlay", () => {
     });
   });
 
-  describe("some scenario", () => {
+  describe("no learned talents", () => {
     beforeEach(() => {
-      cy.mount(TalentsOverlay, { props: { images } });
+      cy.mount(TalentsOverlay, { props: { images, learned: [] } });
     });
 
     it("displays all talents correctly", () => {
@@ -41,7 +41,7 @@ describe("TalentsOverlay", () => {
         cy.percySnapshot();
       });
 
-      it.only("displays correct item in talent viewer panel", () => {
+      it("displays correct item in talent viewer panel", () => {
         getTalentViewer().should("contain.text", "Learning the ropes");
       });
 
@@ -53,6 +53,40 @@ describe("TalentsOverlay", () => {
         it("displays correct item in talent viewer panel", () => {
           getTalentViewer().should("contain.text", "Incredible multitasking");
         });
+      });
+
+      describe("clicking learn", () => {
+        beforeEach(() => {
+          cy.contains("button", "Learn").click();
+        });
+
+        it("displays correctly", () => {
+          // Wait for transition
+          cy.wait(1500);
+          cy.percySnapshot();
+        });
+      });
+    });
+  });
+
+  describe("initially learned talents", () => {
+    beforeEach(() => {
+      cy.mount(TalentsOverlay, {
+        props: { images, learned: ["proficency", "idle"] },
+      });
+    });
+
+    it("works", () => {
+      cy.percySnapshot();
+    });
+
+    describe("selecting first talent", () => {
+      beforeEach(() => {
+        getTalentSquares().eq(0).click();
+      });
+
+      it("does not have learn button", () => {
+        cy.contains("button", "Learn").should("not.exist");
       });
     });
   });

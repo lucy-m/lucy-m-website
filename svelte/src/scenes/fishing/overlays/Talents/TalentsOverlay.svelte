@@ -3,17 +3,21 @@
   import { recordToEntries } from "../../../../utils";
   import OverlayBase from "../OverlayBase.svelte";
   import DependencyGraph from "./DependencyGraph.svelte";
+  import TalentViewer from "./TalentDetails.svelte";
   import TalentSquare from "./TalentSquare.svelte";
-  import TalentViewer from "./TalentViewer.svelte";
   import { talentTree, type TalentId } from "./talents";
 
   export let images: Record<AssetKey, ImageBitmap>;
+  export let learned: readonly TalentId[];
 
   let wrapperEl: HTMLElement | undefined;
-
   let selected: TalentId | undefined;
 
   $: wrapperSize = wrapperEl && observeElementSize(wrapperEl);
+
+  const onLearnTalent = (talentId: TalentId) => {
+    learned = [...learned, talentId];
+  };
 
   const itemSize = 100;
   const itemGap = 48;
@@ -69,6 +73,7 @@
                     talentId={talent.id}
                     {xIndex}
                     {yIndex}
+                    learned={learned.includes(talent.id)}
                     selected={selected === talent.id}
                     setSelected={() => {
                       selected = talent?.id;
@@ -86,7 +91,14 @@
     </div>
     <div class="side-panel">
       {#if selected}
-        <TalentViewer talentId={selected} />
+        <TalentViewer
+          talentId={selected}
+          learned={learned.includes(selected)}
+          onLearn={(
+            (talentId) => () =>
+              onLearnTalent(talentId)
+          )(selected)}
+        />
       {:else}
         Selected talent will appear here
       {/if}
