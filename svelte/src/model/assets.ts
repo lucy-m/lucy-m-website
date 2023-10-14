@@ -12,6 +12,16 @@ type FishStates = "no-bg" | "shadow" | "no-bg-flip" | "shadow-flip";
 
 type FishAsset = `${FishName}.${FishStates}`;
 
+const talentPaths = {
+  placeholder: "/assets/scene-fishing/talents/placeholder.jpg",
+} as const;
+
+const talentAssets = entriesToRecord(
+  recordToEntries(talentPaths).map(
+    ([key, value]) => [`talent.${key}`, value] as const
+  )
+);
+
 const imagePaths = {
   introBackground: "/assets/scene-intro/background.PNG",
   personSitting: "/assets/scene-intro/person-sitting.png",
@@ -35,6 +45,8 @@ const imagePaths = {
   reelSpinner: "/assets/scene-fishing/reel-spinner.PNG",
   openGameMenuIcon: "/assets/scene-fishing/menu-icons/menu.PNG",
   openTalentsIcon: "/assets/scene-fishing/menu-icons/talents.PNG",
+
+  ...talentAssets,
 } as const;
 
 export type AssetKey = keyof typeof imagePaths | FishAsset;

@@ -20,6 +20,8 @@ describe("talents", () => {
       cy.mount(Talents, { props: { images } });
     });
 
-    it.only("works", () => {});
+    it.only("works", () => {
+      cy.get("canvas").eq(0).click();
+    });
   });
 });

@@ -2,11 +2,21 @@
   import { observeElementSize, type AssetKey } from "../../../../model";
   import { recordToEntries } from "../../../../utils";
   import OverlayBase from "../OverlayBase.svelte";
-  import { talentTree } from "./talents";
+  import { talentTree, type Talent } from "./talents";
 
   export let images: Record<AssetKey, ImageBitmap>;
 
   let wrapperEl: HTMLElement | undefined;
+
+  let selected: { talent: Talent; xIndex: number; yIndex: number } | undefined;
+
+  $: isSelected = (x: number, y: number): boolean => {
+    if (selected) {
+      return selected.xIndex === x && selected.yIndex === y;
+    } else {
+      return false;
+    }
+  };
 
   $: wrapperSize = wrapperEl && observeElementSize(wrapperEl);
 
@@ -36,6 +46,23 @@
 
     return asString;
   };
+
+  const drawImage = (
+    canvas: HTMLCanvasElement,
+    args: { assetKey: AssetKey }
+  ) => {
+    canvas.width = 100;
+    canvas.height = 100;
+
+    const ctx = canvas.getContext("2d");
+
+    if (!ctx) {
+      throw new Error("Could not get canvas context");
+    } else {
+      const image = images[args.assetKey];
+      ctx.drawImage(image, 0, 0);
+    }
+  };
 </script>
 
 <OverlayBase width="wide">
@@ -48,12 +75,21 @@
         >
           <div class="talent-tree-viewer">
             {#each talentTree as talentTreeRow, yIndex}
-              {#each talentTreeRow as item, xIndex}
-                {#if item !== undefined}
-                  <div
+              {#each talentTreeRow as talent, xIndex}
+                {#if talent !== undefined}
+                  <canvas
+                    use:drawImage={{ assetKey: talent.image }}
                     class="talent-tree-item"
+                    class:selected={isSelected(xIndex, yIndex)}
                     style:grid-column={xIndex + 1}
                     style:grid-row={yIndex + 1}
+                    on:click={() => {
+                      if (isSelected(xIndex, yIndex) || !talent) {
+                        selected = undefined;
+                      } else {
+                        selected = { talent, xIndex, yIndex };
+                      }
+                    }}
                   />
                 {/if}
               {/each}
@@ -62,7 +98,13 @@
         </div>
       {/if}
     </div>
-    <div>Preview pane</div>
+    <div>
+      {#if selected}
+        {selected.talent.name}
+      {:else}
+        Selected talent will appear here
+      {/if}
+    </div>
   </div>
 </OverlayBase>
 
@@ -78,7 +120,6 @@
     position: relative;
     height: 100%;
     width: 100%;
-    border: 1px solid black;
   }
 
   .talent-tree-styles-wrapper {
@@ -99,6 +140,9 @@
   .talent-tree-item {
     width: 100%;
     height: 100%;
-    background-color: bisque;
+  }
+
+  .talent-tree-item.selected {
+    outline: 8px solid hsl(273deg 47% 55%);
   }
 </style>

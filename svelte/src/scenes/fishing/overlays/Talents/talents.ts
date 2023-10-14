@@ -1,12 +1,22 @@
-type Talent = Readonly<{
+import type { AssetKey } from "../../../../model";
+
+export type Talent = Readonly<{
   name: string;
+  image: AssetKey;
 }>;
 
-type TalentRow = [Talent | undefined, Talent | undefined, Talent | undefined];
+export type TalentRow = [
+  Talent | undefined,
+  Talent | undefined,
+  Talent | undefined
+];
 
-type TalentTree = TalentRow[];
+export type TalentTree = TalentRow[];
 
-const placeholderTalent: Talent = { name: "Placeholder" };
+const placeholderTalent: Talent = {
+  name: "Placeholder",
+  image: "talent.placeholder",
+};
 
 export const talentTree: TalentTree = [
   [undefined, placeholderTalent, undefined],
