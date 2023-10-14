@@ -71,7 +71,6 @@ export const talentTree: TalentTree = [
     { id: "events", dependsOn: 1 },
     { id: "shop", dependsOn: 1 },
   ],
-  [{ id: "idle", dependsOn: 2 }, undefined, undefined],
 ];
 
 export type TalentTreeDependency = Readonly<{

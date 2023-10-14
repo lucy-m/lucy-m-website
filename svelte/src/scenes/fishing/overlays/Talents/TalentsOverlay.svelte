@@ -100,6 +100,7 @@
     grid-template-columns: 3fr 2fr;
     column-gap: calc(var(--overlay-padding) * 2);
     max-height: calc(100vh - 24px);
+    min-height: 300px;
   }
 
   .talent-tree-wrapper {
@@ -116,7 +117,7 @@
     position: absolute;
     top: 0;
     width: 100%;
-    height: 100%;
+    height: var(--height);
   }
 
   .talent-tree-viewer {
