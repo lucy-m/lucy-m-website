@@ -1,5 +1,24 @@
+import type { ComponentProps } from "svelte";
 import { TalentsOverlay } from "..";
 import { loadImages, type AssetKey } from "../../../../../model";
+
+const mountComponent = (
+  images: Record<AssetKey, ImageBitmap>,
+  overrides?: {
+    props?: Partial<ComponentProps<TalentsOverlay>>;
+  }
+) => {
+  cy.mount(TalentsOverlay, {
+    props: {
+      images,
+      learned: [],
+      totalTalentPoints: 3,
+      onClosed: cy.spy().as("onClosed"),
+      unmountSelf: cy.spy().as("unmountSelf"),
+      ...overrides?.props,
+    },
+  });
+};
 
 describe("TalentsOverlay", () => {
   let images: Record<AssetKey, ImageBitmap>;
@@ -20,11 +39,12 @@ describe("TalentsOverlay", () => {
 
   describe("no learned talents", () => {
     beforeEach(() => {
-      cy.mount(TalentsOverlay, { props: { images, learned: [] } });
+      mountComponent(images);
     });
 
     it("displays all talents correctly", () => {
       getTalentSquares().should("have.length", 4);
+      cy.contains("0/3 points spent");
       cy.percySnapshot();
     });
 
@@ -65,18 +85,38 @@ describe("TalentsOverlay", () => {
           cy.wait(1500);
           cy.percySnapshot();
         });
+
+        it("shows correct points spent", () => {
+          cy.contains("1/3 points spent");
+        });
+
+        describe("clicking close", () => {
+          beforeEach(() => {
+            cy.contains("button", "Close").click();
+          });
+
+          it("calls event handlers correctly", () => {
+            cy.get("@onClosed").should("have.been.calledOnceWith", [
+              "proficiency",
+            ]);
+            cy.get("@unmountSelf").should("have.been.calledOnce");
+          });
+        });
       });
     });
   });
 
   describe("initially learned talents", () => {
     beforeEach(() => {
-      cy.mount(TalentsOverlay, {
-        props: { images, learned: ["proficency", "idle"] },
+      mountComponent(images, {
+        props: {
+          learned: ["proficiency", "idle"],
+          totalTalentPoints: 2,
+        },
       });
     });
 
-    it("works", () => {
+    it("matches snapshot", () => {
       cy.percySnapshot();
     });
 
@@ -87,6 +127,16 @@ describe("TalentsOverlay", () => {
 
       it("does not have learn button", () => {
         cy.contains("button", "Learn").should("not.exist");
+      });
+    });
+
+    describe("selecting unlearned talent", () => {
+      beforeEach(() => {
+        getTalentSquares().eq(2).click();
+      });
+
+      it("learn button is disabled", () => {
+        cy.contains("button", "Learn").should("be.disabled");
       });
     });
   });

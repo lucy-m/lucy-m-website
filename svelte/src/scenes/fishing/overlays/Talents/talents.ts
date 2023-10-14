@@ -1,7 +1,7 @@
 import type { AssetKey } from "../../../../model";
 import { filterUndefined } from "../../../../utils";
 
-export type TalentId = "proficency" | "idle" | "events" | "shop";
+export type TalentId = "proficiency" | "idle" | "events" | "shop";
 
 export type TalentInfo = Readonly<{
   name: string;
@@ -13,7 +13,7 @@ const nyiDescription = ["Coming soon..."];
 
 export const getTalentInfo = (id: TalentId): TalentInfo => {
   switch (id) {
-    case "proficency":
+    case "proficiency":
       return {
         name: "Learning the ropes",
         image: "talent.placeholder",
@@ -65,7 +65,7 @@ export type TalentRow = [
 export type TalentTree = TalentRow[];
 
 export const talentTree: TalentTree = [
-  [undefined, { id: "proficency" }, undefined],
+  [undefined, { id: "proficiency" }, undefined],
   [
     { id: "idle", dependsOn: 1 },
     { id: "events", dependsOn: 1 },

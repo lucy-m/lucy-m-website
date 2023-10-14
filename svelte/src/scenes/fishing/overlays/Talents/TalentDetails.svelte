@@ -3,6 +3,7 @@
 
   export let talentId: TalentId;
   export let learned: boolean;
+  export let pointsAvailable: number;
   export let onLearn: () => void;
 
   $: talentInfo = getTalentInfo(talentId);
@@ -22,7 +23,7 @@
     </p>
   {/each}
   {#if !learned}
-    <button on:click={onLearn}>Learn</button>
+    <button on:click={onLearn} disabled={pointsAvailable <= 0}>Learn</button>
   {/if}
 </div>
 

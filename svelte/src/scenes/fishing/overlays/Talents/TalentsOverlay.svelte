@@ -7,8 +7,12 @@
   import TalentSquare from "./TalentSquare.svelte";
   import { talentTree, type TalentId } from "./talents";
 
+  export let unmountSelf: () => void;
+  export let onClosed: (talents: readonly TalentId[]) => void;
+
   export let images: Record<AssetKey, ImageBitmap>;
   export let learned: readonly TalentId[];
+  export let totalTalentPoints: number;
 
   let wrapperEl: HTMLElement | undefined;
   let selected: TalentId | undefined;
@@ -94,6 +98,7 @@
         <TalentViewer
           talentId={selected}
           learned={learned.includes(selected)}
+          pointsAvailable={totalTalentPoints - learned.length}
           onLearn={(
             (talentId) => () =>
               onLearnTalent(talentId)
@@ -103,6 +108,15 @@
         Selected talent will appear here
       {/if}
     </div>
+    <div class="footer">
+      <div>{learned.length}/{totalTalentPoints} points spent</div>
+      <button
+        on:click={() => {
+          onClosed(learned);
+          unmountSelf();
+        }}>Close</button
+      >
+    </div>
   </div>
 </OverlayBase>
 
@@ -110,7 +124,9 @@
   .wrapper {
     display: grid;
     grid-template-columns: 3fr 2fr;
+    grid-template-rows: 1fr auto;
     column-gap: calc(var(--overlay-padding) * 2);
+    row-gap: calc(var(--overlay-padding) * 2);
     max-height: calc(100vh - 24px);
     min-height: 300px;
   }
@@ -147,5 +163,12 @@
     background-color: var(--overlay-background-dark);
     margin: calc(var(--overlay-padding) * -1);
     padding: var(--overlay-padding);
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .footer {
+    display: flex;
+    justify-content: space-between;
   }
 </style>
