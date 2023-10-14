@@ -175,6 +175,17 @@ export const makeFishingScene =
           });
         },
       }),
+      makeSceneObjectBound({
+        layerKey: "ui",
+        typeName: "talent-menu",
+        getPosition: () => PosFns.new(sceneSize.x - 280, sceneSize.y - 140),
+        getLayers: () => [
+          {
+            kind: "image",
+            assetKey: "openTalentsIcon",
+          },
+        ],
+      }),
       stateSub.value !== undefined ? xpBar : undefined,
     ]);
 
