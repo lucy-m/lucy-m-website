@@ -43,6 +43,7 @@
   <canvas
     use:drawImage={{ assetKey: talentInfo.image }}
     class="talent-tree-item"
+    data-testid="talent-icon"
     class:unlearned={!learned}
     on:click={() => {
       if (selected) {

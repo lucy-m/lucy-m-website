@@ -52,7 +52,7 @@
 </script>
 
 <OverlayBase width="wide">
-  <div class="wrapper">
+  <div class="wrapper" data-testid="talents-overlay">
     <div class="talent-tree-wrapper" bind:this={wrapperEl}>
       {#if $wrapperSize}
         <div

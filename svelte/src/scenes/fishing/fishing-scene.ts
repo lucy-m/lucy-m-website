@@ -5,7 +5,9 @@ import {
   combineLatest,
   concatMap,
   first,
+  from,
   map,
+  mergeMap,
   pairwise,
 } from "rxjs";
 import type { FishName, SceneEventOrAction, SceneSpec } from "../../model";
@@ -16,16 +18,19 @@ import {
   caughtFish,
   fishingSceneStateSchema,
   initialFishingSceneState,
+  talentsChanged,
   type FishingSceneNotification,
   type FishingSceneState,
 } from "./fishing-scene-state";
 import { fishingMan, makeXpBar } from "./objects";
+import { makeTalentMenuIcon } from "./objects/talent-menu-icon";
 import {
   FirstFishNotification,
   GameMenu,
   LevelUpNotification,
   NewFishCaught,
 } from "./overlays";
+import { TalentsOverlay } from "./overlays/Talents";
 
 const layerOrder = [
   "bg",
@@ -45,7 +50,8 @@ export const makeFishingScene =
     initialState: FishingSceneState | undefined;
     onStateChange: (state: FishingSceneState | undefined) => void;
   }): SceneSpec =>
-  ({ random, mountSvelteComponent }) => {
+  ({ random, mountSvelteComponent }) =>
+  (images, onSceneChange) => {
     const makeSceneObjectBound = makeSceneObject(random);
 
     const stateSub = new BehaviorSubject<FishingSceneState | undefined>(
@@ -103,18 +109,40 @@ export const makeFishingScene =
       onStationary,
     });
 
+    const talentMenuIcon = makeTalentMenuIcon({
+      random,
+      state$: stateSub,
+      openTalentMenu: (state) => {
+        mountSvelteComponent(TalentsOverlay, {
+          images,
+          learned: state.talents,
+          totalTalentPoints: state.level - 1,
+          onClosed: (talents) => {
+            stateSub.next(talentsChanged(stateSub.value ?? state, talents));
+          },
+        });
+      },
+    });
+
     const events$: Observable<SceneEventOrAction> = stateSub.pipe(
       pairwise(),
       chooseOp(([previous, next]) => {
         if (!previous && next) {
-          return {
-            kind: "addObject",
-            makeObject: () => xpBar,
-          } as SceneEventOrAction;
+          return [
+            {
+              kind: "addObject",
+              makeObject: () => xpBar,
+            },
+            {
+              kind: "addObject",
+              makeObject: () => talentMenuIcon,
+            },
+          ] as SceneEventOrAction[];
         } else {
           return undefined;
         }
-      })
+      }),
+      mergeMap((v) => from(v))
     );
 
     const objects = filterUndefined([
@@ -175,17 +203,7 @@ export const makeFishingScene =
           });
         },
       }),
-      makeSceneObjectBound({
-        layerKey: "ui",
-        typeName: "talent-menu",
-        getPosition: () => PosFns.new(sceneSize.x - 280, sceneSize.y - 140),
-        getLayers: () => [
-          {
-            kind: "image",
-            assetKey: "openTalentsIcon",
-          },
-        ],
-      }),
+      stateSub.value !== undefined ? talentMenuIcon : undefined,
       stateSub.value !== undefined ? xpBar : undefined,
     ]);
 
@@ -195,7 +213,7 @@ export const makeFishingScene =
       layerOrder,
       objects,
       onDestroy: () => sub.unsubscribe(),
-    });
+    })(images, onSceneChange);
   };
 
 export const makeFishingSceneWithLocalStorage: SceneSpec = (() => {

@@ -10,7 +10,10 @@ export const fishingSceneStateSchema = z
     nextLevelXp: z.number(),
     totalXp: z.number(),
     caughtFish: z.array(z.string()).readonly(),
-    talents: z.array(z.string()).readonly(),
+    talents: z
+      .array(z.string())
+      .readonly()
+      .transform((s) => s as readonly TalentId[]),
   })
   .readonly();
 
