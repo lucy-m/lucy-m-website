@@ -185,6 +185,7 @@ export const makeFishingScene =
           }
         },
         getCurrentLevel: () => stateSub.value?.level ?? 0,
+        getTalents: () => stateSub.value?.talents ?? [],
       }),
       makeSceneObjectBound({
         layerKey: "ui",

@@ -17,6 +17,7 @@ import {
   type SceneObject,
 } from "../../../model";
 import { filterUndefined } from "../../../utils";
+import type { TalentId } from "../overlays/Talents/talents";
 import { biteMarker } from "./bite-marker";
 import { makeBobber } from "./bobber";
 import { makeFishPond } from "./fish-pond";
@@ -35,6 +36,7 @@ export const fishingMan = (args: {
   random: PRNG;
   onFishRetrieved: (fishType: FishName) => void;
   initialState?: AnyFishingState;
+  getTalents: () => readonly TalentId[];
   getCurrentLevel: () => number;
 }): SceneObject => {
   const { random } = args;
@@ -42,7 +44,7 @@ export const fishingMan = (args: {
     args.initialState ?? { kind: "idle" }
   );
   const getProficiency = () => {
-    return levelToProficiency(args.getCurrentLevel());
+    return levelToProficiency(args.getCurrentLevel(), args.getTalents());
   };
 
   let interactShadow = OscillatorFns.make({
