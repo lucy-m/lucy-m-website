@@ -3,7 +3,7 @@ import { PosFns, type Position } from "./position";
 
 export type Shape = Position[];
 
-const getRotations = <T>(array: T[]): T[][] => {
+export const getRotations = <T>(array: T[]): T[][] => {
   interface Accumulator {
     left: T[];
     right: T[];

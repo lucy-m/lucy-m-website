@@ -31,6 +31,7 @@ import {
   NewFishCaught,
 } from "./overlays";
 import { TalentsOverlay } from "./overlays/Talents";
+import type { TalentId } from "./overlays/Talents/talents";
 
 const layerOrder = [
   "bg",
@@ -117,7 +118,7 @@ export const makeFishingScene =
           images,
           learned: state.talents,
           totalTalentPoints: state.level - 1,
-          onClosed: (talents) => {
+          onClosed: (talents: readonly TalentId[]) => {
             stateSub.next(talentsChanged(stateSub.value ?? state, talents));
           },
         });

@@ -1,6 +1,6 @@
 import fc from "fast-check";
 import { Subject } from "rxjs";
-import seedrandom from "seedrandom";
+import seedrandom, { type PRNG } from "seedrandom";
 import { z } from "zod";
 import {
   getDebugInfo,
@@ -8,7 +8,7 @@ import {
   type SceneObject,
   type SceneType,
 } from "../../../model";
-import { levelToProficiency } from "../objects/level-to-proficiency";
+import { calcProficiency } from "../objects/calc-proficiency";
 import { reelingOverlay } from "../objects/reeling-overlay";
 
 const interactive = Cypress.config("isInteractive");
@@ -55,7 +55,7 @@ describe("reeling-overlay", () => {
       worldClickSub = new Subject();
 
       cy.mountSceneObject({
-        makeObjects: (random) => [
+        makeObjects: (random: PRNG) => [
           reelingOverlay({
             random,
             onComplete: cy.spy().as("onCompleteSpy"),
@@ -63,7 +63,7 @@ describe("reeling-overlay", () => {
           }),
         ],
         seed: "any",
-        onSceneChange: (scene) => {
+        onSceneChange: (scene: SceneType) => {
           lastScene = scene;
         },
         worldClick$: worldClickSub,
@@ -164,7 +164,7 @@ describe("reeling-overlay", () => {
 
               const reel = reelingOverlay({
                 random: seedrandom(seed),
-                getProficiency: () => levelToProficiency(level),
+                getProficiency: () => calcProficiency({ level, talents: [] }),
                 onComplete: complete,
               });
 
@@ -203,7 +203,7 @@ describe("reeling-overlay", () => {
               const reel = reelingOverlay({
                 random: seedrandom(seed),
                 onComplete: () => {},
-                getProficiency: () => levelToProficiency(level),
+                getProficiency: () => calcProficiency({ level, talents: [] }),
               });
 
               const before = getDebugInfo(

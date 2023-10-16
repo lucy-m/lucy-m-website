@@ -1,5 +1,6 @@
 import { Subject } from "rxjs";
-import { PosFns, type SceneObject } from "../../../model";
+import type { PRNG } from "seedrandom";
+import { PosFns, type SceneObject, type SceneType } from "../../../model";
 import { flyingFish } from "../objects/flying-fish";
 
 const interactive = Cypress.config("isInteractive");
@@ -33,19 +34,21 @@ describe("flying-fish", () => {
   };
 
   const renderFish = (
-    args: Omit<Parameters<typeof flyingFish>[0], "random" | "fishId">
+    args: Omit<Parameters<typeof flyingFish>[0], "random" | "fishType">
   ) => {
     cy.mountSceneObject({
-      makeObjects: (random) => [flyingFish({ random, ...args })],
+      makeObjects: (random: PRNG) => [
+        flyingFish({ random, fishType: "commonBrown", ...args }),
+      ],
       seed: "sssss",
-      onSceneChange: (scene) => {
+      onSceneChange: (scene: SceneType) => {
         lastFish = scene
           .getObjects()
           .find((obj) => obj.typeName === "flying-fish");
       },
       debugDraw$: debugDrawSub,
       debugTrace: {
-        sources: (scene) => scene.getObjects(),
+        sources: (scene: SceneType) => scene.getObjects(),
         colour: () => "mediumaquamarine",
       },
     }).then(() => {

@@ -186,7 +186,7 @@ describe("intro scene", () => {
               cy.mountViewScene({
                 sceneSpec: makeIntroScene,
                 seed,
-                onSceneChange: (scene) => {
+                onSceneChange: (scene: SceneType) => {
                   scene
                     .getObjects()
                     .filter((obj) => obj.typeName === "cruising-bird")

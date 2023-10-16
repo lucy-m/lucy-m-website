@@ -1,6 +1,11 @@
 import { Subject } from "rxjs";
 import { z } from "zod";
-import { getDebugInfo, type Position, type SceneObject } from "../../../model";
+import {
+  getDebugInfo,
+  type Position,
+  type SceneObject,
+  type SceneType,
+} from "../../../model";
 import { makeFishingScene } from "../fishing-scene";
 import {
   initialFishingSceneState,
@@ -70,7 +75,7 @@ describe("fishing scene", () => {
         onStateChange: cy.spy().as("onStateChangeSpy"),
       }),
       seed: "abcd",
-      onSceneChange: (scene) => {
+      onSceneChange: (scene: SceneType) => {
         fisherman = scene
           .getObjects()
           .find((obj) => obj.typeName === "fisherman");

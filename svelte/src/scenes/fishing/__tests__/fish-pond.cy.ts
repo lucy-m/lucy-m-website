@@ -1,7 +1,7 @@
 import type Sinon from "cypress/types/sinon";
 import fc from "fast-check";
 import { Subject } from "rxjs";
-import seedrandom from "seedrandom";
+import seedrandom, { type PRNG } from "seedrandom";
 import { z } from "zod";
 import {
   PosFns,
@@ -68,7 +68,7 @@ describe("fish pond", () => {
         });
 
       return cy.mountSceneObject({
-        makeObjects: (random) => [
+        makeObjects: (random: PRNG) => [
           fishingBg(random),
           makeFishPond({
             random,
@@ -78,7 +78,7 @@ describe("fish pond", () => {
           }),
         ],
         seed: "pond",
-        onSceneChange: (scene) => {
+        onSceneChange: (scene: SceneType) => {
           lastScene = scene;
         },
         debugDraw$,
@@ -161,7 +161,7 @@ describe("fish pond", () => {
             let fishPositions: Position[] = [];
 
             cy.mountSceneObject({
-              makeObjects: (random) => [
+              makeObjects: (random: PRNG) => [
                 fishingBg(random),
                 makeFishPond({
                   random,
@@ -171,7 +171,7 @@ describe("fish pond", () => {
                 }),
               ],
               seed,
-              onSceneChange: (scene) => {
+              onSceneChange: (scene: SceneType) => {
                 const positions = scene
                   .getObjects()
                   .filter((obj) => obj.typeName === "swimming-fish")
@@ -181,11 +181,17 @@ describe("fish pond", () => {
               },
               debugDraw$: debugDrawSub,
               debugTrace: {
-                sources: (scene) =>
+                sources: (scene: SceneType) =>
                   scene
                     .getObjects()
                     .filter((obj) => obj.typeName === "swimming-fish"),
-                colour: ({ obj, index }) => {
+                colour: ({
+                  obj,
+                  index,
+                }: {
+                  obj: SceneObject;
+                  index: number;
+                }) => {
                   const debugInfo = getDebugInfo(
                     obj,
                     z.object({
@@ -260,7 +266,7 @@ describe("fish pond", () => {
               });
             cy.mountSceneObject({
               seed,
-              makeObjects: (random) => [
+              makeObjects: (random: PRNG) => [
                 fishingBg(random),
                 makeFishPond({
                   random,

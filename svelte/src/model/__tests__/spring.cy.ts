@@ -2,7 +2,7 @@ import { Subject, map, type Observable } from "rxjs";
 import type { PRNG } from "seedrandom";
 import { PosFns, type Position } from "../position";
 import { makeSceneObject } from "../scene-object";
-import type { SceneObject } from "../scene-types";
+import type { SceneObject, SceneType } from "../scene-types";
 import {
   NumberSpringFns,
   PositionSpringFns,
@@ -129,7 +129,7 @@ describe("spring", () => {
           );
 
           cy.mountSceneObject({
-            makeObjects: (random) => [
+            makeObjects: (random: PRNG) => [
               makeSpringSceneObject({
                 random,
                 initial: 100,
@@ -139,7 +139,7 @@ describe("spring", () => {
             ],
             seed: "zzz",
             debugTrace: {
-              sources: (scene) => scene.getObjects(),
+              sources: (scene: SceneType) => scene.getObjects(),
               colour: () => {
                 return `hsl(${endPointCount * 80}, 80%, 50%)`;
               },
@@ -227,7 +227,7 @@ describe("spring", () => {
           );
 
           cy.mountSceneObject({
-            makeObjects: (random) => [
+            makeObjects: (random: PRNG) => [
               makeSpringSceneObject({
                 random,
                 initial: PosFns.new(50, 100),
@@ -237,7 +237,7 @@ describe("spring", () => {
             ],
             seed: "zzz",
             debugTrace: {
-              sources: (scene) => scene.getObjects(),
+              sources: (scene: SceneType) => scene.getObjects(),
               colour: () => {
                 return `hsl(${endPointCount * 80}, 80%, 50%)`;
               },

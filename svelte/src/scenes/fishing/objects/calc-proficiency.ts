@@ -1,10 +1,12 @@
 import { choose } from "../../../utils";
 import type { TalentId } from "../overlays/Talents/talents";
 
-export const levelToProficiency = (
-  level: number,
-  talents: readonly TalentId[]
-): number => {
+export const calcProficiency = (args: {
+  level: number;
+  talents: readonly TalentId[];
+}): number => {
+  const { level, talents } = args;
+
   if (level <= 1) {
     return 1;
   }
