@@ -1,6 +1,6 @@
 import fc from "fast-check";
 import { Subject } from "rxjs";
-import seedrandom from "seedrandom";
+import seedrandom, { type PRNG } from "seedrandom";
 import { z } from "zod";
 import {
   getDebugInfo,
@@ -8,9 +8,10 @@ import {
   PosFns,
   positionSchema,
   type SceneObject,
+  type SceneType,
 } from "../../../model";
 import { bobberBounds, makeBobber } from "../objects";
-import { levelToProficiency } from "../objects/level-to-proficiency";
+import { calcProficiency } from "../objects/calc-proficiency";
 
 describe("bobber", () => {
   let bobber: SceneObject | undefined;
@@ -36,7 +37,7 @@ describe("bobber", () => {
 
     cy.mountSceneObject({
       seed: overrides?.seed ?? "bobber",
-      makeObjects: (random) => [
+      makeObjects: (random: PRNG) => [
         makeSceneObject(random)({
           layerKey: "background",
           getPosition: () => PosFns.zero,
@@ -56,10 +57,10 @@ describe("bobber", () => {
       ],
       debugDraw$: debugDrawSub,
       debugTrace: {
-        sources: (scene) => scene.getObjects(),
+        sources: (scene: SceneType) => scene.getObjects(),
         colour: () => "orange",
       },
-      onSceneChange: (scene) => {
+      onSceneChange: (scene: SceneType) => {
         bobber = scene.getObjects().find((obj) => obj.typeName === "bobber");
       },
     }).then(() => {
@@ -130,7 +131,7 @@ describe("bobber", () => {
 
     describe("level 50", () => {
       beforeEach(() => {
-        mount({ proficiency: levelToProficiency(50) });
+        mount({ proficiency: calcProficiency({ level: 50, talents: [] }) });
       });
 
       it("lands", () => {
@@ -193,7 +194,7 @@ describe("bobber", () => {
 
             const bobber2 = makeBobber({
               onLand: () => {},
-              getProficiency: () => levelToProficiency(20),
+              getProficiency: () => calcProficiency({ level: 20, talents: [] }),
               random: seedrandom(seed),
             });
 

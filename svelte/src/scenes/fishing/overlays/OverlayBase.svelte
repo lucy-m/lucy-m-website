@@ -8,9 +8,13 @@
 
 <style>
   .wrapper {
-    padding: 16px;
+    --overlay-padding: 16px;
+    --overlay-background: hsl(208, 100%, 97%);
+    --overlay-background-dark: hsl(208, 30%, 85%);
+
+    padding: var(--overlay-padding);
     max-width: calc(100vw - 48px);
-    background-color: hsl(208, 100%, 97%);
+    background-color: var(--overlay-background);
   }
 
   .wrapper.narrow {

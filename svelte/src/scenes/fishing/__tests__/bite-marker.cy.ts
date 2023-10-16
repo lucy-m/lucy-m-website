@@ -1,4 +1,5 @@
-import { PosFns } from "../../../model";
+import type { PRNG } from "seedrandom";
+import { PosFns, type SceneType } from "../../../model";
 import { biteMarker } from "../objects/bite-marker";
 
 const interactive = Cypress.config("isInteractive");
@@ -14,7 +15,7 @@ describe("biteMarker", () => {
 
   it("works", () => {
     cy.mountSceneObject({
-      makeObjects: (random) => [
+      makeObjects: (random: PRNG) => [
         biteMarker({
           position: PosFns.new(100, 100),
           onInteract: cy.spy().as("onInteractSpy"),
@@ -22,8 +23,8 @@ describe("biteMarker", () => {
         }),
       ],
       debugTrace: {
-        sources: (scene) => scene.getObjects(),
-        colour: ({ obj }) => {
+        sources: (scene: SceneType) => scene.getObjects(),
+        colour: () => {
           return "blue";
         },
       },

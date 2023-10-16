@@ -1,5 +1,11 @@
 import { Subject } from "rxjs";
-import { PosFns, type Position } from "../../../model";
+import type { PRNG } from "seedrandom";
+import {
+  PosFns,
+  type Position,
+  type SceneObject,
+  type SceneType,
+} from "../../../model";
 import { makeCruisingBird } from "../cruising-bird";
 
 const interactive = Cypress.config("isInteractive");
@@ -14,15 +20,15 @@ describe("cruising bird", () => {
 
   it("works", () => {
     cy.mountSceneObject({
-      makeObjects: (seed) => [
+      makeObjects: (seed: PRNG) => [
         makeCruisingBird("bird", 10, [100, 400], seed),
         makeCruisingBird("bird", 10, [400, 700], seed),
         makeCruisingBird("bird", 10, [700, 1000], seed),
       ],
       seed: "abcde",
       debugTrace: {
-        sources: (scene) => scene.getObjects(),
-        colour: ({ obj, index }) => {
+        sources: (scene: SceneType) => scene.getObjects(),
+        colour: ({ obj, index }: { obj: SceneObject; index: number }) => {
           const flapUp = obj._getDebugInfo && obj._getDebugInfo()?.flapUp;
 
           const hue = (() => {
@@ -85,14 +91,16 @@ describe("cruising bird", () => {
     }
 
     cy.mountSceneObject({
-      makeObjects: (seed) => [makeCruisingBird("bird", 10, [100, 1000], seed)],
-      onSceneChange: (scene) => {
+      makeObjects: (seed: PRNG) => [
+        makeCruisingBird("bird", 10, [100, 1000], seed),
+      ],
+      onSceneChange: (scene: SceneType) => {
         birdPosition = scene.getObjects()[0]?.getPosition();
       },
       seed: "wwwwow",
       debugTrace: {
-        sources: (scene) => scene.getObjects(),
-        colour: ({ obj }) => {
+        sources: (scene: SceneType) => scene.getObjects(),
+        colour: ({ obj }: { obj: SceneObject }) => {
           const flapUp = obj._getDebugInfo && obj._getDebugInfo()?.flapUp;
 
           const lightness = (() => {
@@ -112,7 +120,7 @@ describe("cruising bird", () => {
       debugDraw$: debugDrawSub,
     });
 
-    const wait = (n: number) => (interactive ? cy.wait(n) : cy.steppedTick(n));
+    const wait = (n: number) => cy.interactiveWait(n, interactive);
 
     wait(2_000).then(clickBird);
 

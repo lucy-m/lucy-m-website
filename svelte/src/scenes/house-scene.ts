@@ -40,7 +40,7 @@ export const makeHouseScene: SceneSpec = ({ random, mountSvelteComponent }) => {
       getLayers: () => [
         {
           kind: "image",
-          assetKey: "fish1",
+          assetKey: "commonBrown.no-bg",
         },
       ],
       onInteract: () => [

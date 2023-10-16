@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { FishName } from "../../model";
 import { filterUndefined } from "../../utils";
+import type { TalentId } from "./overlays/Talents/talents";
 
 export const fishingSceneStateSchema = z
   .object({
@@ -9,6 +10,10 @@ export const fishingSceneStateSchema = z
     nextLevelXp: z.number(),
     totalXp: z.number(),
     caughtFish: z.array(z.string()).readonly(),
+    talents: z
+      .array(z.string())
+      .readonly()
+      .transform((s) => s as readonly TalentId[]),
   })
   .readonly();
 
@@ -20,6 +25,7 @@ export const initialFishingSceneState: FishingSceneState = {
   nextLevelXp: 30,
   totalXp: 0,
   caughtFish: [],
+  talents: [],
 };
 
 export type FishingSceneNotification = Readonly<
@@ -55,6 +61,7 @@ export const caughtFish = (
       nextLevelXp: Math.floor((state.nextLevelXp + 10) * 1.1),
       totalXp: newTotalXp,
       caughtFish,
+      talents: state.talents,
     };
     const notification: FishingSceneNotification = {
       kind: "level-up",
@@ -69,8 +76,19 @@ export const caughtFish = (
       nextLevelXp: state.nextLevelXp,
       totalXp: newTotalXp,
       caughtFish,
+      talents: state.talents,
     };
 
     return [newState, filterUndefined([newFishNotification])];
   }
+};
+
+export const talentsChanged = (
+  state: FishingSceneState,
+  talents: readonly TalentId[]
+): FishingSceneState => {
+  return {
+    ...state,
+    talents,
+  };
 };

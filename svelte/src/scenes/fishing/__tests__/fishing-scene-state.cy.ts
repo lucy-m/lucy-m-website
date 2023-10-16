@@ -1,39 +1,185 @@
-import { addXp, type FishingSceneState } from "../fishing-scene-state";
+import {
+  caughtFish,
+  talentsChanged,
+  type FishingSceneNotification,
+  type FishingSceneState,
+} from "../fishing-scene-state";
+import type { TalentId } from "../overlays/Talents/talents";
 
 describe("fishing scene state", () => {
-  const initialState: FishingSceneState = {
-    level: 3,
-    levelXp: 100,
-    nextLevelXp: 150,
-    totalXp: 300,
-  };
+  describe("caughtFish", () => {
+    describe("existing fish", () => {
+      describe("no level up", () => {
+        const initialState: FishingSceneState = {
+          level: 3,
+          levelXp: 100,
+          nextLevelXp: 150,
+          totalXp: 300,
+          caughtFish: ["commonBrown"],
+          talents: [],
+        };
 
-  it("works when no level up", () => {
-    const [newState, notification] = addXp(30, initialState);
+        const [newState, notification] = caughtFish(
+          "commonBrown",
+          initialState
+        );
 
-    expect(newState).to.deep.eq({
-      level: 3,
-      levelXp: 130,
-      nextLevelXp: 150,
-      totalXp: 330,
+        it("has correct state", () => {
+          const expected: FishingSceneState = {
+            level: 3,
+            levelXp: 110,
+            nextLevelXp: 150,
+            totalXp: 310,
+            caughtFish: ["commonBrown"],
+            talents: [],
+          };
+
+          expect(newState).to.deep.eq(expected);
+        });
+
+        it("has correct notification", () => {
+          expect(notification).to.be.empty;
+        });
+      });
+
+      describe("level up", () => {
+        const initialState: FishingSceneState = {
+          level: 3,
+          levelXp: 105,
+          nextLevelXp: 110,
+          totalXp: 300,
+          caughtFish: ["commonBrown"],
+          talents: [],
+        };
+
+        const [newState, notification] = caughtFish(
+          "commonBrown",
+          initialState
+        );
+
+        it("has correct state", () => {
+          const expected: FishingSceneState = {
+            level: 4,
+            levelXp: 5,
+            nextLevelXp: 132,
+            totalXp: 310,
+            caughtFish: ["commonBrown"],
+            talents: [],
+          };
+
+          expect(newState).to.deep.eq(expected);
+        });
+
+        it("has correct notification", () => {
+          const expected: FishingSceneNotification[] = [
+            {
+              kind: "level-up",
+              level: 4,
+            },
+          ];
+
+          expect(notification).to.deep.eq(expected);
+        });
+      });
     });
 
-    expect(notification).to.be.undefined;
+    describe("new fish", () => {
+      describe("no level up", () => {
+        const initialState: FishingSceneState = {
+          level: 3,
+          levelXp: 100,
+          nextLevelXp: 150,
+          totalXp: 300,
+          caughtFish: ["commonBrown"],
+          talents: [],
+        };
+
+        const [newState, notification] = caughtFish("commonGrey", initialState);
+
+        it("has correct state", () => {
+          const expected: FishingSceneState = {
+            level: 3,
+            levelXp: 110,
+            nextLevelXp: 150,
+            totalXp: 310,
+            caughtFish: ["commonBrown", "commonGrey"],
+            talents: [],
+          };
+
+          expect(newState).to.deep.eq(expected);
+        });
+
+        it("has correct notification", () => {
+          const expected: FishingSceneNotification[] = [
+            {
+              kind: "new-fish-type-caught",
+              fishType: "commonGrey",
+            },
+          ];
+
+          expect(notification).to.deep.eq(expected);
+        });
+      });
+
+      describe("level up", () => {
+        const initialState: FishingSceneState = {
+          level: 3,
+          levelXp: 105,
+          nextLevelXp: 110,
+          totalXp: 300,
+          caughtFish: ["commonBrown"],
+          talents: [],
+        };
+
+        const [newState, notification] = caughtFish("commonGrey", initialState);
+
+        it("has correct state", () => {
+          const expected: FishingSceneState = {
+            level: 4,
+            levelXp: 5,
+            nextLevelXp: 132,
+            totalXp: 310,
+            caughtFish: ["commonBrown", "commonGrey"],
+            talents: [],
+          };
+
+          expect(newState).to.deep.eq(expected);
+        });
+
+        it("has correct notification", () => {
+          const expected: FishingSceneNotification[] = [
+            {
+              kind: "level-up",
+              level: 4,
+            },
+            {
+              kind: "new-fish-type-caught",
+              fishType: "commonGrey",
+            },
+          ];
+
+          expect(notification).to.deep.eq(expected);
+        });
+      });
+    });
   });
 
-  it("works when level up", () => {
-    const [newState, notification] = addXp(80, initialState);
+  describe("talentsChanged", () => {
+    it("sets talents", () => {
+      const initialState: FishingSceneState = {
+        level: 3,
+        levelXp: 100,
+        nextLevelXp: 150,
+        totalXp: 300,
+        caughtFish: [],
+        talents: [],
+      };
 
-    expect(newState).to.deep.eq({
-      level: 4,
-      levelXp: 30,
-      nextLevelXp: 176,
-      totalXp: 380,
-    });
+      const newTalents: readonly TalentId[] = ["proficiency", "idle"];
 
-    expect(notification).to.deep.eq({
-      kind: "level-up",
-      level: 4,
+      const newState = talentsChanged(initialState, newTalents);
+
+      expect(newState.talents).to.deep.eq(newTalents);
     });
   });
 });

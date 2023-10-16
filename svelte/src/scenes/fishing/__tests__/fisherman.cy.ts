@@ -1,5 +1,5 @@
 import { Subject } from "rxjs";
-import seedrandom from "seedrandom";
+import seedrandom, { type PRNG } from "seedrandom";
 import { z } from "zod";
 import {
   PosFns,
@@ -63,7 +63,7 @@ describe("fisherman", () => {
 
     const mount = (overrides?: { getCurrentLevel?: () => number }) => {
       cy.mountSceneObject({
-        makeObjects: (random) => [
+        makeObjects: (random: PRNG) => [
           makeSceneObject(random)({
             layerKey: "background",
             getPosition: () => PosFns.zero,
@@ -78,6 +78,7 @@ describe("fisherman", () => {
             random,
             onFishRetrieved: cy.spy().as("onFishRetrieved"),
             getCurrentLevel: overrides?.getCurrentLevel ?? (() => 0),
+            getTalents: () => [],
           }),
         ],
         debugDraw$: debugDrawSub,
@@ -92,18 +93,18 @@ describe("fisherman", () => {
           "reeling",
         ],
         seed: "some-seed-12341",
-        onSceneChange: (scene) => {
+        onSceneChange: (scene: SceneType) => {
           lastScene = scene;
         },
         debugTrace: {
-          sources: (scene) =>
+          sources: (scene: SceneType) =>
             scene
               .getObjects()
               .filter(
                 (obj) =>
                   obj.typeName === "bobber" || obj.typeName === "flying-fish"
               ),
-          colour: ({ obj }) => {
+          colour: ({ obj }: { obj: SceneObject }) => {
             if (obj.typeName === "bobber") {
               return "mediumaquamarine";
             } else if (obj.typeName === "flying-fish") {
@@ -376,6 +377,7 @@ describe("fisherman", () => {
         random,
         onFishRetrieved: cy.spy().as("fishRetrieved"),
         getCurrentLevel: () => 10,
+        getTalents: () => [],
       });
 
       const getFishingState = () =>

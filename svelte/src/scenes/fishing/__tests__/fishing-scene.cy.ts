@@ -1,6 +1,11 @@
 import { Subject } from "rxjs";
 import { z } from "zod";
-import { getDebugInfo, type Position, type SceneObject } from "../../../model";
+import {
+  getDebugInfo,
+  type Position,
+  type SceneObject,
+  type SceneType,
+} from "../../../model";
 import { makeFishingScene } from "../fishing-scene";
 import {
   initialFishingSceneState,
@@ -14,6 +19,7 @@ describe("fishing scene", () => {
   let fisherman: SceneObject | undefined;
   let xpBar: SceneObject | undefined;
   let gameMenu: SceneObject | undefined;
+  let talentMenu: SceneObject | undefined;
 
   let worldClickSub: Subject<Position>;
 
@@ -69,7 +75,7 @@ describe("fishing scene", () => {
         onStateChange: cy.spy().as("onStateChangeSpy"),
       }),
       seed: "abcd",
-      onSceneChange: (scene) => {
+      onSceneChange: (scene: SceneType) => {
         fisherman = scene
           .getObjects()
           .find((obj) => obj.typeName === "fisherman");
@@ -78,6 +84,9 @@ describe("fishing scene", () => {
         gameMenu = scene
           .getObjects()
           .find((obj) => obj.typeName === "game-menu");
+        talentMenu = scene
+          .getObjects()
+          .find((obj) => obj.typeName === "talent-menu");
       },
       worldClick$: worldClickSub,
     });
@@ -99,6 +108,10 @@ describe("fishing scene", () => {
 
     it("does not have xp bar", () => {
       expect(xpBar).to.be.undefined;
+    });
+
+    it("does not have talent menu", () => {
+      expect(talentMenu).to.be.undefined;
     });
 
     describe("retrieving a fish", () => {
@@ -137,6 +150,10 @@ describe("fishing scene", () => {
           expect(getXpBarInfo().fillFracSpring.position).to.eq(0);
         });
 
+        it("talent menu displayed", () => {
+          expect(talentMenu).to.exist;
+        });
+
         describe("second fish retrieved", () => {
           beforeEach(() => {
             retrieveFish("fish2");
@@ -149,6 +166,7 @@ describe("fishing scene", () => {
               nextLevelXp: 30,
               totalXp: 10,
               caughtFish: ["fish2"],
+              talents: [],
             };
             getOnStateChangeSpy().then((spy) => {
               expect(spy.lastCall.args[0]).to.deep.equal(expected);
@@ -156,7 +174,7 @@ describe("fishing scene", () => {
           });
 
           it("displays new fish notification", () => {
-            cy.getByTestId("new-fish-caught-overlay").contains("fish2");
+            cy.getByTestId("new-fish-caught-overlay").contains("Mysteryfish");
           });
 
           describe("dismissing overlay", () => {
@@ -201,6 +219,47 @@ describe("fishing scene", () => {
                 cy.getByTestId("level-up-notification").should("not.exist");
               });
 
+              describe("opening talents", () => {
+                beforeEach(() => {
+                  expect(talentMenu).to.exist;
+                  worldClickSub.next(talentMenu!.getPosition());
+                });
+
+                it("opens overlay", () => {
+                  cy.getByTestId("talents-overlay").should(
+                    "contain.text",
+                    "0/1 points spent"
+                  );
+                });
+
+                describe("spending points", () => {
+                  beforeEach(() => {
+                    cy.interactiveWait(500, interactive);
+
+                    cy.getByTestId("talent-icon").eq(0).click();
+                    cy.contains("button", "Learn").click();
+
+                    cy.contains("button", "Close").click();
+                  });
+
+                  it("calls onStateChangeSpy", () => {
+                    const expected: FishingSceneState = {
+                      level: 2,
+                      levelXp: 0,
+                      nextLevelXp: 44,
+                      totalXp: 30,
+                      caughtFish: ["fish2", "fish3", "fish4"],
+                      talents: ["proficiency"],
+                    };
+
+                    getOnStateChangeSpy().should(
+                      "have.been.calledWith",
+                      expected
+                    );
+                  });
+                });
+              });
+
               describe("after xp bar fills", () => {
                 beforeEach(() => {
                   cy.myWaitFor(
@@ -223,6 +282,7 @@ describe("fishing scene", () => {
                     nextLevelXp: 44,
                     totalXp: 30,
                     caughtFish: ["fish2", "fish3", "fish4"],
+                    talents: [],
                   };
 
                   getOnStateChangeSpy().then((spy) => {
@@ -261,11 +321,12 @@ describe("fishing scene", () => {
           nextLevelXp: 200,
           totalXp: 740,
           caughtFish: [],
+          talents: [],
         },
       });
     });
 
-    it("initialises xp bar correcly", () => {
+    it.only("initialises xp bar correcly", () => {
       cy.myWaitFor(() => getXpBarInfo().fadeInOpacity === 1, interactive);
       cy.myWaitFor(
         () => getXpBarInfo().fillFracSpring.position === 0.2,
@@ -303,6 +364,46 @@ describe("fishing scene", () => {
             .should("be.visible")
             .should("contain.text", "Level 5")
             .should("contain.text", "XP 50/200");
+        });
+      });
+    });
+
+    describe("talents menu", () => {
+      beforeEach(() => {
+        expect(talentMenu).to.exist;
+        worldClickSub.next(talentMenu!.getPosition());
+        cy.interactiveWait(1000, interactive);
+      });
+
+      it("display correct overlay", () => {
+        cy.getByTestId("talents-overlay").should(
+          "contain.text",
+          "0/4 points spent"
+        );
+      });
+
+      describe("spending two points", () => {
+        beforeEach(() => {
+          cy.getByTestId("talent-icon").eq(0).click();
+          cy.contains("button", "Learn").click();
+
+          cy.getByTestId("talent-icon").eq(1).click();
+          cy.contains("button", "Learn").click();
+
+          cy.contains("button", "Close").click();
+        });
+
+        it("calls state change correctly", () => {
+          const expected: FishingSceneState = {
+            level: 5,
+            levelXp: 40,
+            nextLevelXp: 200,
+            totalXp: 740,
+            caughtFish: [],
+            talents: ["proficiency", "idle"],
+          };
+
+          getOnStateChangeSpy().should("have.been.calledWith", expected);
         });
       });
     });

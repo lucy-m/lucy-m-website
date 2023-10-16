@@ -2,7 +2,7 @@ import type { PRNG } from "seedrandom";
 import { OscillatorFns, type Oscillator } from "../oscillator";
 import { PosFns } from "../position";
 import { makeSceneObject } from "../scene-object";
-import type { SceneObject } from "../scene-types";
+import type { SceneObject, SceneType } from "../scene-types";
 
 describe("oscillator", () => {
   // const interactive = Cypress.config("isInteractive");
@@ -46,7 +46,7 @@ describe("oscillator", () => {
     };
 
     cy.mountSceneObject({
-      makeObjects: (random) => [
+      makeObjects: (random: PRNG) => [
         makeOscillatorSceneObject({ random }),
         makeOscillatorSceneObject({
           random,
@@ -63,8 +63,9 @@ describe("oscillator", () => {
       ],
       seed: "fry",
       debugTrace: {
-        sources: (scene) => scene.getObjects(),
-        colour: ({ index }) => `hsl(${index * 60}, 80%, 60%)`,
+        sources: (scene: SceneType) => scene.getObjects(),
+        colour: ({ index }: { index: number }) =>
+          `hsl(${index * 60}, 80%, 60%)`,
       },
     });
 

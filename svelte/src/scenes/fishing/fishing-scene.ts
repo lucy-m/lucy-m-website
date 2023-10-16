@@ -5,7 +5,9 @@ import {
   combineLatest,
   concatMap,
   first,
+  from,
   map,
+  mergeMap,
   pairwise,
 } from "rxjs";
 import type { FishName, SceneEventOrAction, SceneSpec } from "../../model";
@@ -16,16 +18,20 @@ import {
   caughtFish,
   fishingSceneStateSchema,
   initialFishingSceneState,
+  talentsChanged,
   type FishingSceneNotification,
   type FishingSceneState,
 } from "./fishing-scene-state";
 import { fishingMan, makeXpBar } from "./objects";
+import { makeTalentMenuIcon } from "./objects/talent-menu-icon";
 import {
   FirstFishNotification,
   GameMenu,
   LevelUpNotification,
   NewFishCaught,
 } from "./overlays";
+import { TalentsOverlay } from "./overlays/Talents";
+import type { TalentId } from "./overlays/Talents/talents";
 
 const layerOrder = [
   "bg",
@@ -45,7 +51,8 @@ export const makeFishingScene =
     initialState: FishingSceneState | undefined;
     onStateChange: (state: FishingSceneState | undefined) => void;
   }): SceneSpec =>
-  ({ random, mountSvelteComponent }) => {
+  ({ random, mountSvelteComponent }) =>
+  (images, onSceneChange) => {
     const makeSceneObjectBound = makeSceneObject(random);
 
     const stateSub = new BehaviorSubject<FishingSceneState | undefined>(
@@ -103,18 +110,40 @@ export const makeFishingScene =
       onStationary,
     });
 
+    const talentMenuIcon = makeTalentMenuIcon({
+      random,
+      state$: stateSub,
+      openTalentMenu: (state) => {
+        mountSvelteComponent(TalentsOverlay, {
+          images,
+          learned: state.talents,
+          totalTalentPoints: state.level - 1,
+          onClosed: (talents: readonly TalentId[]) => {
+            stateSub.next(talentsChanged(stateSub.value ?? state, talents));
+          },
+        });
+      },
+    });
+
     const events$: Observable<SceneEventOrAction> = stateSub.pipe(
       pairwise(),
       chooseOp(([previous, next]) => {
         if (!previous && next) {
-          return {
-            kind: "addObject",
-            makeObject: () => xpBar,
-          } as SceneEventOrAction;
+          return [
+            {
+              kind: "addObject",
+              makeObject: () => xpBar,
+            },
+            {
+              kind: "addObject",
+              makeObject: () => talentMenuIcon,
+            },
+          ] as SceneEventOrAction[];
         } else {
           return undefined;
         }
-      })
+      }),
+      mergeMap((v) => from(v))
     );
 
     const objects = filterUndefined([
@@ -157,6 +186,7 @@ export const makeFishingScene =
           }
         },
         getCurrentLevel: () => stateSub.value?.level ?? 0,
+        getTalents: () => stateSub.value?.talents ?? [],
       }),
       makeSceneObjectBound({
         layerKey: "ui",
@@ -175,6 +205,7 @@ export const makeFishingScene =
           });
         },
       }),
+      stateSub.value !== undefined ? talentMenuIcon : undefined,
       stateSub.value !== undefined ? xpBar : undefined,
     ]);
 
@@ -184,7 +215,7 @@ export const makeFishingScene =
       layerOrder,
       objects,
       onDestroy: () => sub.unsubscribe(),
-    });
+    })(images, onSceneChange);
   };
 
 export const makeFishingSceneWithLocalStorage: SceneSpec = (() => {

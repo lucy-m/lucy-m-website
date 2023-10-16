@@ -1,4 +1,5 @@
 import { Subject } from "rxjs";
+import type { PRNG } from "seedrandom";
 import {
   PosFns,
   type Position,
@@ -29,13 +30,13 @@ describe("feather", () => {
 
   it("works", () => {
     cy.mountSceneObject({
-      makeObjects: (seed) => [
+      makeObjects: (seed: PRNG) => [
         makeFeather("feather", PosFns.new(500, 50), PosFns.new(1, 0), seed),
       ],
       seed: "abcd",
       debugTrace: {
-        sources: (scene) => scene.getObjects(),
-        colour: ({ obj }) => {
+        sources: (scene: SceneType) => scene.getObjects(),
+        colour: ({ obj }: { obj: SceneObject }) => {
           const rotation = getFeatherRotation(obj);
           return rotation !== undefined
             ? `hsl(${rotation}, 50%, 60%)`
@@ -57,11 +58,11 @@ describe("feather", () => {
 
     const render = () => {
       cy.mountSceneObject({
-        makeObjects: (seed) => [
+        makeObjects: (seed: PRNG) => [
           makeFeather("feather", PosFns.new(500, 50), PosFns.new(1, 0), seed),
         ],
         seed: "abcd",
-        onSceneChange: (scene) => {
+        onSceneChange: (scene: SceneType) => {
           const feather = scene.getObjects()[0];
           if (feather) {
             const position = feather.getPosition();
@@ -73,8 +74,8 @@ describe("feather", () => {
           }
         },
         debugTrace: {
-          sources: (scene) => scene.getObjects(),
-          colour: ({ obj }) => {
+          sources: (scene: SceneType) => scene.getObjects(),
+          colour: ({ obj }: { obj: SceneObject }) => {
             const rotation = getFeatherRotation(obj);
             return rotation !== undefined
               ? `hsl(${rotation}, 50%, 60%)`
