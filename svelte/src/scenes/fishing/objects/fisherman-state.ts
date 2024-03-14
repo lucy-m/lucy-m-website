@@ -3,6 +3,7 @@ import type { FishName, SceneObject } from "../../../model";
 export type AnyFishingState = Readonly<
   | {
       kind: "idle";
+      idleTimer: number;
     }
   | {
       kind: "cast-out-swing";
@@ -21,6 +22,7 @@ export type AnyFishingState = Readonly<
       fishType: FishName;
       bobber: SceneObject;
       biteMarker: SceneObject;
+      idleTimer: number;
     }
   | {
       kind: "reeling";
@@ -79,6 +81,18 @@ export type FishingAction<T extends AnyFishingAction["kind"]> = Extract<
   { kind: T }
 >;
 
+export const makeIdle = (proficiency: number): FishingState<"idle"> => ({
+  kind: "idle",
+  idleTimer: Math.floor(500 * proficiency),
+});
+
+const makeCastOutSwing = (
+  proficiency: number
+): FishingState<"cast-out-swing"> => ({
+  kind: "cast-out-swing",
+  timer: Math.floor(50 * proficiency),
+});
+
 export const makeFishingStateReducer =
   (args: {
     makeBobber: (prevState: FishingState<"cast-out-swing">) => SceneObject;
@@ -86,6 +100,7 @@ export const makeFishingStateReducer =
       prevState: FishingState<"cast-out-waiting">
     ) => SceneObject;
     makeFlyingFish: (prevState: FishingState<"reeling">) => SceneObject;
+    canAutoIdle: () => boolean;
   }) =>
   (
     action: AnyFishingAction,
@@ -107,6 +122,22 @@ export const makeFishingStateReducer =
           } else {
             return { ...state, timer: state.timer - 1 };
           }
+        } else if ("idleTimer" in state && args.canAutoIdle()) {
+          if (state.idleTimer < 0) {
+            switch (state.kind) {
+              case "idle":
+                return makeCastOutSwing(proficiency);
+
+              case "got-a-bite":
+                return {
+                  kind: "reeling",
+                  fishType: state.fishType,
+                  bobber: state.bobber,
+                };
+            }
+          } else {
+            return { ...state, idleTimer: state.idleTimer - 1 };
+          }
         } else {
           return state;
         }
@@ -114,10 +145,7 @@ export const makeFishingStateReducer =
 
       case "start-cast-out-swing": {
         if (state.kind === "idle") {
-          return {
-            kind: "cast-out-swing",
-            timer: Math.floor(50 * proficiency),
-          };
+          return makeCastOutSwing(proficiency);
         } else {
           return state;
         }
@@ -141,6 +169,7 @@ export const makeFishingStateReducer =
             fishType: action.fishType,
             biteMarker: args.makeFishBiteMarker(state),
             bobber: state.bobber,
+            idleTimer: Math.floor(300 * proficiency),
           };
         } else {
           return state;
@@ -173,7 +202,7 @@ export const makeFishingStateReducer =
 
       case "fish-retrieved": {
         if (state.kind === "retrieving-fish") {
-          return { kind: "idle" };
+          return makeIdle(proficiency);
         } else {
           return state;
         }

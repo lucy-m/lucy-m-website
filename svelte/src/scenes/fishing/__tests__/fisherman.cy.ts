@@ -1,3 +1,4 @@
+import Sinon from "cypress/types/sinon";
 import { Subject } from "rxjs";
 import seedrandom, { type PRNG } from "seedrandom";
 import { z } from "zod";
@@ -11,6 +12,7 @@ import {
 } from "../../../model";
 import type { AnyFishingState } from "../objects";
 import { bobberBounds, fishingMan } from "../objects";
+import type { TalentId } from "../overlays/Talents/talents";
 
 describe("fisherman", () => {
   describe("example", () => {
@@ -61,7 +63,10 @@ describe("fisherman", () => {
       return debugInfo.state as AnyFishingState;
     };
 
-    const mount = (overrides?: { getCurrentLevel?: () => number }) => {
+    const mount = (overrides?: {
+      getCurrentLevel?: () => number;
+      getTalents?: () => TalentId[];
+    }) => {
       cy.mountSceneObject({
         makeObjects: (random: PRNG) => [
           makeSceneObject(random)({
@@ -78,7 +83,7 @@ describe("fisherman", () => {
             random,
             onFishRetrieved: cy.spy().as("onFishRetrieved"),
             getCurrentLevel: overrides?.getCurrentLevel ?? (() => 0),
-            getTalents: () => [],
+            getTalents: overrides?.getTalents ?? (() => []),
           }),
         ],
         debugDraw$: debugDrawSub,
@@ -114,6 +119,9 @@ describe("fisherman", () => {
         },
       });
     };
+
+    const getOnFishRetrieved = (args?: { log?: boolean }) =>
+      cy.get<Sinon.SinonSpy>("@onFishRetrieved", { log: args?.log });
 
     beforeEach(() => {
       if (!interactive) {
@@ -288,7 +296,7 @@ describe("fisherman", () => {
 
                 describe("fish is retrieved", () => {
                   beforeEach(() => {
-                    cy.get("@onFishRetrieved").should("not.have.been.called");
+                    getOnFishRetrieved().should("not.have.been.called");
                     cy.myWaitFor(
                       () => getFlyingFish() === undefined,
                       interactive
@@ -296,7 +304,7 @@ describe("fisherman", () => {
                   });
 
                   it("calls callback", () => {
-                    cy.get("@onFishRetrieved").should("have.been.calledOnce");
+                    getOnFishRetrieved().should("have.been.calledOnce");
                   });
                 });
               });
@@ -364,6 +372,144 @@ describe("fisherman", () => {
               reelingOverlay: false,
               flyingFish: false,
             });
+          });
+        });
+      });
+    });
+
+    describe("with idle talent", () => {
+      describe("walkthrough", () => {
+        beforeEach(() => {
+          mount({
+            getTalents: () => ["idle"],
+          });
+        });
+
+        it("scene has correct objects", () => {
+          assertCorrectObjects({
+            fisherman: true,
+            bobber: false,
+            biteMarker: false,
+            reelingOverlay: false,
+            flyingFish: false,
+          });
+        });
+
+        describe("waiting for cast out", () => {
+          beforeEach(() => {
+            cy.myWaitFor(
+              () => getFishermanState().kind === "cast-out-swing",
+              interactive,
+              { timeout: 20000 }
+            );
+          });
+
+          describe("bite marker appears", () => {
+            beforeEach(() => {
+              cy.myWaitFor(() => getBiteMarker() !== undefined, interactive, {
+                timeout: 10000,
+              });
+            });
+
+            describe("reeling auto starts", () => {
+              beforeEach(() => {
+                cy.myWaitFor(
+                  () => getReelingOverlay() !== undefined,
+                  interactive,
+                  {
+                    timeout: 15000,
+                  }
+                );
+              });
+
+              describe("reeling finishes", () => {
+                beforeEach(() => {
+                  cy.interactiveWait(1000, interactive, { log: false });
+
+                  cy.myWaitFor(
+                    () => getReelingOverlay() === undefined,
+                    interactive,
+                    {
+                      timeout: 120000,
+                    }
+                  );
+                });
+
+                describe("fish is retrieved", () => {
+                  beforeEach(() => {
+                    getOnFishRetrieved().should("not.have.been.called");
+                    cy.myWaitFor(
+                      () => getFlyingFish() === undefined,
+                      interactive
+                    );
+                  });
+
+                  it("calls callback", () => {
+                    getOnFishRetrieved().should("have.been.calledOnce");
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+
+      describe("single level non-interactive", () => {
+        beforeEach(() => {
+          cy.clock();
+        });
+
+        describe("level 1", () => {
+          it("completes within 2.5 min", () => {
+            mount({
+              getCurrentLevel: () => 1,
+              getTalents: () => ["idle"],
+            });
+
+            cy.myWaitFor(
+              () =>
+                getOnFishRetrieved({ log: false }).then(
+                  (spy) => spy.callCount === 1
+                ),
+              false,
+              { timeout: 150_000, logFinish: true }
+            );
+          });
+        });
+
+        describe("level 50", () => {
+          it("completes within 40s", () => {
+            mount({
+              getCurrentLevel: () => 50,
+              getTalents: () => ["idle"],
+            });
+
+            cy.myWaitFor(
+              () =>
+                getOnFishRetrieved({ log: false }).then(
+                  (spy) => spy.callCount === 1
+                ),
+              false,
+              { timeout: 40000, logFinish: true }
+            );
+          });
+        });
+
+        describe("level 100", () => {
+          it("completes within 20s", () => {
+            mount({
+              getCurrentLevel: () => 100,
+              getTalents: () => ["idle"],
+            });
+
+            cy.myWaitFor(
+              () =>
+                getOnFishRetrieved({ log: false }).then(
+                  (spy) => spy.callCount === 1
+                ),
+              false,
+              { timeout: 20_000, logFinish: true }
+            );
           });
         });
       });

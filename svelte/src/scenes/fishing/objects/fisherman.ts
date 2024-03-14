@@ -24,6 +24,7 @@ import { calcProficiency } from "./calc-proficiency";
 import { makeFishPond } from "./fish-pond";
 import {
   makeFishingStateReducer,
+  makeIdle,
   toFlatState,
   type AnyFishingAction,
   type AnyFishingState,
@@ -40,15 +41,16 @@ export const fishingMan = (args: {
   getCurrentLevel: () => number;
 }): SceneObject => {
   const { random } = args;
-  const currentState = new BehaviorSubject<AnyFishingState>(
-    args.initialState ?? { kind: "idle" }
-  );
   const getProficiency = () => {
     return calcProficiency({
       level: args.getCurrentLevel(),
       talents: args.getTalents(),
     });
   };
+
+  const currentState = new BehaviorSubject<AnyFishingState>(
+    args.initialState ?? makeIdle(getProficiency())
+  );
 
   let interactShadow = OscillatorFns.make({
     amplitude: 10,
@@ -91,6 +93,9 @@ export const fishingMan = (args: {
         },
         getProficiency,
       }),
+    canAutoIdle: () => {
+      return args.getTalents().includes("idle");
+    },
   });
 
   const applyFishingAction = (action: AnyFishingAction): void => {

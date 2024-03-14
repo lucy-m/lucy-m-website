@@ -326,7 +326,7 @@ describe("fishing scene", () => {
       });
     });
 
-    it.only("initialises xp bar correcly", () => {
+    it("initialises xp bar correcly", () => {
       cy.myWaitFor(() => getXpBarInfo().fadeInOpacity === 1, interactive);
       cy.myWaitFor(
         () => getXpBarInfo().fillFracSpring.position === 0.2,
@@ -405,6 +405,48 @@ describe("fishing scene", () => {
 
           getOnStateChangeSpy().should("have.been.calledWith", expected);
         });
+      });
+    });
+  });
+
+  describe("with talents", () => {
+    beforeEach(() => {
+      renderFishingScene({
+        initialState: {
+          level: 5,
+          levelXp: 40,
+          nextLevelXp: 200,
+          totalXp: 740,
+          caughtFish: [],
+          talents: ["proficiency", "idle"],
+        },
+      });
+    });
+
+    describe("talents menu", () => {
+      beforeEach(() => {
+        expect(talentMenu).to.exist;
+        worldClickSub.next(talentMenu!.getPosition());
+        cy.interactiveWait(1000, interactive);
+      });
+
+      it("display correct overlay", () => {
+        cy.getByTestId("talents-overlay").should(
+          "contain.text",
+          "2/4 points spent"
+        );
+
+        cy.get("[data-talentname='Learning the ropes']").should(
+          "have.attr",
+          "data-learned",
+          "true"
+        );
+
+        cy.get("[data-talentname='Incredible multitasking']").should(
+          "have.attr",
+          "data-learned",
+          "true"
+        );
       });
     });
   });

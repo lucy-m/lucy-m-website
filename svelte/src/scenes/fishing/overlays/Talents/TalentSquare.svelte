@@ -44,6 +44,8 @@
     use:drawImage={{ assetKey: talentInfo.image }}
     class="talent-tree-item"
     data-testid="talent-icon"
+    data-talentname={talentInfo.name}
+    data-learned={learned}
     class:unlearned={!learned}
     on:click={() => {
       if (selected) {

@@ -128,11 +128,12 @@ const interactiveWait = (
 };
 
 const myWaitFor = (
-  predicate: () => boolean,
+  predicate: () => boolean | Cypress.Chainable<boolean>,
   interactive: boolean,
   options?: {
     /** Maximum time in ms to wait. Default 4000ms. */
     timeout?: number;
+    logFinish?: boolean;
   }
 ): Cypress.Chainable => {
   const step = 100;
@@ -140,13 +141,36 @@ const myWaitFor = (
 
   const inner = (progress: number): Cypress.Chainable => {
     return interactiveWait(step, interactive, { log: false }).then(() => {
-      if (predicate()) {
-        return;
-      } else {
-        if (progress > timeout) {
-          throw new Error(`Maximum waitfor timeout of ${timeout}ms reached`);
+      const value = predicate();
+
+      if (typeof value === "boolean") {
+        if (value) {
+          if (options?.logFinish) {
+            cy.log(`Wait finished in ${progress}ms`);
+          }
+          return;
+        } else {
+          if (progress > timeout) {
+            throw new Error(`Maximum waitfor timeout of ${timeout}ms reached`);
+          }
+          return inner(progress + step);
         }
-        return inner(progress + step);
+      } else {
+        return value.then((resolved) => {
+          if (resolved) {
+            if (options?.logFinish) {
+              cy.log(`Wait finished in ${progress}ms`);
+            }
+            return;
+          } else {
+            if (progress > timeout) {
+              throw new Error(
+                `Maximum waitfor timeout of ${timeout}ms reached`
+              );
+            }
+            return inner(progress + step);
+          }
+        });
       }
     });
   };

@@ -17,7 +17,7 @@ export const reelingOverlay = (args: {
   const yOffScreen = -1400;
   const yOnScreen = -100;
   const speedRatio = Math.pow(args.getProficiency(), -1.5);
-  const minSpeed = 0.3 * speedRatio;
+  const minSpeed = 0.5 * speedRatio;
 
   let position = PosFns.new(-200, yOffScreen);
 
