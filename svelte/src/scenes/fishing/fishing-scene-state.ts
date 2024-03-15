@@ -22,7 +22,7 @@ export type FishingSceneState = z.infer<typeof fishingSceneStateSchema>;
 export const initialFishingSceneState: FishingSceneState = {
   level: 1,
   levelXp: 0,
-  nextLevelXp: 30,
+  nextLevelXp: 20,
   totalXp: 0,
   caughtFish: [],
   talents: [],
@@ -58,7 +58,7 @@ export const caughtFish = (
     const newState: FishingSceneState = {
       level: state.level + 1,
       levelXp: newLevelXp - state.nextLevelXp,
-      nextLevelXp: Math.floor((state.nextLevelXp + 10) * 1.1),
+      nextLevelXp: Math.floor((state.nextLevelXp + 5) * 1.1),
       totalXp: newTotalXp,
       caughtFish,
       talents: state.talents,

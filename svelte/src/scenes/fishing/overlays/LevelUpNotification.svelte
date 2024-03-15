@@ -11,6 +11,7 @@
     startWith(10),
     tap((i) => {
       if (i === 0) {
+        onClosed();
         unmountSelf();
       }
     })
