@@ -409,7 +409,7 @@ describe("fishing scene", () => {
     });
   });
 
-  describe("with talents", () => {
+  describe("with idle talent", () => {
     beforeEach(() => {
       renderFishingScene({
         initialState: {
@@ -447,6 +447,32 @@ describe("fishing scene", () => {
           "data-learned",
           "true"
         );
+      });
+    });
+
+    describe("fish overlay", () => {
+      beforeEach(() => {
+        retrieveFish("fish2");
+        cy.interactiveWait(100, interactive);
+        cy.getByTestId("new-fish-caught-overlay").should("be.visible");
+      });
+
+      it("auto dismisses after 10s", () => {
+        cy.interactiveWait(10_000, interactive);
+        cy.getByTestId("new-fish-caught-overlay").should("not.exist");
+      });
+    });
+
+    describe.only("level up", () => {
+      beforeEach(() => {
+        retrieveFish("rareCandy");
+        dismissFishCaughtOverlay();
+        cy.getByTestId("level-up-notification").should("be.visible");
+      });
+
+      it.only("auto dismisses after 10s", () => {
+        cy.interactiveWait(10_000, interactive);
+        cy.getByTestId("level-up-notification").should("not.exist");
       });
     });
   });

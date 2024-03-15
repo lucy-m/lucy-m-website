@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { interval, map, startWith, tap } from "rxjs";
   import { getFishData } from "../fish-data";
   import OverlayBase from "./OverlayBase.svelte";
 
@@ -6,6 +7,16 @@
   export let fishType: string;
 
   const fishData = getFishData(fishType);
+
+  const timeRemaining = interval(1000).pipe(
+    map((i) => 9 - i),
+    startWith(10),
+    tap((i) => {
+      if (i === 0) {
+        unmountSelf();
+      }
+    })
+  );
 </script>
 
 <OverlayBase width="wide">
@@ -27,7 +38,7 @@
         <img src={fishData.backgroundSrc} alt="" />
       </div>
     </div>
-    <button on:click={unmountSelf}>Cool!</button>
+    <button on:click={unmountSelf}>Cool! ({$timeRemaining})</button>
   </div>
 </OverlayBase>
 

@@ -40,7 +40,7 @@ export const caughtFish = (
   fishType: FishName,
   state: FishingSceneState
 ): [FishingSceneState, FishingSceneNotification[]] => {
-  const xp = 10;
+  const xp = fishType === "rareCandy" ? state.nextLevelXp - state.levelXp : 10;
   const newLevelXp = state.levelXp + xp;
   const newTotalXp = state.totalXp + xp;
 
@@ -63,6 +63,7 @@ export const caughtFish = (
       caughtFish,
       talents: state.talents,
     };
+
     const notification: FishingSceneNotification = {
       kind: "level-up",
       level: newState.level,

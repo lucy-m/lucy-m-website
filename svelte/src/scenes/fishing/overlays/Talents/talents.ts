@@ -34,7 +34,7 @@ export const getTalentInfo = (id: TalentId): TalentInfo => {
         name: "Learning the ropes",
         image: "talent.placeholder",
         description: [
-          "As you level up you will gain more *proficiency*. This will make fishing quicker.",
+          "As you level up your fisherman will gain more *proficiency*. This will make fishing quicker.",
           "Gain 8% *proficiency*.",
         ],
       };
@@ -42,7 +42,10 @@ export const getTalentInfo = (id: TalentId): TalentInfo => {
       return {
         name: "Incredible multitasking",
         image: "talent.placeholder",
-        description: nyiDescription,
+        description: [
+          "While you're fishing you can also do other things. Like, for example, fishing.",
+          "Your fisherman will automatically fish for you (at a very gentle pace, as they are a bit of a slacker).",
+        ],
       };
     case "events":
       return {

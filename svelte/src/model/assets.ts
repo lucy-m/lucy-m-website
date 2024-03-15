@@ -4,6 +4,8 @@ const fishPaths = {
   commonBrown: "/assets/scene-fishing/fish/1_brown.png",
   commonGrey: "/assets/scene-fishing/fish/2_grey.png",
   commonBrownGrey: "/assets/scene-fishing/fish/3_brown_grey.png",
+  // LTODO: Add asset for rareCandy fish
+  rareCandy: "/assets/scene-fishing/fish/3_brown_grey.png",
 } as const;
 
 export type FishName = keyof typeof fishPaths;
