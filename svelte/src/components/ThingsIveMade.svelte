@@ -28,7 +28,7 @@
       images={fanImages}
       targetImageSize={400}
       text={[
-        "I do not have the luxury of wiping sweat of my brow for self-imposed reasons, so I find a hand fan an essential item to carry in my day-to-day life. " +
+        "I do not have the luxury of wiping sweat off my brow for self-imposed reasons, so I find a hand fan an essential item to carry in my day-to-day life. " +
           "Like any good drag queen waiting for their chicken nuggets in an overly warm McDonalds, whipping out the hand fan with a quick sassy hand flick " +
           "lets those around me know I mean BUSINESS. Or that I have far too much time on my hands? Also great for making friends in night clubs.",
         "I'm particularly proud of the comic sans hand fan as I a) painted it by hand, and b) came up with the pun myself.",
