@@ -1,6 +1,7 @@
 import type { ComponentProps, ComponentType } from "svelte";
 import { Scene, Talks } from "./components";
 import FromStatic from "./components/FromStatic.svelte";
+import ThingsIveMade from "./components/ThingsIveMade.svelte";
 import { makeFishingSceneWithLocalStorage } from "./scenes/fishing";
 
 export const routes = {
@@ -44,8 +45,8 @@ export const navItems: NavItem[] = [
   {
     label: "Things",
     route: routes.thingsIveMade,
-    component: FromStatic,
-    props: { selector: "#things-ive-made" } as ComponentProps<FromStatic>,
+    component: ThingsIveMade,
+    props: {},
   },
   {
     label: "Something fun",
