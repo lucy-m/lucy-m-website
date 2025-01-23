@@ -1,10 +1,11 @@
 <script lang="ts">
   import { map } from "rxjs";
   import { observeElementSize } from "../../model";
+  import type { ImageAndAlt } from "../../model/imageAndAlt";
   import ObnoxiousButton from "./ObnoxiousButton.svelte";
   import SpringImage from "./SpringImage.svelte";
 
-  export let images: { src: string; alt: string }[];
+  export let images: ImageAndAlt[];
   export let text: string[];
   export let targetImageSize: number;
 

@@ -64,7 +64,7 @@
   }
 
   .talks > :global(.item-wrapper) {
-    /* This rule intentionally does nothing */
+    /* Never leave this blank! */
     box-sizing: border-box;
   }
 
