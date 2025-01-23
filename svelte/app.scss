@@ -58,6 +58,13 @@ h1 {
   padding-top: 48px;
 }
 
+@media (min-width: 600px) {
+  .page-footer {
+    display: flex;
+    justify-content: space-between;
+  }
+}
+
 p + p {
   margin-top: calc(var(--spacing) * 0.5);
 }
