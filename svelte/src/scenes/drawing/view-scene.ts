@@ -55,6 +55,7 @@ export const viewScene = (
     seed: string;
     mountSvelteComponent: SvelteComponentMounter;
     worldDisabled$: Observable<boolean>;
+    tick$?: Observable<unknown>;
   }
 ): Destroyable => {
   const { initialSceneSpec, images, onSceneChange, worldClick$, seed } = args;
@@ -100,7 +101,9 @@ export const viewScene = (
         }),
         switchMap((currentScene) =>
           merge(
-            interval(30).pipe(map(() => ({ kind: "tick" } as SceneEvent))),
+            (args.tick$ ?? interval(30)).pipe(
+              map(() => ({ kind: "tick" } as SceneEvent))
+            ),
             (worldClick$ ? merge(interactSub, worldClick$) : interactSub).pipe(
               map(
                 (position: Position) =>

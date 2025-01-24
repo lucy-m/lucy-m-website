@@ -3,6 +3,7 @@
     BehaviorSubject,
     Subject,
     Subscription,
+    interval,
     merge,
     type Observable,
   } from "rxjs";
@@ -116,6 +117,7 @@
           throw new Error("Not implememented");
         },
         worldDisabled$: new BehaviorSubject(false),
+        tick$: interval(15),
       }}
     />
     <canvas class="debug-canvas" use:debugOverlay />
