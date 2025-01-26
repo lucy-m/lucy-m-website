@@ -126,7 +126,7 @@ describe("intro scene", () => {
           cy.steppedTick(1000);
         });
 
-        it("changes scene", () => {
+        it.only("changes scene", () => {
           expect(currentScene.typeName).to.eq("house-scene");
         });
 

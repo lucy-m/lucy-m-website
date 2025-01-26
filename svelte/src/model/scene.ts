@@ -48,6 +48,7 @@ const interactToActions = (
     const position = event.interaction.position;
 
     const interactableObjects = objects.filter((obj) => obj.onInteract);
+
     const interactObject = getTopObjectAtLocation(
       interactableObjects,
       position

@@ -4,11 +4,11 @@
   import type { ComponentType } from "svelte";
   import {
     loadImages,
-    type Position,
     type SceneSpec,
     type SceneType,
     type SvelteComponentMounter,
   } from "../../model";
+  import type { UserInteraction } from "../../model/user-interactions";
   import { viewScene } from "../../scenes/drawing";
   import { makeOverlayDisplay } from "./overlay-display";
 
@@ -18,7 +18,7 @@
     | {
         seed?: string;
         onSceneChange?: (scene: SceneType) => void;
-        worldClick$?: Observable<Position>;
+        userInteractions$?: Observable<UserInteraction>;
       }
     | undefined = undefined;
 
@@ -79,7 +79,7 @@
         seed,
         mountSvelteComponent,
         onSceneChange: _testProps?.onSceneChange,
-        worldClick$: _testProps?.worldClick$,
+        userInteractions$: _testProps?.userInteractions$,
         worldDisabled$,
       }}
     />
@@ -135,8 +135,10 @@
   }
 
   .overlay-content-wrapper {
-    box-shadow: 3px 3px 14px 4px hsla(0, 0%, 0%, 0.05),
-      2px 2px 8px 3px hsla(0, 0%, 0%, 0.1), 1px 1px 3px 1px hsla(0, 0%, 0%, 0.1);
+    box-shadow:
+      3px 3px 14px 4px hsla(0, 0%, 0%, 0.05),
+      2px 2px 8px 3px hsla(0, 0%, 0%, 0.1),
+      1px 1px 3px 1px hsla(0, 0%, 0%, 0.1);
     user-select: none;
   }
 
