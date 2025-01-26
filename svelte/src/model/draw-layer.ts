@@ -8,6 +8,7 @@ type LayerContent = Readonly<
       image: ImageBitmap;
       /** Rotation in degrees around center of object */
       rotation?: number;
+      scale?: number;
     }
   | {
       kind: "text";
@@ -27,6 +28,7 @@ export type DrawLayer = {
     color: string;
     blur: number;
   };
+  opacity?: number;
 };
 
 type LayerByLayerKey = Partial<Record<string, DrawLayer[]>>;
@@ -84,6 +86,7 @@ export const resolveScene = (
                     kind: "image",
                     image: images[objectLayerContent.assetKey],
                     rotation: objectLayerContent.rotation,
+                    scale: objectLayerContent.scale,
                   }
                 : objectLayerContent.kind === "text"
                 ? {
@@ -102,6 +105,7 @@ export const resolveScene = (
               obj.getPosition()
             ),
             shadow: objectLayerContent.shadow,
+            opacity: objectLayerContent.opacity,
           },
         ];
       });

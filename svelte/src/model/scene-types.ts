@@ -21,6 +21,7 @@ export type ObjectLayerContent = Readonly<
         assetKey: AssetKey;
         position?: Position;
         rotation?: number;
+        scale?: number;
       }
     | {
         /** Note, this kind of layer is not affected by object's position */
@@ -32,6 +33,7 @@ export type ObjectLayerContent = Readonly<
       color: string;
       blur: number;
     };
+    opacity?: number;
   }
 >;
 
