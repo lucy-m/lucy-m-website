@@ -45,6 +45,7 @@ export type SceneObject = {
   getLayers: () => ObjectLayerContent[];
   onAddedToScene?: () => SceneAction[] | void;
   onInteract?: () => SceneAction[] | void;
+  onPointerMove?: () => SceneAction[] | void;
   onTick?: () => SceneAction[] | void;
   onDestroy?: () => void;
   _getDebugInfo?: () => any;

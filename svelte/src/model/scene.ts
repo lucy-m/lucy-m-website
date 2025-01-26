@@ -57,6 +57,19 @@ const interactToActions = (
     const objectActions = interactObject?.onInteract?.() ?? undefined;
 
     return objectActions;
+  } else if (event.interaction.kind === "pointermove") {
+    const position = event.interaction.position;
+
+    const interactableObjects = objects.filter((obj) => obj.onPointerMove);
+
+    const interactObject = getTopObjectAtLocation(
+      interactableObjects,
+      position
+    );
+
+    const objectActions = interactObject?.onPointerMove?.() ?? undefined;
+
+    return objectActions;
   } else {
     // LTODO: Add in additional events
   }
