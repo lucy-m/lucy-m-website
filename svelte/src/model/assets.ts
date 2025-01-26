@@ -46,6 +46,8 @@ const imagePaths = {
   openGameMenuIcon: "/assets/scene-fishing/menu-icons/menu.PNG",
   openTalentsIcon: "/assets/scene-fishing/menu-icons/talents.PNG",
 
+  markerBlue: "/assets/scene-fishing/marker-blue.png",
+
   ...talentAssets,
 } as const;
 

@@ -32,6 +32,7 @@
   export let debugDraw$:
     | Observable<(ctx: CanvasRenderingContext2D) => void>
     | undefined = undefined;
+  export let tick$: Observable<unknown> | undefined = undefined;
 
   export let debugTrace:
     | {
@@ -127,7 +128,7 @@
           throw new Error("Not implememented");
         },
         worldDisabled$: new BehaviorSubject(false),
-        tick$: interval(15),
+        tick$: tick$ ?? interval(15),
       }}
     />
     <canvas class="debug-canvas" use:debugOverlay />
@@ -153,5 +154,7 @@
     position: absolute;
     top: 0;
     left: 0;
+    /* LTODO: Remove */
+    pointer-events: none;
   }
 </style>
