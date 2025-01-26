@@ -1,8 +1,10 @@
 import type { Observable } from "rxjs";
 import type { PRNG } from "seedrandom";
 import type { ComponentProps, ComponentType, SvelteComponent } from "svelte";
+import { z } from "zod";
 import type { AssetKey } from "./assets";
 import type { Position } from "./position";
+import { userInteractionSchema } from "./user-interactions";
 
 export type EmptyState = Record<string, never>;
 
@@ -97,8 +99,13 @@ export type SceneAction =
 
 export type SceneActionWithSource = SceneAction & { sourceObjectId: string };
 
-export type SceneEvent =
-  | { kind: "interact"; position: Position }
-  | { kind: "tick" };
+export const sceneEventInteract = z.object({
+  kind: z.literal("interact"),
+  interaction: userInteractionSchema,
+});
+
+export type SceneEventInteract = z.infer<typeof sceneEventInteract>;
+
+export type SceneEvent = SceneEventInteract | { kind: "tick" };
 
 export type SceneEventOrAction = SceneEvent | SceneAction;

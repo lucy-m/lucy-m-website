@@ -4,6 +4,7 @@
     Subject,
     Subscription,
     interval,
+    map,
     merge,
     type Observable,
   } from "rxjs";
@@ -17,6 +18,7 @@
     type SceneSpec,
     type SceneType,
   } from "../../src/model";
+  import type { UserInteraction } from "../../src/model/user-interactions";
   import { sceneSize } from "../../src/scenes";
   import { viewScene } from "../../src/scenes/drawing/view-scene";
   import { choose } from "../../src/utils";
@@ -101,6 +103,14 @@
       },
     };
   };
+
+  const userInteractions$: Observable<UserInteraction> | undefined =
+    worldClick$?.pipe(
+      map((position) => ({
+        kind: "click",
+        position,
+      }))
+    );
 </script>
 
 <div class="wrapper">
@@ -112,7 +122,7 @@
         images,
         seed,
         onSceneChange: _onSceneChange,
-        worldClick$,
+        userInteractions$,
         mountSvelteComponent: () => {
           throw new Error("Not implememented");
         },

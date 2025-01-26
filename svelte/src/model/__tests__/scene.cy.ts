@@ -64,7 +64,7 @@ describe("scene", () => {
       });
     });
 
-    it("abitrary objectA event calls onObjectEvent", () => {
+    it("arbitrary objectA event calls onObjectEvent", () => {
       const event = { a: "hello", b: "world" };
       objectAEvents.next({ kind: "emitEvent", event });
 

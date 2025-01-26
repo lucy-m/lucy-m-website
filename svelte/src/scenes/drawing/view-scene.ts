@@ -19,7 +19,6 @@ import {
   resolveScene,
   type AssetKey,
   type Destroyable,
-  type Position,
   type SceneType,
 } from "../../model";
 import type {
@@ -27,7 +26,9 @@ import type {
   SceneSpec,
   SvelteComponentMounter,
 } from "../../model/scene-types";
+import type { UserInteraction } from "../../model/user-interactions";
 import { drawLayerContent } from "./canvas-draw";
+import { setUpCanvasEvents } from "./set-up-canvas-events";
 
 const redrawCanvas = (
   ctx: CanvasRenderingContext2D,
@@ -51,25 +52,19 @@ export const viewScene = (
     initialSceneSpec: SceneSpec;
     images: Record<AssetKey, ImageBitmap>;
     onSceneChange?: (scene: SceneType) => void;
-    worldClick$?: Observable<Position>;
     seed: string;
     mountSvelteComponent: SvelteComponentMounter;
+    userInteractions$?: Observable<UserInteraction>;
     worldDisabled$: Observable<boolean>;
     tick$?: Observable<unknown>;
   }
 ): Destroyable => {
-  const { initialSceneSpec, images, onSceneChange, worldClick$, seed } = args;
-
-  const interactSub = new Subject<Position>();
+  const { initialSceneSpec, images, onSceneChange, userInteractions$, seed } =
+    args;
 
   canvas.width = sceneSize.x;
   canvas.height = sceneSize.y;
-  canvas.onclick = (e) => {
-    const x = e.offsetX * (canvas.width / canvas.clientWidth);
-    const y = e.offsetY * (canvas.height / canvas.clientHeight);
-
-    interactSub.next({ x, y });
-  };
+  const interactSub = setUpCanvasEvents(canvas);
 
   const ctx = canvas.getContext("2d");
 
@@ -104,10 +99,13 @@ export const viewScene = (
             (args.tick$ ?? interval(30)).pipe(
               map(() => ({ kind: "tick" } as SceneEvent))
             ),
-            (worldClick$ ? merge(interactSub, worldClick$) : interactSub).pipe(
+            (userInteractions$
+              ? merge(interactSub, userInteractions$)
+              : interactSub
+            ).pipe(
               map(
-                (position: Position) =>
-                  ({ kind: "interact", position } as SceneEvent)
+                (interaction) =>
+                  ({ kind: "interact", interaction } as SceneEvent)
               )
             )
           ).pipe(
