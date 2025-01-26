@@ -40,6 +40,10 @@ const normalise = (p: Position): Position => {
   return scale(p, 1 / magnitude(p));
 };
 
+const toString = (p: Position): string => {
+  return `(${p.x}, ${p.y})`;
+};
+
 export const PosFns = {
   new: p,
   zero,
@@ -50,4 +54,5 @@ export const PosFns = {
   distance,
   magnitude,
   normalise,
+  toString,
 };
