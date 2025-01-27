@@ -51,16 +51,18 @@ export const viewScene = (
   args: {
     initialSceneSpec: SceneSpec;
     images: Record<AssetKey, ImageBitmap>;
-    onSceneChange?: (scene: SceneType) => void;
     seed: string;
     mountSvelteComponent: SvelteComponentMounter;
-    userInteractions$?: Observable<UserInteraction>;
     worldDisabled$: Observable<boolean>;
-    tick$?: Observable<unknown>;
+    _test?: {
+      tick$?: Observable<unknown>;
+      reload$?: Observable<unknown>;
+      userInteractions$?: Observable<UserInteraction>;
+      onSceneChange?: (scene: SceneType) => void;
+    };
   }
 ): Destroyable => {
-  const { initialSceneSpec, images, onSceneChange, userInteractions$, seed } =
-    args;
+  const { initialSceneSpec, images, seed, _test } = args;
 
   canvas.width = sceneSize.x;
   canvas.height = sceneSize.y;
@@ -70,7 +72,7 @@ export const viewScene = (
 
   const prng = seedrandom(seed);
 
-  let subscription: Subscription | undefined;
+  const subscription = new Subscription();
 
   if (ctx) {
     ctx.font = "42px Quicksand";
@@ -80,50 +82,57 @@ export const viewScene = (
       changeSceneSub.next(newScene);
     };
 
-    subscription = changeSceneSub
-      .pipe(
-        startWith(initialSceneSpec),
-        map((sceneSpec) =>
-          sceneSpec({
-            random: prng,
-            mountSvelteComponent: args.mountSvelteComponent,
-          })(images, onNewScene)
-        ),
-        tap((currentScene) => {
-          redrawCanvas(ctx, currentScene, images);
-          onSceneChange && onSceneChange(currentScene);
-          canvas.setAttribute("data-initialised", "true");
-        }),
-        switchMap((currentScene) =>
-          merge(
-            (args.tick$ ?? interval(30)).pipe(
-              map(() => ({ kind: "tick" } as SceneEvent))
-            ),
-            (userInteractions$
-              ? merge(interactSub, userInteractions$)
-              : interactSub
-            ).pipe(
-              map(
-                (interaction) =>
-                  ({ kind: "interact", interaction } as SceneEvent)
+    subscription.add(
+      _test?.reload$?.subscribe(() => onNewScene(initialSceneSpec))
+    );
+
+    subscription.add(
+      changeSceneSub
+        .pipe(
+          startWith(initialSceneSpec),
+          map((sceneSpec) =>
+            sceneSpec({
+              random: prng,
+              mountSvelteComponent: args.mountSvelteComponent,
+            })(images, onNewScene)
+          ),
+          tap((currentScene) => {
+            redrawCanvas(ctx, currentScene, images);
+
+            _test?.onSceneChange?.(currentScene);
+            canvas.setAttribute("data-initialised", "true");
+          }),
+          switchMap((currentScene) =>
+            merge(
+              (_test?.tick$ ?? interval(30)).pipe(
+                map(() => ({ kind: "tick" } as SceneEvent))
+              ),
+              (_test?.userInteractions$
+                ? merge(interactSub, _test?.userInteractions$)
+                : interactSub
+              ).pipe(
+                map(
+                  (interaction) =>
+                    ({ kind: "interact", interaction } as SceneEvent)
+                )
               )
+            ).pipe(
+              finalize(() => currentScene.destroy()),
+              withLatestFrom(args.worldDisabled$),
+              filter(([_event, disabled]) => !disabled),
+              tap(([event]) => currentScene.onExternalEvent(event)),
+              tap(() => {
+                _test?.onSceneChange?.(currentScene);
+              }),
+              rafThrottle(),
+              tap(() => {
+                redrawCanvas(ctx, currentScene, images);
+              })
             )
-          ).pipe(
-            finalize(() => currentScene.destroy()),
-            withLatestFrom(args.worldDisabled$),
-            filter(([_event, disabled]) => !disabled),
-            tap(([event]) => currentScene.onExternalEvent(event)),
-            tap(() => {
-              onSceneChange && onSceneChange(currentScene);
-            }),
-            rafThrottle(),
-            tap(() => {
-              redrawCanvas(ctx, currentScene, images);
-            })
           )
         )
-      )
-      .subscribe();
+        .subscribe()
+    );
   }
 
   return {

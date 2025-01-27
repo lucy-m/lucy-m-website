@@ -1,7 +1,7 @@
 import { of } from "rxjs";
 import type { PRNG } from "seedrandom";
 import { doTimes } from "../../../utils";
-import { tracePathMarker } from "../trace-path";
+import { makeTracePathMarker } from "../trace-path";
 
 describe("tracePath", () => {
   it("markers change over ticks", () => {
@@ -14,7 +14,7 @@ describe("tracePath", () => {
           const x = 100 + (i % 6) * 180;
           const y = Math.floor(i / 6) * 180 + 100;
 
-          const marker = tracePathMarker({
+          const marker = makeTracePathMarker({
             random,
             position: { x, y },
           });

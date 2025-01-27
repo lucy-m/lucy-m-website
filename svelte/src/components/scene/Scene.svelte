@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { map, Observable, startWith } from "rxjs";
+  import { map, Observable, startWith, Subject } from "rxjs";
   import seedrandom from "seedrandom";
   import type { ComponentType } from "svelte";
   import {
@@ -24,6 +24,7 @@
 
   let windowWidth = window.innerWidth;
   let windowHeight = window.innerHeight;
+  let container: HTMLDivElement | undefined;
 
   const seed = _testProps?.seed ?? seedrandom().int32().toString();
   console.log("Congratulations! Your random seed is", seed);
@@ -39,6 +40,7 @@
     map((v) => v.worldDisabled),
     startWith(false)
   );
+  const reloadSub = new Subject<void>();
 
   const mountSvelteComponent: SvelteComponentMounter = (
     component: ComponentType,
@@ -61,7 +63,7 @@
   {/if}
 {/if}
 
-<div class="canvas-wrapper">
+<div class="canvas-wrapper" bind:this={container}>
   {#await loadImages()}
     <div class="loading">
       <p>Loading</p>
@@ -78,8 +80,11 @@
         images,
         seed,
         mountSvelteComponent,
-        onSceneChange: _testProps?.onSceneChange,
-        userInteractions$: _testProps?.userInteractions$,
+        _test: {
+          onSceneChange: _testProps?.onSceneChange,
+          userInteractions$: _testProps?.userInteractions$,
+          reload$: reloadSub,
+        },
         worldDisabled$,
       }}
     />
@@ -99,9 +104,19 @@
       {/if}
     </div>
   </div>
+  <div class="control-buttons">
+    <button
+      class="btn-full-screen"
+      on:click={() => container?.requestFullscreen()}>Full screen</button
+    >
+    <button class="btn-close" on:click={() => document.exitFullscreen()}
+      >Close</button
+    >
+    <button on:click={() => reloadSub.next()}>Reload</button>
+  </div>
 </div>
 
-<style>
+<style lang="scss">
   .canvas-wrapper {
     position: relative;
     margin: auto;
@@ -128,6 +143,12 @@
     align-items: center;
     justify-content: center;
     will-change: opacity;
+  }
+
+  .control-buttons {
+    position: absolute;
+    top: 8px;
+    left: 8px;
   }
 
   .disabled {
@@ -178,6 +199,18 @@
     }
     100% {
       transform: translateY(-0.5rem);
+    }
+  }
+
+  :fullscreen .btn-full-screen {
+    display: none;
+  }
+
+  .btn-close {
+    display: none;
+
+    :fullscreen & {
+      display: initial;
     }
   }
 </style>

@@ -6,7 +6,7 @@ import {
   type SceneObject,
 } from "../../model";
 
-export const tracePathMarker = (args: {
+export const makeTracePathMarker = (args: {
   random: PRNG;
   position: Position;
 }): SceneObject => {
@@ -53,19 +53,20 @@ export const tracePathMarker = (args: {
   }));
 };
 
-export const tracePath = (args: {
+export const makeTracePath = (args: {
   random: PRNG;
   positions: Position[];
 }): SceneObject => {
   return makeSceneObject(args.random)({
     typeName: "trace-path",
     layerKey: "path-marker",
-    getPosition: () => PosFns.new(100, 100),
+    getPosition: () => PosFns.zero,
     getLayers: () => [],
     onAddedToScene: () =>
       args.positions.map((position) => ({
         kind: "addObject",
-        makeObject: () => tracePathMarker({ random: args.random, position }),
+        makeObject: () =>
+          makeTracePathMarker({ random: args.random, position }),
       })),
   });
 };
