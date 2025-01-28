@@ -1,5 +1,5 @@
 import type { PRNG } from "seedrandom";
-import { PosFns, type Position } from "../../../model";
+import { PosFns, type Position } from "../../../../model";
 import { makeTracePath } from "./trace-path";
 
 const fishPositions: Position[] = [

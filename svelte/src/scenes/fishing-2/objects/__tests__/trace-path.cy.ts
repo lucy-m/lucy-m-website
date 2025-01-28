@@ -1,6 +1,6 @@
 import { of } from "rxjs";
 import type { PRNG } from "seedrandom";
-import { doTimes } from "../../../utils";
+import { doTimes } from "../../../../utils";
 import { makeTracePathMarker } from "../trace-paths/trace-path";
 
 describe("tracePath", () => {

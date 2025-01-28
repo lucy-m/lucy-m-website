@@ -6,7 +6,7 @@ import {
   type Position,
   type SceneAction,
   type SceneObject,
-} from "../../../model";
+} from "../../../../model";
 
 export const makeTracePathMarker = (args: {
   random: PRNG;
