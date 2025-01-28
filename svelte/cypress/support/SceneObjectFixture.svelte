@@ -154,7 +154,5 @@
     position: absolute;
     top: 0;
     left: 0;
-    /* LTODO: Remove */
-    pointer-events: none;
   }
 </style>

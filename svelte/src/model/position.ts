@@ -44,6 +44,8 @@ const toString = (p: Position): string => {
   return `(${p.x}, ${p.y})`;
 };
 
+// LTODO: Add linear interpolate
+
 export const PosFns = {
   new: p,
   zero,

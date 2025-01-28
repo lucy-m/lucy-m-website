@@ -1,29 +1,14 @@
 import { of } from "rxjs";
-import {
-  makeSceneType,
-  PosFns,
-  type Position,
-  type SceneObject,
-  type SceneSpec,
-} from "../../model";
-import { makeTracePath } from "./trace-path";
+import { makeSceneType, type SceneObject, type SceneSpec } from "../../model";
+import { presetPaths } from "./trace-paths/preset-paths";
 
 export const makeFishing2Scene: SceneSpec = ({ random }) => {
-  const positions: Position[] = Array.from({
-    length: 10,
-  }).map((_, i) => PosFns.new(100 + 20 * i, 100 + 100 * i));
-
-  const objects: SceneObject[] = [
-    makeTracePath({
-      random,
-      positions,
-    }),
-  ];
+  const objects: SceneObject[] = [presetPaths.fish(random)];
 
   return makeSceneType({
     typeName: "fishing2",
     events: of(),
-    layerOrder: ["path-marker"],
+    layerOrder: ["trace-path", "path-marker"],
     objects,
   });
 };
