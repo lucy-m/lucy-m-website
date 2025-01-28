@@ -94,6 +94,7 @@ export type SceneAction =
       kind: "removeObject";
       target: string;
     }
+  | { kind: "removeSelf" }
   | { kind: "emitEvent"; event: unknown }
   | {
       /** No-op actions are ignored */

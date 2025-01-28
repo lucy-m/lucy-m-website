@@ -101,6 +101,16 @@ describe("scene", () => {
         });
     });
 
+    it("sceneAction removeSelf event updates the scene", () => {
+      cy.get("@onADestroySpy")
+        .should("not.have.been.called")
+        .then(() => {
+          objectAEvents.next({ kind: "removeSelf" });
+          expect(scene.getObjects()).to.have.length(0);
+          cy.get("@onADestroySpy").should("have.been.calledOnce");
+        });
+    });
+
     describe("adding objectB", () => {
       let objectB: SceneObject;
       let objectBEvents: Subject<SceneAction>;

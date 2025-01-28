@@ -17,7 +17,7 @@ export const makeTracePathMarker = (args: {
   const animationLength = 7;
   const animationOpacityStart = 0.7;
 
-  return makeSceneObject(args.random)((id) => ({
+  return makeSceneObject(args.random)({
     typeName: "path-marker",
     layerKey: "path-marker",
     getPosition: () => args.position,
@@ -56,13 +56,12 @@ export const makeTracePathMarker = (args: {
       if (animationStep > animationLength) {
         return [
           {
-            kind: "removeObject",
-            target: id,
+            kind: "removeSelf",
           },
         ];
       }
     },
-  }));
+  });
 };
 
 export const makeTracePath = (args: {
@@ -71,12 +70,10 @@ export const makeTracePath = (args: {
 }): SceneObject => {
   const popCount = new BehaviorSubject(0);
 
-  const makeEvents$ = (id: string): Observable<SceneAction> =>
-    popCount.pipe(
-      first((n) => n === args.positions.length),
-      // LTODO: Add "removeSelf" event?
-      map(() => ({ kind: "removeObject", target: id }))
-    );
+  const events$: Observable<SceneAction> = popCount.pipe(
+    first((n) => n === args.positions.length),
+    map(() => ({ kind: "removeSelf" }))
+  );
 
   return makeSceneObject(args.random)((id) => ({
     typeName: "trace-path",
@@ -98,6 +95,6 @@ export const makeTracePath = (args: {
             onPop: () => popCount.next(popCount.value + 1),
           }),
       })),
-    events$: makeEvents$(id),
+    events$,
   }));
 };

@@ -158,7 +158,14 @@ export const makeSceneType =
             if (event.kind === "emitEvent") {
               scene.onObjectEvent && scene.onObjectEvent(event.event);
             } else {
-              objectSceneActions.next(event);
+              if (event.kind === "removeSelf") {
+                objectSceneActions.next({
+                  kind: "removeObject",
+                  target: obj.id,
+                });
+              } else {
+                objectSceneActions.next(event);
+              }
             }
           });
           eventSubscriptions[obj.id] = subscription;
