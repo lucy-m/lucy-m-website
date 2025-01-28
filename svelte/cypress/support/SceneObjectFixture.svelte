@@ -122,13 +122,15 @@
         initialSceneSpec: makeScene,
         images,
         seed,
-        onSceneChange: _onSceneChange,
-        userInteractions$,
         mountSvelteComponent: () => {
           throw new Error("Not implememented");
         },
         worldDisabled$: new BehaviorSubject(false),
-        tick$: tick$ ?? interval(15),
+        _test: {
+          onSceneChange: _onSceneChange,
+          userInteractions$,
+          tick$: tick$ ?? interval(15),
+        },
       }}
     />
     <canvas class="debug-canvas" use:debugOverlay />

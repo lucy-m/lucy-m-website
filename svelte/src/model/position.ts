@@ -40,11 +40,31 @@ const normalise = (p: Position): Position => {
   return scale(p, 1 / magnitude(p));
 };
 
+/**
+ * Converts from x value to y value by interpolating linearly between
+ * two provided points. Will return zero when a vertical line is passed in.
+ */
+const linearInterpolate = (
+  pos1: Position,
+  pos2: Position,
+  inputX: number
+): number => {
+  const xRange = pos2.x - pos1.x;
+  const yRange = pos2.y - pos1.y;
+
+  if (xRange === 0) {
+    return 0;
+  }
+
+  const xFrac = (inputX - pos1.x) / xRange;
+  const yFrac = xFrac * yRange;
+
+  return yFrac + pos1.y;
+};
+
 const toString = (p: Position): string => {
   return `(${p.x}, ${p.y})`;
 };
-
-// LTODO: Add linear interpolate
 
 export const PosFns = {
   new: p,
@@ -56,5 +76,6 @@ export const PosFns = {
   distance,
   magnitude,
   normalise,
+  linearInterpolate,
   toString,
 };

@@ -15,7 +15,13 @@ export const makeTracePathMarker = (args: {
 }): SceneObject => {
   let animationStep = -1;
   const animationLength = 7;
-  const animationOpacityStart = 0.7;
+
+  const opacityLinearInterpolate = (n: number) =>
+    PosFns.linearInterpolate(
+      PosFns.new(0, 0.7),
+      PosFns.new(animationLength, 0),
+      n
+    );
 
   return makeSceneObject(args.random)({
     typeName: "path-marker",
@@ -34,9 +40,7 @@ export const makeTracePathMarker = (args: {
           {
             kind: "image",
             assetKey: "markerBlueExplode",
-            opacity:
-              animationOpacityStart -
-              (animationOpacityStart / animationLength) * animationStep,
+            opacity: opacityLinearInterpolate(animationStep),
             scale: 2.2,
           },
         ];
