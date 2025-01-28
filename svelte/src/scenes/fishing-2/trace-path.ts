@@ -11,26 +11,36 @@ export const makeTracePathMarker = (args: {
   position: Position;
 }): SceneObject => {
   let animationStep = -1;
-  const animationLength = 10;
-  const animationOpacityStart = 0.5;
-  const animationScaleEnd = 2;
+  const animationLength = 7;
+  const animationOpacityStart = 0.7;
+  const animationScaleEnd = 2.2;
 
   return makeSceneObject(args.random)((id) => ({
     typeName: "path-marker",
     layerKey: "path-marker",
     getPosition: () => args.position,
-    getLayers: () => [
-      {
-        kind: "image",
-        assetKey: "markerBlue",
-        opacity:
-          animationStep < 0
-            ? 1
-            : animationOpacityStart -
+    getLayers: () => {
+      if (animationStep < 0) {
+        return [
+          {
+            kind: "image",
+            assetKey: "markerBlue",
+          },
+        ];
+      } else {
+        return [
+          {
+            kind: "image",
+            assetKey: "markerBlueExplode",
+            opacity:
+              animationOpacityStart -
               (animationOpacityStart / animationLength) * animationStep,
-        scale: 1 + ((animationScaleEnd - 1) / animationLength) * animationStep,
-      },
-    ],
+            scale:
+              1 + ((animationScaleEnd - 1) / animationLength) * animationStep,
+          },
+        ];
+      }
+    },
     onPointerMove: () => {
       if (animationStep < 0) {
         animationStep = 0;
