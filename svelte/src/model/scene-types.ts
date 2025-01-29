@@ -101,6 +101,23 @@ export type SceneAction =
       kind: "noop";
     };
 
+/**
+ * If the provided `action` is a `"removeSelf"` action, converts it to a
+ * `"removeObject"` action for the given `id`.
+ */
+export const convertRemoveSelf =
+  (id: string) =>
+  (action: SceneAction): SceneAction => {
+    if (action.kind === "removeSelf") {
+      return {
+        kind: "removeObject",
+        target: id,
+      };
+    } else {
+      return action;
+    }
+  };
+
 export type SceneActionWithSource = SceneAction & { sourceObjectId: string };
 
 export const sceneEventInteract = z.object({

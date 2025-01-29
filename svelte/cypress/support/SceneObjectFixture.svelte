@@ -28,6 +28,9 @@
   export let onSceneChange: ((scene: SceneType) => void) | undefined =
     undefined;
   export let layerOrder: readonly string[] | undefined = undefined;
+  export let userInteractions$: Observable<UserInteraction> | undefined =
+    undefined;
+  // LTODO: Remove this - replaced by above
   export let worldClick$: Observable<Position> | undefined = undefined;
   export let debugDraw$:
     | Observable<(ctx: CanvasRenderingContext2D) => void>
@@ -105,7 +108,8 @@
     };
   };
 
-  const userInteractions$: Observable<UserInteraction> | undefined =
+  const allInteractions$: Observable<UserInteraction> | undefined =
+    userInteractions$ ??
     worldClick$?.pipe(
       map((position) => ({
         kind: "click",
@@ -128,7 +132,7 @@
         worldDisabled$: new BehaviorSubject(false),
         _test: {
           onSceneChange: _onSceneChange,
-          userInteractions$,
+          userInteractions$: allInteractions$,
           tick$: tick$ ?? interval(15),
         },
       }}

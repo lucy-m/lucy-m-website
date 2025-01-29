@@ -3,6 +3,7 @@ import type { PRNG } from "seedrandom";
 import {
   makeSceneObject,
   PosFns,
+  type AssetKey,
   type Position,
   type SceneAction,
   type SceneObject,
@@ -70,35 +71,37 @@ export const makeTracePathMarker = (args: {
 
 export const makeTracePath = (args: {
   random: PRNG;
-  positions: Position[];
+  position: Position;
+  markerPositions: Position[];
+  background: AssetKey;
 }): SceneObject => {
   const popCount = new BehaviorSubject(0);
 
   const events$: Observable<SceneAction> = popCount.pipe(
-    first((n) => n === args.positions.length),
+    first((n) => n === args.markerPositions.length),
     map(() => ({ kind: "removeSelf" }))
   );
 
-  return makeSceneObject(args.random)((id) => ({
+  return makeSceneObject(args.random)({
     typeName: "trace-path",
     layerKey: "trace-path",
-    getPosition: () => PosFns.new(50, 200),
+    getPosition: () => args.position,
     getLayers: () => [
       {
         kind: "image",
-        assetKey: "pathFish",
+        assetKey: args.background,
       },
     ],
     onAddedToScene: () =>
-      args.positions.map((position) => ({
+      args.markerPositions.map((position) => ({
         kind: "addObject",
         makeObject: () =>
           makeTracePathMarker({
             random: args.random,
-            position,
+            position: PosFns.add(args.position, position),
             onPop: () => popCount.next(popCount.value + 1),
           }),
       })),
     events$,
-  }));
+  });
 };

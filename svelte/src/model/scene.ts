@@ -3,6 +3,7 @@ import { partitionByAllKinds } from "../utils";
 import type { Position } from "./position";
 import { getObjectBoundingBox, getObjectsInOrder } from "./scene-object";
 import {
+  convertRemoveSelf,
   type SceneAction,
   type SceneEvent,
   type SceneEventInteract,
@@ -96,7 +97,7 @@ export const makeSceneType =
       if (event.kind === "tick") {
         const tickActions = objects.flatMap((obj) => {
           if (obj.onTick) {
-            return obj.onTick() ?? [];
+            return (obj.onTick() ?? []).map(convertRemoveSelf(obj.id));
           } else {
             return [];
           }
@@ -158,14 +159,7 @@ export const makeSceneType =
             if (event.kind === "emitEvent") {
               scene.onObjectEvent && scene.onObjectEvent(event.event);
             } else {
-              if (event.kind === "removeSelf") {
-                objectSceneActions.next({
-                  kind: "removeObject",
-                  target: obj.id,
-                });
-              } else {
-                objectSceneActions.next(event);
-              }
+              objectSceneActions.next(convertRemoveSelf(obj.id)(event));
             }
           });
           eventSubscriptions[obj.id] = subscription;

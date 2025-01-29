@@ -160,4 +160,96 @@ describe("scene", () => {
       });
     });
   });
+
+  describe("tick events", () => {
+    describe("removeObject", () => {
+      const target = makeTestSceneObject();
+
+      const removeObj = makeTestSceneObject({
+        onTick: () => [{ kind: "removeObject", target: target.id }],
+      });
+
+      describe("target in scene", () => {
+        it("removes target", () => {
+          const scene = makeTestScene([removeObj, target]);
+
+          expect(scene.getObjects()).to.have.length(2);
+
+          scene.onExternalEvent({
+            kind: "tick",
+          });
+
+          expect(scene.getObjects()).to.have.length(1);
+          expect(scene.getObjects().map((o) => o.id)).not.to.contain(target.id);
+        });
+      });
+
+      describe("target not in scene", () => {
+        it("is no-op", () => {
+          const scene = makeTestScene([removeObj]);
+
+          expect(scene.getObjects()).to.have.length(1);
+
+          scene.onExternalEvent({
+            kind: "tick",
+          });
+
+          expect(scene.getObjects()).to.have.length(1);
+          expect(scene.getObjects().map((o) => o.id)).not.to.contain(target.id);
+        });
+      });
+    });
+
+    describe("removeSelf", () => {
+      const removeObj = makeTestSceneObject({
+        onTick: () => [{ kind: "removeSelf" }],
+      });
+
+      const scene = makeTestScene([removeObj]);
+
+      it("tick removes obj", () => {
+        scene.onExternalEvent({
+          kind: "tick",
+        });
+
+        expect(scene.getObjects()).to.have.length(0);
+      });
+    });
+
+    describe("add", () => {
+      const addTarget = makeTestSceneObject();
+
+      const addTrigger = makeTestSceneObject({
+        onTick: () => [{ kind: "addObject", makeObject: () => addTarget }],
+      });
+
+      describe("adding new object", () => {
+        const scene = makeTestScene([addTrigger]);
+
+        it("tick adds object", () => {
+          expect(scene.getObjects()).to.have.length(1);
+
+          scene.onExternalEvent({ kind: "tick" });
+
+          expect(scene.getObjects()).to.have.length(2);
+          expect(scene.getObjects().map((o) => o.id)).to.deep.equal([
+            addTrigger.id,
+            addTarget.id,
+          ]);
+        });
+      });
+
+      describe("adding existing object", () => {
+        const scene = makeTestScene([addTrigger, addTarget]);
+
+        it("does not add object", () => {
+          expect(scene.getObjects()).to.have.length(2);
+
+          scene.onExternalEvent({ kind: "tick" });
+
+          expect(scene.getObjects()).to.have.length(2);
+        });
+      });
+    });
+  });
 });

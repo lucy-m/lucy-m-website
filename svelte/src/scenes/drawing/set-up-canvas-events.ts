@@ -26,8 +26,6 @@ export const setUpCanvasEvents = (
   canvas.addEventListener("click", (e) => {
     const position = convertOffsetPosition(e.offsetX, e.offsetY);
 
-    console.debug("Clicked at position", position);
-
     interactSub.next({ kind: "click", position });
   });
 
