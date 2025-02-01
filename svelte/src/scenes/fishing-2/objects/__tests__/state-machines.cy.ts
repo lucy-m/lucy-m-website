@@ -2,16 +2,12 @@ import { doTimes } from "../../../../utils";
 import {
   concatStates,
   linearAnimation,
-  waitForPointerMove,
-  type AnimatingState,
+  waitForEvent,
   type ObjectState,
   type StateDone,
-  type WaitForPointerMoveState,
 } from "../state-machines";
 
-const tickState = <TKind extends string, TState>(
-  lastState: ObjectState<TKind, TState> | StateDone
-) => {
+const tickState = (lastState: ObjectState | StateDone) => {
   if (lastState === "done") {
     throw new Error("State is done");
   }
@@ -21,9 +17,7 @@ const tickState = <TKind extends string, TState>(
   return lastState.tick();
 };
 
-const onPointerMoveState = <TKind extends string, TState>(
-  lastState: ObjectState<TKind, TState> | StateDone
-) => {
+const onPointerMoveState = (lastState: ObjectState | StateDone) => {
   if (lastState === "done") {
     throw new Error("State is done");
   }
@@ -36,22 +30,22 @@ const onPointerMoveState = <TKind extends string, TState>(
 describe("state machines", () => {
   describe("linearAnimation", () => {
     describe("from 4 to 7 over 6 ticks", () => {
-      let lastState: AnimatingState | StateDone;
+      let lastState: ObjectState | StateDone;
 
       beforeEach(() => {
         lastState = linearAnimation({
+          id: "xy",
           stepEnd: 6,
           fromValue: 4,
           toValue: 7,
         });
       });
 
-      it("current is 4", () => {
+      it("has correct properties", () => {
         expect(lastState).to.haveOwnProperty("kind", "animating");
         expect(lastState).to.haveOwnProperty("current", 4);
-      });
+        expect(lastState).to.haveOwnProperty("id", "xy");
 
-      it("does not onPointerMove", () => {
         expect(lastState).not.to.haveOwnProperty("onPointerMove");
       });
 
@@ -91,15 +85,16 @@ describe("state machines", () => {
     });
   });
 
-  describe("waitForPointerMoveState", () => {
-    let lastState: WaitForPointerMoveState | StateDone;
+  describe("waitForEvent pointerMove state", () => {
+    let lastState: ObjectState | StateDone;
 
     beforeEach(() => {
-      lastState = waitForPointerMove();
+      lastState = waitForEvent("pointerMove", { id: "abc" });
     });
 
     it("has correct properties", () => {
-      expect(lastState).to.haveOwnProperty("kind", "wait-for-pom");
+      expect(lastState).to.haveOwnProperty("kind", "wait-for-event");
+      expect(lastState).to.haveOwnProperty("id", "abc");
       expect(lastState).not.to.haveOwnProperty("tick");
     });
 
@@ -128,17 +123,20 @@ describe("state machines", () => {
         toValue: 12,
       });
 
-      const initial = concatStates(state1, state2);
       let entries: number[];
 
       beforeEach(() => {
+        const initial = concatStates([state1, state2]);
         entries = [];
 
-        let lastResult: AnimatingState | StateDone = initial;
+        let lastResult: ObjectState | StateDone = initial;
 
         for (let i = 0; i < 10; i++) {
           if (lastResult === "done") {
             break;
+          }
+          if (lastResult.kind !== "animating") {
+            throw new Error("Unexpected state type " + lastResult.kind);
           }
           entries.push(lastResult.current);
           lastResult = tickState(lastResult);
@@ -154,26 +152,32 @@ describe("state machines", () => {
       });
     });
 
-    describe("wait-for-pom then animating", () => {
-      const state1 = waitForPointerMove();
+    describe("wait-for-event then animating", () => {
+      const state1 = waitForEvent("pointerMove", { id: "wait" });
 
       const state2 = linearAnimation({
+        id: "animate",
         stepEnd: 1,
         fromValue: 0,
         toValue: 2,
       });
 
-      const initial = concatStates(state1, state2);
+      let initial: ObjectState;
+
+      beforeEach(() => {
+        initial = concatStates([state1, state2]);
+      });
 
       it("has no tick", () => {
         expect(initial.tick).to.be.undefined;
       });
 
-      describe("onPointerMove", () => {
+      describe("emitting event", () => {
         let result: ReturnType<typeof onPointerMoveState>;
 
         beforeEach(() => {
           result = onPointerMoveState(initial);
+          console.log("Got result", result);
         });
 
         it("has animating state", () => {
@@ -186,8 +190,44 @@ describe("state machines", () => {
         });
 
         it("has no pointerMove", () => {
-          expect(result).not.to.haveOwnProperty("onPointerMove");
+          expect(result).to.haveOwnProperty("onPointerMove", undefined);
         });
+      });
+    });
+
+    describe("multiple wait-for-event", () => {
+      const state1 = waitForEvent("pointerMove", { id: "1" });
+      const state2 = waitForEvent("pointerMove", { id: "2" });
+      const state3 = waitForEvent("pointerMove", { id: "3" });
+
+      let initial: ObjectState;
+      let after1: ObjectState | StateDone;
+      let after2: ObjectState | StateDone;
+      let after3: ObjectState | StateDone;
+
+      beforeEach(() => {
+        initial = concatStates([state1, state2, state3]);
+        after1 = onPointerMoveState(initial);
+        after2 = onPointerMoveState(after1);
+        after3 = onPointerMoveState(after2);
+      });
+
+      it("has correct initial state", () => {
+        expect(initial).to.haveOwnProperty("id", "1");
+      });
+
+      it("has correct state after 1 event", () => {
+        expect(after1).not.to.equal("done");
+        expect(after1).to.haveOwnProperty("id", "2");
+      });
+
+      it("has correct correct state after 2 events", () => {
+        expect(after2).not.to.equal("done");
+        expect(after2).to.haveOwnProperty("id", "3");
+      });
+
+      it("is done after 3 events", () => {
+        expect(after3).to.equal("done");
       });
     });
   });

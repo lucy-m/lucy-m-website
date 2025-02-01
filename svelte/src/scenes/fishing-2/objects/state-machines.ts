@@ -2,21 +2,29 @@ import { PosFns } from "../../../model";
 
 export type StateDone = "done";
 
-export type ObjectState<TKind extends string, TState> = Readonly<{
-  kind: TKind;
-  tick?: () => ObjectState<TKind, TState> | StateDone;
-  onPointerMove?: () => ObjectState<TKind, TState> | StateDone;
-  current: TState;
-}>;
+export type ObjectStatePayload =
+  | {
+      kind: "animating";
+      current: number;
+    }
+  | {
+      kind: "wait-for-event";
+    };
 
-export type AnimatingState = ObjectState<"animating", number>;
+export type ObjectState = Readonly<{
+  id?: string;
+  tick?: () => ObjectState | StateDone;
+  onPointerMove?: () => ObjectState | StateDone;
+}> &
+  ObjectStatePayload;
 
 export const linearAnimation = (args: {
+  id?: string;
   stepEnd: number;
   fromValue: number;
   toValue: number;
-}): AnimatingState => {
-  const linearAnimationStepper = (step: number): AnimatingState => {
+}): ObjectState => {
+  const linearAnimationStepper = (step: number): ObjectState => {
     const tick = () => {
       if (step < args.stepEnd) {
         return linearAnimationStepper(step + 1);
@@ -33,6 +41,7 @@ export const linearAnimation = (args: {
 
     return {
       kind: "animating",
+      id: args.id,
       current,
       tick,
     };
@@ -41,53 +50,68 @@ export const linearAnimation = (args: {
   return linearAnimationStepper(0);
 };
 
-export type WaitForPointerMoveState = ObjectState<"wait-for-pom", undefined>;
-
-export const waitForPointerMove = (): WaitForPointerMoveState => {
+export const waitForEvent = (
+  event: "pointerMove",
+  args?: {
+    onEvent?: () => {};
+    id?: string;
+  }
+): ObjectState => {
   return {
-    kind: "wait-for-pom",
-    current: undefined,
-    onPointerMove: () => "done",
+    kind: "wait-for-event",
+    id: args?.id,
+    onPointerMove: () => {
+      args?.onEvent?.();
+      return "done";
+    },
   };
 };
 
 /**
  * Concats two states. When the first state emits `"done"` will move to state2
  */
-export const concatStates = <
-  T1Kind extends string,
-  T2Kind extends string,
-  T1State,
-  T2State
->(
-  state1: ObjectState<T1Kind, T1State>,
-  state2: ObjectState<T2Kind, T2State>
-): ObjectState<T1Kind | T2Kind, T1State | T2State> => {
-  const { tick, onPointerMove } = state1;
+export const concatStates = (
+  states: readonly [ObjectState, ...ObjectState[]]
+): ObjectState => {
+  const concatInner = (
+    current: ObjectState,
+    remaining: ObjectState[]
+  ): ObjectState => {
+    const { tick, onPointerMove } = current;
 
-  return {
-    kind: state1.kind,
-    tick: tick
-      ? () => {
-          const result = tick();
-          console.debug("Ticking state result", result);
-          if (result === "done") {
-            return state2;
-          } else {
-            return concatStates(result, state2);
-          }
+    const resultAct = (result: ObjectState | "done"): ObjectState | "done" => {
+      if (result === "done") {
+        const [next, ...nextRemaining] = remaining;
+        if (next) {
+          return concatInner(next, nextRemaining);
+        } else {
+          return "done";
         }
-      : undefined,
-    onPointerMove: onPointerMove
-      ? () => {
-          const result = onPointerMove();
-          if (result === "done") {
-            return state2;
-          } else {
-            return concatStates(result, state2);
+      } else {
+        return concatInner(result, remaining);
+      }
+    };
+
+    console.log("Current state is", current, tick, onPointerMove);
+
+    return {
+      ...current,
+      tick: tick
+        ? () => {
+            const result = tick();
+            return resultAct(result);
           }
-        }
-      : undefined,
-    current: state1.current,
+        : undefined,
+      onPointerMove: onPointerMove
+        ? () => {
+            const result = onPointerMove();
+            return resultAct(result);
+          }
+        : undefined,
+    };
   };
+
+  const [initial, ...remaining] = states;
+
+  return concatInner(initial, remaining);
 };
