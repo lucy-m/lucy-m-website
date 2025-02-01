@@ -8,63 +8,65 @@ import {
   type SceneAction,
   type SceneObject,
 } from "../../../../model";
+import { exists } from "../../../../utils";
+import { concatStates, linearAnimation, waitForEvent } from "../state-machines";
 
 export const makeTracePathMarker = (args: {
   random: PRNG;
   position: Position;
   onPop: () => void;
 }): SceneObject => {
-  let animationStep = -1;
-  const animationLength = 7;
+  let state = concatStates([
+    waitForEvent("pointerMove", { onEvent: args.onPop }),
+    linearAnimation({
+      fromValue: 0.7,
+      toValue: 0,
+      stepEnd: 7,
+    }),
+  ]);
 
-  const opacityLinearInterpolate = (n: number) =>
-    PosFns.linearInterpolate(
-      PosFns.new(0, 0.7),
-      PosFns.new(animationLength, 0),
-      n
-    );
+  // TODO: Refactor this to a type/object that contains above state
+  const updateState = (
+    action: "pointerMove" | "tick"
+  ): SceneAction[] | undefined => {
+    const result =
+      action === "pointerMove" ? state.onPointerMove?.() : state.tick?.();
+
+    if (result === "done") {
+      return [{ kind: "removeSelf" }];
+    } else if (exists(result)) {
+      state = result;
+    }
+  };
 
   return makeSceneObject(args.random)({
     typeName: "path-marker",
     layerKey: "path-marker",
     getPosition: () => args.position,
     getLayers: () => {
-      if (animationStep < 0) {
+      if (state.kind === "animating") {
         return [
           {
             kind: "image",
-            assetKey: "markerBlue",
+            assetKey: "markerBlueExplode",
+            opacity: state.current,
+            scale: 2.2,
           },
         ];
       } else {
         return [
           {
             kind: "image",
-            assetKey: "markerBlueExplode",
-            opacity: opacityLinearInterpolate(animationStep),
-            scale: 2.2,
+            assetKey: "markerBlue",
           },
         ];
       }
     },
     onPointerMove: () => {
-      if (animationStep < 0) {
-        args.onPop();
-        animationStep = 0;
-      }
+      return updateState("pointerMove");
     },
     onTick: () => {
-      if (animationStep >= 0) {
-        animationStep++;
-      }
-
-      if (animationStep > animationLength) {
-        return [
-          {
-            kind: "removeSelf",
-          },
-        ];
-      }
+      return updateState("tick");
     },
   });
 };

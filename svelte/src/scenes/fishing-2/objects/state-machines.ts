@@ -53,7 +53,7 @@ export const linearAnimation = (args: {
 export const waitForEvent = (
   event: "pointerMove",
   args?: {
-    onEvent?: () => {};
+    onEvent?: () => void;
     id?: string;
   }
 ): ObjectState => {
