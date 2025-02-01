@@ -1,4 +1,5 @@
-import { PosFns } from "../../../model";
+import { PosFns, type SceneAction } from "../../../model";
+import { exists } from "../../../utils";
 
 export type StateDone = "done";
 
@@ -114,4 +115,36 @@ export const concatStates = (
   const [initial, ...remaining] = states;
 
   return concatInner(initial, remaining);
+};
+
+/**
+ * Wraps state into a StateMachine object. This keeps track of the current state.
+ */
+export type StateMachine = {
+  getCurrent: () => ObjectState;
+  /**
+   * Updates the current state. Returns SceneAction to remove self when done.
+   */
+  update: (event: "tick" | "pointerMove") => SceneAction[] | undefined;
+};
+
+export const makeStateMachine = (initial: ObjectState): StateMachine => {
+  let current = initial;
+
+  const update = (
+    action: "pointerMove" | "tick"
+  ): SceneAction[] | undefined => {
+    const result =
+      action === "pointerMove" ? current.onPointerMove?.() : current.tick?.();
+
+    if (result === "done") {
+      return [{ kind: "removeSelf" }];
+    } else if (exists(result)) {
+      current = result;
+    }
+  };
+
+  const getCurrent = () => current;
+
+  return { getCurrent, update };
 };

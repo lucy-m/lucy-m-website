@@ -8,48 +8,42 @@ import {
   type SceneAction,
   type SceneObject,
 } from "../../../../model";
-import { exists } from "../../../../utils";
-import { concatStates, linearAnimation, waitForEvent } from "../state-machines";
+import {
+  concatStates,
+  linearAnimation,
+  makeStateMachine,
+  waitForEvent,
+} from "../state-machines";
 
 export const makeTracePathMarker = (args: {
   random: PRNG;
   position: Position;
   onPop: () => void;
 }): SceneObject => {
-  let state = concatStates([
-    waitForEvent("pointerMove", { onEvent: args.onPop }),
-    linearAnimation({
-      fromValue: 0.7,
-      toValue: 0,
-      stepEnd: 7,
-    }),
-  ]);
-
-  // TODO: Refactor this to a type/object that contains above state
-  const updateState = (
-    action: "pointerMove" | "tick"
-  ): SceneAction[] | undefined => {
-    const result =
-      action === "pointerMove" ? state.onPointerMove?.() : state.tick?.();
-
-    if (result === "done") {
-      return [{ kind: "removeSelf" }];
-    } else if (exists(result)) {
-      state = result;
-    }
-  };
+  const state = makeStateMachine(
+    concatStates([
+      waitForEvent("pointerMove", { onEvent: args.onPop }),
+      linearAnimation({
+        fromValue: 0.7,
+        toValue: 0,
+        stepEnd: 7,
+      }),
+    ])
+  );
 
   return makeSceneObject(args.random)({
     typeName: "path-marker",
     layerKey: "path-marker",
     getPosition: () => args.position,
     getLayers: () => {
-      if (state.kind === "animating") {
+      const current = state.getCurrent();
+
+      if (current.kind === "animating") {
         return [
           {
             kind: "image",
             assetKey: "markerBlueExplode",
-            opacity: state.current,
+            opacity: current.current,
             scale: 2.2,
           },
         ];
@@ -63,10 +57,10 @@ export const makeTracePathMarker = (args: {
       }
     },
     onPointerMove: () => {
-      return updateState("pointerMove");
+      return state.update("pointerMove");
     },
     onTick: () => {
-      return updateState("tick");
+      return state.update("tick");
     },
   });
 };
