@@ -4,6 +4,7 @@
     Subject,
     Subscription,
     interval,
+    map,
     merge,
     type Observable,
   } from "rxjs";
@@ -17,6 +18,7 @@
     type SceneSpec,
     type SceneType,
   } from "../../src/model";
+  import type { UserInteraction } from "../../src/model/user-interactions";
   import { sceneSize } from "../../src/scenes";
   import { viewScene } from "../../src/scenes/drawing/view-scene";
   import { choose } from "../../src/utils";
@@ -26,10 +28,14 @@
   export let onSceneChange: ((scene: SceneType) => void) | undefined =
     undefined;
   export let layerOrder: readonly string[] | undefined = undefined;
+  export let userInteractions$: Observable<UserInteraction> | undefined =
+    undefined;
+  // LTODO: Remove this - replaced by above
   export let worldClick$: Observable<Position> | undefined = undefined;
   export let debugDraw$:
     | Observable<(ctx: CanvasRenderingContext2D) => void>
     | undefined = undefined;
+  export let tick$: Observable<unknown> | undefined = undefined;
 
   export let debugTrace:
     | {
@@ -101,6 +107,15 @@
       },
     };
   };
+
+  const allInteractions$: Observable<UserInteraction> | undefined =
+    userInteractions$ ??
+    worldClick$?.pipe(
+      map((position) => ({
+        kind: "click",
+        position,
+      }))
+    );
 </script>
 
 <div class="wrapper">
@@ -111,13 +126,15 @@
         initialSceneSpec: makeScene,
         images,
         seed,
-        onSceneChange: _onSceneChange,
-        worldClick$,
         mountSvelteComponent: () => {
           throw new Error("Not implememented");
         },
         worldDisabled$: new BehaviorSubject(false),
-        tick$: interval(15),
+        _test: {
+          onSceneChange: _onSceneChange,
+          userInteractions$: allInteractions$,
+          tick$: tick$ ?? interval(15),
+        },
       }}
     />
     <canvas class="debug-canvas" use:debugOverlay />

@@ -64,7 +64,7 @@ describe("scene", () => {
       });
     });
 
-    it("abitrary objectA event calls onObjectEvent", () => {
+    it("arbitrary objectA event calls onObjectEvent", () => {
       const event = { a: "hello", b: "world" };
       objectAEvents.next({ kind: "emitEvent", event });
 
@@ -96,6 +96,16 @@ describe("scene", () => {
         .should("not.have.been.called")
         .then(() => {
           objectAEvents.next({ kind: "removeObject", target: objectA.id });
+          expect(scene.getObjects()).to.have.length(0);
+          cy.get("@onADestroySpy").should("have.been.calledOnce");
+        });
+    });
+
+    it("sceneAction removeSelf event updates the scene", () => {
+      cy.get("@onADestroySpy")
+        .should("not.have.been.called")
+        .then(() => {
+          objectAEvents.next({ kind: "removeSelf" });
           expect(scene.getObjects()).to.have.length(0);
           cy.get("@onADestroySpy").should("have.been.calledOnce");
         });
@@ -147,6 +157,98 @@ describe("scene", () => {
         objectAEvents.next({ kind: "emitEvent", event });
 
         getOnObjectEventSpy().should("not.have.been.called");
+      });
+    });
+  });
+
+  describe("tick events", () => {
+    describe("removeObject", () => {
+      const target = makeTestSceneObject();
+
+      const removeObj = makeTestSceneObject({
+        onTick: () => [{ kind: "removeObject", target: target.id }],
+      });
+
+      describe("target in scene", () => {
+        it("removes target", () => {
+          const scene = makeTestScene([removeObj, target]);
+
+          expect(scene.getObjects()).to.have.length(2);
+
+          scene.onExternalEvent({
+            kind: "tick",
+          });
+
+          expect(scene.getObjects()).to.have.length(1);
+          expect(scene.getObjects().map((o) => o.id)).not.to.contain(target.id);
+        });
+      });
+
+      describe("target not in scene", () => {
+        it("is no-op", () => {
+          const scene = makeTestScene([removeObj]);
+
+          expect(scene.getObjects()).to.have.length(1);
+
+          scene.onExternalEvent({
+            kind: "tick",
+          });
+
+          expect(scene.getObjects()).to.have.length(1);
+          expect(scene.getObjects().map((o) => o.id)).not.to.contain(target.id);
+        });
+      });
+    });
+
+    describe("removeSelf", () => {
+      const removeObj = makeTestSceneObject({
+        onTick: () => [{ kind: "removeSelf" }],
+      });
+
+      const scene = makeTestScene([removeObj]);
+
+      it("tick removes obj", () => {
+        scene.onExternalEvent({
+          kind: "tick",
+        });
+
+        expect(scene.getObjects()).to.have.length(0);
+      });
+    });
+
+    describe("add", () => {
+      const addTarget = makeTestSceneObject();
+
+      const addTrigger = makeTestSceneObject({
+        onTick: () => [{ kind: "addObject", makeObject: () => addTarget }],
+      });
+
+      describe("adding new object", () => {
+        const scene = makeTestScene([addTrigger]);
+
+        it("tick adds object", () => {
+          expect(scene.getObjects()).to.have.length(1);
+
+          scene.onExternalEvent({ kind: "tick" });
+
+          expect(scene.getObjects()).to.have.length(2);
+          expect(scene.getObjects().map((o) => o.id)).to.deep.equal([
+            addTrigger.id,
+            addTarget.id,
+          ]);
+        });
+      });
+
+      describe("adding existing object", () => {
+        const scene = makeTestScene([addTrigger, addTarget]);
+
+        it("does not add object", () => {
+          expect(scene.getObjects()).to.have.length(2);
+
+          scene.onExternalEvent({ kind: "tick" });
+
+          expect(scene.getObjects()).to.have.length(2);
+        });
       });
     });
   });

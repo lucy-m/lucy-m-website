@@ -9,7 +9,10 @@ describe("gameMenu", () => {
         levelXp: 20,
         nextLevelXp: 200,
         totalXp: 600,
+        caughtFish: [],
+        talents: [],
       },
+      resetState: () => {},
     });
   });
 

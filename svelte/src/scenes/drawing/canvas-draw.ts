@@ -1,4 +1,5 @@
 import { PosFns, breakText, type DrawLayer } from "../../model";
+import { exists } from "../../utils/exists";
 
 const lineHeight = 53;
 
@@ -10,18 +11,30 @@ export const drawLayerContent =
     ctx.save();
     ctx.setTransform();
 
-    if (layer.shadow) {
+    if (exists(layer.shadow)) {
       ctx.shadowColor = layer.shadow.color;
       ctx.shadowBlur = layer.shadow.blur;
     }
 
+    if (exists(layer.opacity)) {
+      ctx.globalAlpha = Math.max(layer.opacity, 0);
+    }
+
     if (content.kind === "image") {
-      if (content.rotation) {
+      if (exists(content.rotation) || exists(content.scale)) {
         const size = PosFns.new(content.image.width, content.image.height);
         const center = PosFns.add(layer.position, PosFns.scale(size, 0.5));
 
         ctx.translate(center.x, center.y);
-        ctx.rotate((content.rotation * Math.PI) / 180);
+
+        if (exists(content.rotation)) {
+          ctx.rotate((content.rotation * Math.PI) / 180);
+        }
+
+        if (exists(content.scale)) {
+          ctx.scale(content.scale, content.scale);
+        }
+
         ctx.translate(-center.x, -center.y);
       }
 

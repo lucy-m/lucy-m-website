@@ -1,8 +1,10 @@
 import type { Observable } from "rxjs";
 import type { PRNG } from "seedrandom";
 import type { ComponentProps, ComponentType, SvelteComponent } from "svelte";
+import { z } from "zod";
 import type { AssetKey } from "./assets";
 import type { Position } from "./position";
+import { userInteractionSchema } from "./user-interactions";
 
 export type EmptyState = Record<string, never>;
 
@@ -19,6 +21,7 @@ export type ObjectLayerContent = Readonly<
         assetKey: AssetKey;
         position?: Position;
         rotation?: number;
+        scale?: number;
       }
     | {
         /** Note, this kind of layer is not affected by object's position */
@@ -30,6 +33,7 @@ export type ObjectLayerContent = Readonly<
       color: string;
       blur: number;
     };
+    opacity?: number;
   }
 >;
 
@@ -43,6 +47,7 @@ export type SceneObject = {
   getLayers: () => ObjectLayerContent[];
   onAddedToScene?: () => SceneAction[] | void;
   onInteract?: () => SceneAction[] | void;
+  onPointerMove?: () => SceneAction[] | void;
   onTick?: () => SceneAction[] | void;
   onDestroy?: () => void;
   _getDebugInfo?: () => any;
@@ -89,16 +94,39 @@ export type SceneAction =
       kind: "removeObject";
       target: string;
     }
+  | { kind: "removeSelf" }
   | { kind: "emitEvent"; event: unknown }
   | {
       /** No-op actions are ignored */
       kind: "noop";
     };
 
+/**
+ * If the provided `action` is a `"removeSelf"` action, converts it to a
+ * `"removeObject"` action for the given `id`.
+ */
+export const convertRemoveSelf =
+  (id: string) =>
+  (action: SceneAction): SceneAction => {
+    if (action.kind === "removeSelf") {
+      return {
+        kind: "removeObject",
+        target: id,
+      };
+    } else {
+      return action;
+    }
+  };
+
 export type SceneActionWithSource = SceneAction & { sourceObjectId: string };
 
-export type SceneEvent =
-  | { kind: "interact"; position: Position }
-  | { kind: "tick" };
+export const sceneEventInteract = z.object({
+  kind: z.literal("interact"),
+  interaction: userInteractionSchema,
+});
+
+export type SceneEventInteract = z.infer<typeof sceneEventInteract>;
+
+export type SceneEvent = SceneEventInteract | { kind: "tick" };
 
 export type SceneEventOrAction = SceneEvent | SceneAction;

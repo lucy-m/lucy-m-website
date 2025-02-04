@@ -19,6 +19,7 @@ describe("canvas-draw", () => {
       drawLayers: (Omit<DrawLayer, "content"> & {
         assetKey: AssetKey;
         rotation?: number;
+        scale?: number;
       })[];
       only?: true;
     }
@@ -47,7 +48,7 @@ describe("canvas-draw", () => {
         ],
       },
       {
-        caseName: "feathers",
+        caseName: "feathers - rotated",
         drawLayers: Array.from({ length: 16 }).map((_, i) => {
           const x = 20 + (i % 4) * 100;
           const y = 20 + Math.floor(i / 4) * 100;
@@ -59,6 +60,35 @@ describe("canvas-draw", () => {
             rotation,
           };
         }),
+      },
+      {
+        caseName: "feathers - scaled",
+        drawLayers: Array.from({ length: 16 }).map((_, i) => {
+          const x = 20 + (i % 4) * 100;
+          const y = 20 + Math.floor(i / 4) * 100;
+          const scale = -1 + 0.25 * i;
+
+          return {
+            assetKey: "feather1",
+            position: PosFns.new(x, y),
+            scale,
+          };
+        }),
+      },
+      {
+        caseName: "feathers - opacity",
+        drawLayers: Array.from({ length: 16 }).map((_, i) => {
+          const x = 20 + (i % 4) * 100;
+          const y = 20 + Math.floor(i / 4) * 100;
+          const opacity = -0.3 + i * 0.1;
+
+          return {
+            assetKey: "feather1",
+            position: PosFns.new(x, y),
+            opacity,
+          };
+        }),
+        only: true,
       },
     ];
 
@@ -72,6 +102,7 @@ describe("canvas-draw", () => {
                 kind: "image" as const,
                 image: images[drawLayer.assetKey],
                 rotation: drawLayer.rotation,
+                scale: drawLayer.scale,
               },
             })),
           },

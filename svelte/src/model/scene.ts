@@ -1,14 +1,80 @@
 import { Observable, Subject, merge, type Subscription } from "rxjs";
 import { partitionByAllKinds } from "../utils";
+import type { Position } from "./position";
 import { getObjectBoundingBox, getObjectsInOrder } from "./scene-object";
 import {
+  convertRemoveSelf,
   type SceneAction,
   type SceneEvent,
+  type SceneEventInteract,
   type SceneEventOrAction,
   type SceneObject,
   type SceneSpec,
   type SceneType,
 } from "./scene-types";
+
+/**
+ * Converts SceneEventInteract to actions.
+ */
+const interactToActions = (
+  event: SceneEventInteract,
+  objects: Readonly<SceneObject[]>,
+  layerOrder: Readonly<string[]>,
+  images: Record<string, ImageBitmap>
+): SceneAction[] | undefined => {
+  const getTopObjectAtLocation = (
+    objects: Readonly<SceneObject[]>,
+    position: Position
+  ): SceneObject | undefined => {
+    const objectsInOrder = getObjectsInOrder(
+      objects,
+      layerOrder,
+      "top-to-bottom"
+    );
+
+    const interactObject = objectsInOrder.find((sceneObj) => {
+      const boundingBox = getObjectBoundingBox(sceneObj, images);
+      return (
+        position.x >= boundingBox.topLeft.x &&
+        position.x < boundingBox.bottomRight.x &&
+        position.y >= boundingBox.topLeft.y &&
+        position.y < boundingBox.bottomRight.y
+      );
+    });
+
+    return interactObject;
+  };
+
+  if (event.interaction.kind === "click") {
+    const position = event.interaction.position;
+
+    const interactableObjects = objects.filter((obj) => obj.onInteract);
+
+    const interactObject = getTopObjectAtLocation(
+      interactableObjects,
+      position
+    );
+
+    const objectActions = interactObject?.onInteract?.() ?? undefined;
+
+    return objectActions;
+  } else if (event.interaction.kind === "pointermove") {
+    const position = event.interaction.position;
+
+    const interactableObjects = objects.filter((obj) => obj.onPointerMove);
+
+    const interactObject = getTopObjectAtLocation(
+      interactableObjects,
+      position
+    );
+
+    const objectActions = interactObject?.onPointerMove?.() ?? undefined;
+
+    return objectActions;
+  } else {
+    // LTODO: Add in additional events
+  }
+};
 
 export const makeSceneType =
   (
@@ -29,9 +95,9 @@ export const makeSceneType =
 
     const applySceneEvent = (event: SceneEventOrAction): void => {
       if (event.kind === "tick") {
-        const tickActions = getObjects().flatMap((obj) => {
+        const tickActions = objects.flatMap((obj) => {
           if (obj.onTick) {
-            return obj.onTick() ?? [];
+            return (obj.onTick() ?? []).map(convertRemoveSelf(obj.id));
           } else {
             return [];
           }
@@ -39,32 +105,14 @@ export const makeSceneType =
 
         applySceneActions(tickActions);
       } else if (event.kind === "interact") {
-        const objectsInOrder = getObjectsInOrder(
-          getObjects().filter((obj) => obj.onInteract),
+        const objectActions = interactToActions(
+          event,
+          objects,
           scene.layerOrder,
-          "top-to-bottom"
+          images
         );
 
-        const interactObject = objectsInOrder.find((sceneObj) => {
-          const boundingBox = getObjectBoundingBox(sceneObj, images);
-          return (
-            event.position.x >= boundingBox.topLeft.x &&
-            event.position.x < boundingBox.bottomRight.x &&
-            event.position.y >= boundingBox.topLeft.y &&
-            event.position.y < boundingBox.bottomRight.y
-          );
-        });
-
-        if (!interactObject) {
-          return;
-        }
-
-        const objectActions =
-          interactObject.onInteract && interactObject.onInteract();
-
-        if (!objectActions) {
-          return;
-        } else {
+        if (objectActions) {
           applySceneActions(objectActions);
         }
       } else {
@@ -111,7 +159,7 @@ export const makeSceneType =
             if (event.kind === "emitEvent") {
               scene.onObjectEvent && scene.onObjectEvent(event.event);
             } else {
-              objectSceneActions.next(event);
+              objectSceneActions.next(convertRemoveSelf(obj.id)(event));
             }
           });
           eventSubscriptions[obj.id] = subscription;

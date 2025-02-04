@@ -122,21 +122,19 @@ describe("cruising bird", () => {
 
     const wait = (n: number) => cy.interactiveWait(n, interactive);
 
-    wait(2_000).then(clickBird);
+    wait(1_000).then(clickBird);
 
-    wait(2_000).then(clickBird);
+    wait(1_000).then(clickBird);
 
-    wait(2_000).then(clickBird);
-    wait(200).then(clickBird);
-
-    wait(10_000).then(clickBird);
-    wait(100).then(clickBird);
+    wait(1_000).then(clickBird);
     wait(100).then(clickBird);
 
-    wait(15_000);
+    wait(5_000).then(clickBird);
+    wait(50).then(clickBird);
+    wait(50).then(clickBird);
 
-    if (!interactive) {
-      cy.percySnapshot();
-    }
+    wait(7_500);
+
+    cy.percySnapshot();
   });
 });

@@ -19,7 +19,6 @@ import {
   resolveScene,
   type AssetKey,
   type Destroyable,
-  type Position,
   type SceneType,
 } from "../../model";
 import type {
@@ -27,7 +26,9 @@ import type {
   SceneSpec,
   SvelteComponentMounter,
 } from "../../model/scene-types";
+import type { UserInteraction } from "../../model/user-interactions";
 import { drawLayerContent } from "./canvas-draw";
+import { setUpCanvasEvents } from "./set-up-canvas-events";
 
 const redrawCanvas = (
   ctx: CanvasRenderingContext2D,
@@ -50,32 +51,28 @@ export const viewScene = (
   args: {
     initialSceneSpec: SceneSpec;
     images: Record<AssetKey, ImageBitmap>;
-    onSceneChange?: (scene: SceneType) => void;
-    worldClick$?: Observable<Position>;
     seed: string;
     mountSvelteComponent: SvelteComponentMounter;
     worldDisabled$: Observable<boolean>;
-    tick$?: Observable<unknown>;
+    _test?: {
+      tick$?: Observable<unknown>;
+      reload$?: Observable<unknown>;
+      userInteractions$?: Observable<UserInteraction>;
+      onSceneChange?: (scene: SceneType) => void;
+    };
   }
 ): Destroyable => {
-  const { initialSceneSpec, images, onSceneChange, worldClick$, seed } = args;
-
-  const interactSub = new Subject<Position>();
+  const { initialSceneSpec, images, seed, _test } = args;
 
   canvas.width = sceneSize.x;
   canvas.height = sceneSize.y;
-  canvas.onclick = (e) => {
-    const x = e.offsetX * (canvas.width / canvas.clientWidth);
-    const y = e.offsetY * (canvas.height / canvas.clientHeight);
-
-    interactSub.next({ x, y });
-  };
+  const interactSub = setUpCanvasEvents(canvas);
 
   const ctx = canvas.getContext("2d");
 
   const prng = seedrandom(seed);
 
-  let subscription: Subscription | undefined;
+  const subscription = new Subscription();
 
   if (ctx) {
     ctx.font = "42px Quicksand";
@@ -85,47 +82,57 @@ export const viewScene = (
       changeSceneSub.next(newScene);
     };
 
-    subscription = changeSceneSub
-      .pipe(
-        startWith(initialSceneSpec),
-        map((sceneSpec) =>
-          sceneSpec({
-            random: prng,
-            mountSvelteComponent: args.mountSvelteComponent,
-          })(images, onNewScene)
-        ),
-        tap((currentScene) => {
-          redrawCanvas(ctx, currentScene, images);
-          onSceneChange && onSceneChange(currentScene);
-          canvas.setAttribute("data-initialised", "true");
-        }),
-        switchMap((currentScene) =>
-          merge(
-            (args.tick$ ?? interval(30)).pipe(
-              map(() => ({ kind: "tick" } as SceneEvent))
-            ),
-            (worldClick$ ? merge(interactSub, worldClick$) : interactSub).pipe(
-              map(
-                (position: Position) =>
-                  ({ kind: "interact", position } as SceneEvent)
+    subscription.add(
+      _test?.reload$?.subscribe(() => onNewScene(initialSceneSpec))
+    );
+
+    subscription.add(
+      changeSceneSub
+        .pipe(
+          startWith(initialSceneSpec),
+          map((sceneSpec) =>
+            sceneSpec({
+              random: prng,
+              mountSvelteComponent: args.mountSvelteComponent,
+            })(images, onNewScene)
+          ),
+          tap((currentScene) => {
+            redrawCanvas(ctx, currentScene, images);
+
+            _test?.onSceneChange?.(currentScene);
+            canvas.setAttribute("data-initialised", "true");
+          }),
+          switchMap((currentScene) =>
+            merge(
+              (_test?.tick$ ?? interval(30)).pipe(
+                map(() => ({ kind: "tick" } as SceneEvent))
+              ),
+              (_test?.userInteractions$
+                ? merge(interactSub, _test?.userInteractions$)
+                : interactSub
+              ).pipe(
+                map(
+                  (interaction) =>
+                    ({ kind: "interact", interaction } as SceneEvent)
+                )
               )
+            ).pipe(
+              finalize(() => currentScene.destroy()),
+              withLatestFrom(args.worldDisabled$),
+              filter(([_event, disabled]) => !disabled),
+              tap(([event]) => currentScene.onExternalEvent(event)),
+              tap(() => {
+                _test?.onSceneChange?.(currentScene);
+              }),
+              rafThrottle(),
+              tap(() => {
+                redrawCanvas(ctx, currentScene, images);
+              })
             )
-          ).pipe(
-            finalize(() => currentScene.destroy()),
-            withLatestFrom(args.worldDisabled$),
-            filter(([_event, disabled]) => !disabled),
-            tap(([event]) => currentScene.onExternalEvent(event)),
-            tap(() => {
-              onSceneChange && onSceneChange(currentScene);
-            }),
-            rafThrottle(),
-            tap(() => {
-              redrawCanvas(ctx, currentScene, images);
-            })
           )
         )
-      )
-      .subscribe();
+        .subscribe()
+    );
   }
 
   return {
