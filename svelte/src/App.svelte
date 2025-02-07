@@ -3,11 +3,6 @@
   import { NavBar } from "./components";
   import { fallback, navItems } from "./routes";
 
-  const staticItems = document.querySelectorAll("[data-static='true']");
-  staticItems.forEach((item) => {
-    item.setAttribute("style", "display: none");
-  });
-
   const locationHashStore = writable<string>(
     window.location.hash.replace("#", "")
   );
@@ -26,6 +21,10 @@
 
     return fallback;
   });
+
+  document
+    .querySelector("#javascript-loading")
+    ?.setAttribute("style", "display: none");
 </script>
 
 <NavBar {navItems} {navigateFn} />

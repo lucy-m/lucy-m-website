@@ -12,6 +12,11 @@
     <link rel="stylesheet" href="./app.scss" />
     <link rel="stylesheet" href="./cv.scss" />
     <link rel="stylesheet" href="./print.scss" />
+    <style>
+      #javascript-loading {
+        display: none;
+      }
+    </style>
   </head>
   <body class="v-stack">
     <h1>Lucy Mair's <span class="hover-wave">Special</span> Place</h1>
@@ -22,6 +27,8 @@
         it if you turned it on! 🙂
       </div>
     </noscript>
+
+    <div id="javascript-loading">JavaScript is loading, please stand by xoxo</div>
 
     <div id="static-intro" data-static="true">
       <div class="intro-wrapper">
@@ -70,9 +77,29 @@
           <h2>Experience</h2>
           <div class="column-item">
             <div>
+              <p>CodeSignal</p>
+              <p>Senior Software Engineer</p>
+              <p>November 2023 - February 2025</p>
+            </div>
+            <div>
+              <p>
+                At CodeSignal, I worked as a full stack engineer on a team
+                focused on the end-to-end experience of users running code.
+                This included everything from building and maintaining the
+                UI components to managing the infrastructure to run code on AWS.
+              </p>
+              <p>
+                My time here was brief as ultimately the company and engineering
+                culture was not a good fit for me.
+              </p>
+            </div>
+          </div>
+
+          <div class="column-item">
+            <div>
               <p>Codat</p>
-              <p>Engineer</p>
-              <p>June 2021 - Present</p>
+              <p>Software Engineer</p>
+              <p>June 2021 - November 2023</p>
             </div>
             <div>
               <p>
@@ -84,22 +111,18 @@
               <ul>
                 <li>
                   Architecting libraries and apps for front-end to maximise ease
-                  of testing and to leverage the TypeScript compiler as much as
-                  possible.
+                  of testing. This included micro front-ends to allow work to be
+                  split across teams.
                 </li>
                 <li>
                   Introducing Cypress testing and showing how to use it for
-                  test-driven development. Advocating for the end of snapshot
-                  testing. Generally talking about testing too much.
+                  test-driven development of components.
+                  Generally talking about testing too much.
                 </li>
                 <li>
-                  Fixing webpack issues, mostly related to style loading with
-                  micro front ends and content security policies.
-                </li>
-                <li>
-                  Mentoring colleagues, helping them to upskill and become more
-                  confident. I helped a technical writer transition to a junior
-                  developer role and mentored two graduate developers.
+                  Mentoring colleagues, including helping a technical writer
+                  progress to a development role. Running knowledge sharing
+                  and upskilling sessions for non-front-end developers.
                 </li>
                 <li>
                   Introducing Svelte as an alternative to React when building a
@@ -116,7 +139,6 @@
                   sensibly scoped and designs were complete and feasible before
                   starting work.
                 </li>
-                <li>Contributing to our internal component library.</li>
               </ul>
             </div>
           </div>
@@ -241,6 +263,22 @@
       </div>
       <div>Entirely human written</div>
     </footer>
+
+    <script>
+      const body = document.querySelector("body");
+      const styleNode = document.createElement("style");
+      styleNode.innerHTML = `
+      [data-static="true"] {
+        display: none;
+      }
+
+      #javascript-loading {
+        display: block;
+      }
+      `;
+      body?.appendChild(styleNode);
+
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
