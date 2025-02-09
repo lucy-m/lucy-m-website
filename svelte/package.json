@@ -4,9 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
     "start": "vite --host",
-    "build": "vite build",
+    "build": "cd fable && dotnet fable --lang typescript --outDir ../src/fable && cd .. && vite build",
     "preview": "vite preview",
     "check-svelte": "svelte-check --tsconfig ./tsconfig.json",
     "check-ts": "tsc --noEmit --project ./tsconfig.json",
