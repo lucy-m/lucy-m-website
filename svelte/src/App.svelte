@@ -1,7 +1,10 @@
 <script lang="ts">
   import { derived, writable } from "svelte/store";
   import { NavBar } from "./components";
+  import { helloFable } from "./fable/Program";
   import { fallback, navItems } from "./routes";
+
+  helloFable();
 
   const locationHashStore = writable<string>(
     window.location.hash.replace("#", "")

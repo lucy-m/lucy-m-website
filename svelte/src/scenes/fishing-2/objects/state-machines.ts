@@ -93,8 +93,6 @@ export const concatStates = (
       }
     };
 
-    console.log("Current state is", current, tick, onPointerMove);
-
     return {
       ...current,
       tick: tick

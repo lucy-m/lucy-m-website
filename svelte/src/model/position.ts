@@ -49,15 +49,14 @@ const linearInterpolate = (
   pos2: Position,
   inputX: number
 ): number => {
-  const xRange = pos2.x - pos1.x;
-  const yRange = pos2.y - pos1.y;
+  const range = sub(pos2, pos1);
 
-  if (xRange === 0) {
+  if (range.x === 0) {
     return 0;
   }
 
-  const xFrac = (inputX - pos1.x) / xRange;
-  const yFrac = xFrac * yRange;
+  const xFrac = (inputX - pos1.x) / range.x;
+  const yFrac = xFrac * range.y;
 
   return yFrac + pos1.y;
 };
